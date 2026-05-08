@@ -1,0 +1,3 @@
+FROM golang:1.26.3
+
+EXPOSE 8083
