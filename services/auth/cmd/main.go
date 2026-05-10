@@ -1,14 +1,16 @@
 package main
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/labstack/echo/v5"
+	"github.com/labstack/echo/v5/middleware"
 )
 
 func main() {
 	e := echo.New()
+
+	e.Use(middleware.RequestLogger())
 
 	e.GET("/health", func(c *echo.Context) error {
 		return c.JSON(http.StatusOK, map[string]string{
@@ -17,6 +19,6 @@ func main() {
 	})
 
 	if err := e.Start(":8081"); err != nil {
-		log.Fatal(err)
+		e.Logger.Error("Failed to start server", "error", err)
 	}
 }
