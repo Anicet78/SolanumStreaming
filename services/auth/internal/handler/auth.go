@@ -1,7 +1,8 @@
 package handler
 
 import (
-	"net/http"
+	"shared/response"
+
 	"github.com/labstack/echo/v5"
 )
 
@@ -13,17 +14,19 @@ func NewAuthHandler() *AuthHandler {
 
 func (h *AuthHandler) RegisterRoutes(e *echo.Echo) {
 	e.POST("/register", h.register)
-	e.POST("/login", h.login)
+}
+
+type RegisterRequest struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
 }
 
 func (h *AuthHandler) register(c *echo.Context) error {
-	return c.JSON(http.StatusOK, map[string]string{
-		"message": "register",
-	})
-}
+	var req RegisterRequest
 
-func (h *AuthHandler) login(c *echo.Context) error {
-	return c.JSON(http.StatusOK, map[string]string{
-		"message": "login",
-	})
+	if err := c.Bind(&req); err != nil {
+		return response.BadRequest(c, "invalid body")
+	}
+
+	return response.OK(c, req)
 }
