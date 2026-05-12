@@ -1,3 +1,3 @@
-FROM golang:1.26.3
+FROM golang:1.25.8
 
 EXPOSE 8081
