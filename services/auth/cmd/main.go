@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 
+	"github.com/Anicet78/SolanumStreaming/auth/internal/handler"
 	"github.com/labstack/echo/v5"
 	"github.com/labstack/echo/v5/middleware"
 )
@@ -17,6 +18,9 @@ func main() {
 			"status": "ok",
 		})
 	})
+
+	authHandler := handler.NewAuthHandler()
+	authHandler.RegisterRoutes(e)
 
 	if err := e.Start(":8081"); err != nil {
 		e.Logger.Error("Failed to start server", "error", err)

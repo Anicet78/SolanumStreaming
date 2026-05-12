@@ -16,17 +16,12 @@ services:
   #   ports:
   #     - 8081:8081
 
-  # users:
-  #   build: ./services/users
-  #   ports:
-  #     - 8082:8082
-
   # movies:
   #   build: ./services/movies
   #   ports:
-  #     - 8083:8083
+  #     - 8082:8082
 
   # stream:
   #   build: ./services/stream
   #   ports:
-  #     - 8084:8084
+  #     - 8083:8083

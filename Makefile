@@ -7,9 +7,6 @@ front:
 auth:
 	cd services/auth && go run cmd/main.go
 
-users:
-	cd services/users && go run cmd/main.go
-
 movies:
 	cd services/movies && go run cmd/main.go
 
