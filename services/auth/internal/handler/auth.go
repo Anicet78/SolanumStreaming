@@ -17,8 +17,8 @@ func (h *AuthHandler) RegisterRoutes(e *echo.Echo) {
 }
 
 type RegisterRequest struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
+	Username string `json:"username" validate:"required"`
+	Password string `json:"password" validate:"required,min=4"`
 }
 
 func (h *AuthHandler) register(c *echo.Context) error {
@@ -28,5 +28,9 @@ func (h *AuthHandler) register(c *echo.Context) error {
 		return response.BadRequest(c, "invalid body")
 	}
 
-	return response.OK(c, req)
+	if err := c.Validate(&req); err != nil {
+		return response.BadRequest(c, err.Error())
+	}
+
+	return response.Created(c, req)
 }

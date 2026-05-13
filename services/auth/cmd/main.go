@@ -4,14 +4,24 @@ import (
 	"net/http"
 
 	"github.com/Anicet78/SolanumStreaming/auth/internal/handler"
+	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v5"
 	"github.com/labstack/echo/v5/middleware"
 )
+
+type CustomValidator struct {
+	validator *validator.Validate
+}
+
+func (cv *CustomValidator) Validate(i interface{}) error {
+	return cv.validator.Struct(i)
+}
 
 func main() {
 	e := echo.New()
 
 	e.Use(middleware.RequestLogger())
+	e.Validator = &CustomValidator{validator: validator.New()}
 
 	e.GET("/health", func(c *echo.Context) error {
 		return c.JSON(http.StatusOK, map[string]string{

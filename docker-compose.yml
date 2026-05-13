@@ -1,10 +1,33 @@
 services:
   postgres:
-    image: postgres:18.3
-    environment:
-      POSTGRES_PASSWORD: password
+    image: docker.io/postgres:18.3
     ports:
       - 5432:5432
+    env_file:
+      - .env
+    volumes:
+      - ./db/init.sh:/docker-entrypoint-initdb.d/init.sh
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$POSTGRES_USER\" -d \"$POSTGRES_DB\""]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  migrate:
+    image: docker.io/migrate/migrate
+    env_file:
+      - .env
+    volumes:
+      - ./services/auth/migrations:/auth/migrations
+    command:
+      [
+        "-path", "/auth/migrations",
+        "-database", "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}?sslmode=disable",
+        "up"
+      ]
+    depends_on:
+      postgres:
+        condition: service_healthy
 
   # frontend:
   #   build: ./frontend

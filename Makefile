@@ -12,3 +12,21 @@ movies:
 
 stream:
 	cd services/movies && npm run dev
+
+migrate:
+	docker compose up -d migrate
+
+up:
+	docker compose up -d
+
+down:
+	docker compose down
+
+clean: down
+
+fclean:
+	docker compose down --rmi all -v
+
+re: down up
+
+.PHONY: all front auth movies stream migrate up down clean fclean re
