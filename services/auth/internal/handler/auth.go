@@ -1,8 +1,11 @@
 package handler
 
 import (
+	"errors"
+	"log/slog"
 	"shared/response"
 
+	"github.com/Anicet78/SolanumStreaming/auth/internal/domain"
 	"github.com/Anicet78/SolanumStreaming/auth/internal/service"
 	"github.com/labstack/echo/v5"
 )
@@ -19,13 +22,8 @@ func (h *AuthHandler) RegisterRoutes(e *echo.Echo) {
 	e.POST("/register", h.register)
 }
 
-type RegisterRequest struct {
-	Username string `json:"username" validate:"required"`
-	Password string `json:"password" validate:"required,min=4"`
-}
-
 func (h *AuthHandler) register(c *echo.Context) error {
-	var req RegisterRequest
+	var req domain.CreateUserRequest
 
 	if err := c.Bind(&req); err != nil {
 		return response.BadRequest(c, "invalid body")
@@ -35,5 +33,15 @@ func (h *AuthHandler) register(c *echo.Context) error {
 		return response.BadRequest(c, err.Error())
 	}
 
-	return response.Created(c, req)
+	res, err := h.service.Register(c.Request().Context(), req.Username, req.Password)
+
+	if err != nil {
+		if errors.Is(err, domain.ErrUsernameAlreadyExists) {
+			return response.Conflict(c, err.Error())
+		}
+		slog.Error("Account creation failed", "error", err)
+		return response.InternalServerError(c, "internal server error")
+	}
+
+	return response.Created(c, res)
 }

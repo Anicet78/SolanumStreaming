@@ -35,4 +35,4 @@ fclean:
 
 re: down up
 
-.PHONY: all front auth movies stream migrate up down clean fclean re
+.PHONY: all front auth movies stream migrates sqlc up down clean fclean re
