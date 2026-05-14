@@ -1,3 +1,6 @@
+include .env
+export
+
 all:
 	docker compose up -d
 
@@ -15,6 +18,9 @@ stream:
 
 migrate:
 	docker compose up -d migrate
+
+sqlc:
+	cd services/auth && sqlc generate
 
 up:
 	docker compose up -d

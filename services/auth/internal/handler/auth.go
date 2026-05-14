@@ -3,13 +3,16 @@ package handler
 import (
 	"shared/response"
 
+	"github.com/Anicet78/SolanumStreaming/auth/internal/service"
 	"github.com/labstack/echo/v5"
 )
 
-type AuthHandler struct{}
+type AuthHandler struct {
+	service *service.AuthService
+}
 
-func NewAuthHandler() *AuthHandler {
-	return &AuthHandler{}
+func NewAuthHandler(service *service.AuthService) *AuthHandler {
+	return &AuthHandler{service: service}
 }
 
 func (h *AuthHandler) RegisterRoutes(e *echo.Echo) {

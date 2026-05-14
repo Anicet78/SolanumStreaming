@@ -1,12 +1,15 @@
 services:
   postgres:
     image: docker.io/postgres:18.3
+    container_name: postgres-c
     ports:
       - 5432:5432
     env_file:
       - .env
     volumes:
+      - postgres-v:/var/lib/postgresql
       - ./db/init.sh:/docker-entrypoint-initdb.d/init.sh
+    restart: on-failure:3
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U \"$POSTGRES_USER\" -d \"$POSTGRES_DB\""]
       interval: 2s
@@ -15,36 +18,64 @@ services:
 
   migrate:
     image: docker.io/migrate/migrate
+    container_name: migrate-c
     env_file:
       - .env
     volumes:
-      - ./services/auth/migrations:/auth/migrations
+      - ./services/auth/migrations:/migrations/auth
     command:
       [
-        "-path", "/auth/migrations",
-        "-database", "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}?sslmode=disable",
+        "-path", "/migrations/auth",
+        "-database", "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_CONTAINER_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}?sslmode=disable",
         "up"
       ]
+    restart: on-failure:3
     depends_on:
       postgres:
         condition: service_healthy
 
   # frontend:
   #   build: ./frontend
+  #   container_name: frontend-c
   #   ports:
   #     - 8080:8080
+  #   restart: on-failure:3
 
   # auth:
   #   build: ./services/auth
+  #   container_name: auth-c
   #   ports:
   #     - 8081:8081
+  #   restart: on-failure:3
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #     migrate:
+  #       condition: service_completed_successfully
 
   # movies:
   #   build: ./services/movies
+  #   container_name: movies-c
   #   ports:
   #     - 8082:8082
+  #   restart: on-failure:3
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #     migrate:
+  #       condition: service_completed_successfully
 
   # stream:
   #   build: ./services/stream
+  #   container_name: stream-c
   #   ports:
   #     - 8083:8083
+  #   restart: on-failure:3
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #     migrate:
+  #       condition: service_completed_successfully
+
+volumes:
+  postgres-v:
