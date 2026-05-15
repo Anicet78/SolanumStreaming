@@ -10,6 +10,8 @@ type CreateUserRequest struct {
 type CreateUserResponse struct {
 	UUID     string `json:"uuid"`
 	Username string `json:"username"`
+	Role     string `json:"role"`
+	JWT      string `json:"jwt"`
 }
 
 type LoginUserRequest struct {
@@ -20,6 +22,8 @@ type LoginUserRequest struct {
 type LoginUserResponse struct {
 	UUID     string `json:"uuid"`
 	Username string `json:"username"`
+	Role     string `json:"role"`
+	JWT      string `json:"jwt"`
 }
 
 var ErrUsernameAlreadyExists = errors.New("username already exists")

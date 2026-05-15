@@ -40,9 +40,16 @@ func (s *AuthService) Register(ctx context.Context, username string, password st
 		return domain.CreateUserResponse{}, err
 	}
 
+	token, err := generateToken(created.Uuid.String(), string(created.Role))
+	if err != nil {
+		return domain.CreateUserResponse{}, err
+	}
+
 	return domain.CreateUserResponse{
 		UUID:     created.Uuid.String(),
 		Username: created.Username,
+		Role:     string(created.Role),
+		JWT:      token,
 	}, nil
 }
 
@@ -59,8 +66,15 @@ func (s *AuthService) Login(ctx context.Context, username string, password strin
 		return domain.LoginUserResponse{}, domain.ErrPasswordDoesNotMatch
 	}
 
+	token, err := generateToken(found.Uuid.String(), string(found.Role))
+	if err != nil {
+		return domain.LoginUserResponse{}, err
+	}
+
 	return domain.LoginUserResponse{
 		UUID:     found.Uuid.String(),
 		Username: found.Username,
+		Role:     string(found.Role),
+		JWT:      token,
 	}, nil
 }

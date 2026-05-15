@@ -29,5 +29,7 @@ tests {
   test("Returns uuid and username", function() {
     expect(res.body.data.uuid);
     expect(res.body.data.username).to.equal("Anicet78");
+    expect(res.body.data.role).to.equal("user")
+    expect(res.body.data.jwt)
   });
 }
