@@ -17,19 +17,19 @@ func NewAuthService(store *store.Queries) *AuthService {
 	return &AuthService{store: store}
 }
 
-func (s *AuthService) Register(ctx context.Context, username string, password string) (domain.UserResponse, error) {
+func (s *AuthService) Register(ctx context.Context, username string, password string) (domain.CreateUserResponse, error) {
 	exists, err := s.store.GetUserByUsername(ctx, username)
 	if err != nil {
 		if !errors.Is(err, pgx.ErrNoRows) {
-			return domain.UserResponse{}, err
+			return domain.CreateUserResponse{}, err
 		}
 	} else if exists.Uuid.Valid {
-		return domain.UserResponse{}, domain.ErrUsernameAlreadyExists
+		return domain.CreateUserResponse{}, domain.ErrUsernameAlreadyExists
 	}
 
 	hash, err := hashPassword(password)
 	if err != nil {
-		return domain.UserResponse{}, err
+		return domain.CreateUserResponse{}, err
 	}
 
 	created, err := s.store.CreateUser(ctx, store.CreateUserParams{
@@ -37,11 +37,30 @@ func (s *AuthService) Register(ctx context.Context, username string, password st
 		Password: hash,
 	})
 	if err != nil {
-		return domain.UserResponse{}, err
+		return domain.CreateUserResponse{}, err
 	}
 
-	return domain.UserResponse{
+	return domain.CreateUserResponse{
 		UUID:     created.Uuid.String(),
 		Username: created.Username,
+	}, nil
+}
+
+func (s *AuthService) Login(ctx context.Context, username string, password string) (domain.LoginUserResponse, error) {
+	found, err := s.store.GetUserByUsername(ctx, username)
+	if err != nil {
+		return domain.LoginUserResponse{}, domain.ErrUsernameDoesNotExists
+	}
+
+	match, err := passwordMatch(password, found.Password)
+	if err != nil {
+		return domain.LoginUserResponse{}, err
+	} else if !match {
+		return domain.LoginUserResponse{}, domain.ErrPasswordDoesNotMatch
+	}
+
+	return domain.LoginUserResponse{
+		UUID:     found.Uuid.String(),
+		Username: found.Username,
 	}, nil
 }

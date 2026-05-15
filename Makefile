@@ -36,8 +36,10 @@ down:
 clean: down
 
 fclean:
-	docker compose down --rmi all -v
+	docker compose down --rmi -v all
 
-re: down up
+re:
+	docker compose down -v all
+	docker compose up -d
 
 .PHONY: all front auth movies stream migrates sqlc test deploy up down clean fclean re
