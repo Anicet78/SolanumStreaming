@@ -22,6 +22,11 @@ migrate:
 sqlc:
 	cd services/auth && sqlc generate
 
+test:
+	cd bruno && bru run
+
+deploy: # k8s
+
 up:
 	docker compose up -d
 
@@ -35,4 +40,4 @@ fclean:
 
 re: down up
 
-.PHONY: all front auth movies stream migrates sqlc up down clean fclean re
+.PHONY: all front auth movies stream migrates sqlc test deploy up down clean fclean re

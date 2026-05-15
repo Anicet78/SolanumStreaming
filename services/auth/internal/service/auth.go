@@ -19,7 +19,6 @@ func NewAuthService(store *store.Queries) *AuthService {
 
 func (s *AuthService) Register(ctx context.Context, username string, password string) (domain.UserResponse, error) {
 	exists, err := s.store.GetUserByUsername(ctx, username)
-
 	if err != nil {
 		if !errors.Is(err, pgx.ErrNoRows) {
 			return domain.UserResponse{}, err
@@ -28,11 +27,15 @@ func (s *AuthService) Register(ctx context.Context, username string, password st
 		return domain.UserResponse{}, domain.ErrUsernameAlreadyExists
 	}
 
+	hash, err := hashPassword(password)
+	if err != nil {
+		return domain.UserResponse{}, err
+	}
+
 	created, err := s.store.CreateUser(ctx, store.CreateUserParams{
 		Username: username,
-		Password: password,
+		Password: hash,
 	})
-
 	if err != nil {
 		return domain.UserResponse{}, err
 	}
