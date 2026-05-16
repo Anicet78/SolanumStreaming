@@ -3,6 +3,7 @@ package handler
 import (
 	"errors"
 	"log/slog"
+	"shared/bind"
 	"shared/response"
 
 	"github.com/Anicet78/SolanumStreaming/auth/internal/domain"
@@ -19,19 +20,18 @@ func NewAuthHandler(service *service.AuthService) *AuthHandler {
 }
 
 func (h *AuthHandler) RegisterRoutes(e *echo.Echo) {
-	e.POST("/register", h.register)
-	e.POST("/login", h.login)
+	public := e.Group("")
+	public.POST("/register", h.register)
+	public.POST("/login", h.login)
+
+	// private := e.Group("")
+	// private.Use(auth.JWTMiddleware())
 }
 
 func (h *AuthHandler) register(c *echo.Context) error {
-	var req domain.CreateUserRequest
-
-	if err := c.Bind(&req); err != nil {
-		return response.BadRequest(c, "invalid body")
-	}
-
-	if err := c.Validate(&req); err != nil {
-		return response.BadRequest(c, err.Error())
+	req, err := bind.Body[domain.CreateUserRequest](c)
+	if err != nil {
+		return err
 	}
 
 	res, err := h.service.Register(c.Request().Context(), req.Username, req.Password)
@@ -48,14 +48,9 @@ func (h *AuthHandler) register(c *echo.Context) error {
 }
 
 func (h *AuthHandler) login(c *echo.Context) error {
-	var req domain.LoginUserRequest
-
-	if err := c.Bind(&req); err != nil {
-		return response.BadRequest(c, "invalid body")
-	}
-
-	if err := c.Validate(&req); err != nil {
-		return response.BadRequest(c, err.Error())
+	req, err := bind.Body[domain.LoginUserRequest](c)
+	if err != nil {
+		return err
 	}
 
 	res, err := h.service.Login(c.Request().Context(), req.Username, req.Password)

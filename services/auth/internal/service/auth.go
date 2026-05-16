@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"shared/auth"
 
 	"github.com/Anicet78/SolanumStreaming/auth/internal/domain"
 	"github.com/Anicet78/SolanumStreaming/auth/internal/store"
@@ -40,7 +41,7 @@ func (s *AuthService) Register(ctx context.Context, username string, password st
 		return domain.CreateUserResponse{}, err
 	}
 
-	token, err := generateToken(created.Uuid.String(), string(created.Role))
+	token, err := auth.GenerateToken(created.Uuid.String(), string(created.Role))
 	if err != nil {
 		return domain.CreateUserResponse{}, err
 	}
@@ -66,7 +67,7 @@ func (s *AuthService) Login(ctx context.Context, username string, password strin
 		return domain.LoginUserResponse{}, domain.ErrPasswordDoesNotMatch
 	}
 
-	token, err := generateToken(found.Uuid.String(), string(found.Role))
+	token, err := auth.GenerateToken(found.Uuid.String(), string(found.Role))
 	if err != nil {
 		return domain.LoginUserResponse{}, err
 	}

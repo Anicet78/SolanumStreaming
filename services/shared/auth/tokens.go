@@ -1,16 +1,15 @@
-package service
+package auth
 
 import (
 	"errors"
 	"os"
 	"time"
 
-	"github.com/Anicet78/SolanumStreaming/auth/internal/domain"
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func generateToken(uuid string, role string) (string, error) {
-	payload := domain.JWTPayload{
+func GenerateToken(uuid string, role string) (string, error) {
+	payload := Claims{
 		UUID: uuid,
 		Role: role,
 		RegisteredClaims: jwt.RegisteredClaims{
@@ -23,15 +22,15 @@ func generateToken(uuid string, role string) (string, error) {
 	return token.SignedString([]byte(os.Getenv("JWT_SECRET")))
 }
 
-func verifyToken(tokenString string) (payload *domain.JWTPayload, err error) {
-	token, err := jwt.ParseWithClaims(tokenString, &domain.JWTPayload{}, func(token *jwt.Token) (interface{}, error) {
+func VerifyToken(tokenString string) (payload *Claims, err error) {
+	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
 		return []byte(os.Getenv("JWT_SECRET")), nil
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	claims, ok := token.Claims.(*domain.JWTPayload)
+	claims, ok := token.Claims.(*Claims)
 	if !ok {
 		return nil, errors.New("invalid token")
 	}
