@@ -3,11 +3,13 @@ package handler
 import (
 	"errors"
 	"log/slog"
+	"shared/auth"
 	"shared/bind"
 	"shared/response"
 
 	"github.com/Anicet78/SolanumStreaming/auth/internal/domain"
 	"github.com/Anicet78/SolanumStreaming/auth/internal/service"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/labstack/echo/v5"
 )
 
@@ -24,8 +26,9 @@ func (h *AuthHandler) RegisterRoutes(e *echo.Echo) {
 	public.POST("/register", h.register)
 	public.POST("/login", h.login)
 
-	// private := e.Group("")
-	// private.Use(auth.JWTMiddleware())
+	private := e.Group("")
+	private.Use(auth.JWTMiddleware())
+	private.PATCH("/profile", h.patchProfile)
 }
 
 func (h *AuthHandler) register(c *echo.Context) error {
@@ -35,7 +38,6 @@ func (h *AuthHandler) register(c *echo.Context) error {
 	}
 
 	res, err := h.service.Register(c.Request().Context(), req.Username, req.Password)
-
 	if err != nil {
 		if errors.Is(err, domain.ErrUsernameAlreadyExists) {
 			return response.Conflict(c, err.Error())
@@ -54,7 +56,6 @@ func (h *AuthHandler) login(c *echo.Context) error {
 	}
 
 	res, err := h.service.Login(c.Request().Context(), req.Username, req.Password)
-
 	if err != nil {
 		if errors.Is(err, domain.ErrUsernameDoesNotExists) {
 			return response.NotFound(c, err.Error())
@@ -66,4 +67,26 @@ func (h *AuthHandler) login(c *echo.Context) error {
 	}
 
 	return response.OK(c, res)
+}
+
+func (h *AuthHandler) patchProfile(c *echo.Context) error {
+	req, err := bind.Body[domain.PatchProfileRequest](c)
+	if err != nil {
+		return err
+	}
+
+	var uuid pgtype.UUID
+	rawUUID := c.Get("uuid").(string)
+	if err := uuid.Scan(rawUUID); err != nil {
+		slog.Error("UUID parsing failed", "error", err)
+		return response.InternalServerError(c, "internal server error")
+	}
+
+	err = h.service.PatchProfile(c.Request().Context(), uuid, req.NewUsername)
+	if err != nil {
+		slog.Error("Cannot update profile", "error", err)
+		return response.InternalServerError(c, "internal server error")
+	}
+
+	return response.NoContent(c)
 }

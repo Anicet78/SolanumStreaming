@@ -8,6 +8,7 @@ import (
 	"github.com/Anicet78/SolanumStreaming/auth/internal/domain"
 	"github.com/Anicet78/SolanumStreaming/auth/internal/store"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type AuthService struct {
@@ -78,4 +79,20 @@ func (s *AuthService) Login(ctx context.Context, username string, password strin
 		Role:     string(found.Role),
 		JWT:      token,
 	}, nil
+}
+
+func (s *AuthService) PatchProfile(ctx context.Context, uuid pgtype.UUID, newUsername string) (error) {
+	found, err := s.store.GetUserByUUID(ctx, uuid)
+	if err != nil {
+		return domain.ErrUsernameDoesNotExists
+	}
+
+	_, err = s.store.UpdateUser(ctx, store.UpdateUserParams{
+		Uuid: uuid,
+		Username: newUsername,
+		Password: found.Password,
+		Role: found.Role,
+	})
+
+	return err
 }

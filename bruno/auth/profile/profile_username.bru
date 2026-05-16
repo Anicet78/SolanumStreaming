@@ -1,0 +1,31 @@
+meta {
+  name: profile_username
+  type: http
+  seq: 1
+}
+
+patch {
+  url: {{baseUrl}}/profile
+  body: json
+  auth: bearer
+}
+
+body:json {
+  {
+    "new_username": "Anicet67"
+  }
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+vars:pre-request {
+  baseUrl: http://localhost:8081
+}
+
+tests {
+  test("Status code is 204", function() {
+    expect(res.status).to.equal(204);
+  });
+}

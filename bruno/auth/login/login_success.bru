@@ -33,3 +33,7 @@ tests {
     expect(res.body.data.jwt)
   });
 }
+
+script:post-response {
+  bru.setEnvVar("token", res.body.data.jwt);
+}

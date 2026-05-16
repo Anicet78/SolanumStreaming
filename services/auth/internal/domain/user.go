@@ -26,6 +26,10 @@ type LoginUserResponse struct {
 	JWT      string `json:"jwt"`
 }
 
+type PatchProfileRequest struct {
+	NewUsername string `json:"new_username"`
+}
+
 var ErrUsernameAlreadyExists = errors.New("username already exists")
 var ErrUsernameDoesNotExists = errors.New("username doesn't exists")
 var ErrPasswordDoesNotMatch = errors.New("incorrect password")
