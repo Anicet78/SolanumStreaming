@@ -44,7 +44,7 @@ func main() {
 		return c.JSON(http.StatusOK, map[string]string{"status": "ok"})
 	})
 
-	if err := e.Start(":8081"); err != nil {
+	if err := e.Start(":8082"); err != nil {
 		e.Logger.Error("Failed to start server", "error", err)
 	}
 }

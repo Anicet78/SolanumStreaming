@@ -22,16 +22,16 @@ func NewMovieHandler(service *service.MovieService) *MovieHandler {
 func (h *MovieHandler) RegisterRoutes(e *echo.Echo) {
 	private := e.Group("")
 	private.Use(auth.JWTMiddleware())
-	private.POST("/search", h.search)
+	private.GET("/search", h.search)
 }
 
 func (h *MovieHandler) search(c *echo.Context) error {
-	_, err := bind.Body[domain.SearchRequestBody](c)
+	params, err := bind.Query[domain.SearchRequestQuery](c)
 	if err != nil {
 		return err
 	}
 
-	res, err := h.service.Search(c.Request().Context())
+	res, err := h.service.Search(c.Request().Context(), params)
 	if err != nil {
 		slog.Error("Search creation failed", "error", err)
 		return response.InternalServerError(c, "internal server error")

@@ -1,0 +1,26 @@
+meta {
+  name: search
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/search
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+vars:pre-request {
+  baseUrl: http://localhost:8082
+}
+
+tests {
+  console.log("Error response:", res.status, res.body);
+
+  test("Status code is 204", function() {
+    expect(res.status).to.equal(204);
+  });
+}

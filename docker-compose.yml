@@ -43,23 +43,35 @@ services:
   #     - 8080:8080
   #   restart: on-failure:3
 
-  # auth:
-  #   build: ./services/auth
-  #   container_name: auth-c
-  #   ports:
-  #     - 8081:8081
-  #   restart: on-failure:3
-  #   depends_on:
-  #     postgres:
-  #       condition: service_healthy
-  #     migrate:
-  #       condition: service_completed_successfully
+  auth:
+    build:
+      context: ./services
+      dockerfile: auth/Dockerfile
+    container_name: auth-c
+    ports:
+      - 8081:8081
+    env_file:
+      - .env
+    environment:
+      POSTGRES_HOST: postgres
+    restart: on-failure:3
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
 
   # movies:
-  #   build: ./services/movies
+  #   build:
+  #     context: ./services
+  #     dockerfile: movies/Dockerfile
   #   container_name: movies-c
   #   ports:
   #     - 8082:8082
+  #   env_file:
+  #     - .env
+  #   environment:
+  #     POSTGRES_HOST: postgres
   #   restart: on-failure:3
   #   depends_on:
   #     postgres:

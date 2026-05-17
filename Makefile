@@ -1,8 +1,7 @@
 include .env
 export
 
-all:
-	docker compose up -d
+all: up
 
 front:
 	cd frontend && npm run dev
@@ -29,7 +28,7 @@ test:
 deploy: # k8s
 
 up:
-	docker compose up -d
+	docker compose up --build -d
 
 down:
 	docker compose down
@@ -37,7 +36,7 @@ down:
 clean: down
 
 fclean:
-	docker compose down --rmi -v
+	docker compose down --rmi all -v
 
 re:
 	docker compose down -v
