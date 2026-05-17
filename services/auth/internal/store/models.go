@@ -11,6 +11,48 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type Languages string
+
+const (
+	LanguagesEn Languages = "en"
+	LanguagesFr Languages = "fr"
+)
+
+func (e *Languages) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = Languages(s)
+	case string:
+		*e = Languages(s)
+	default:
+		return fmt.Errorf("unsupported scan type for Languages: %T", src)
+	}
+	return nil
+}
+
+type NullLanguages struct {
+	Languages Languages
+	Valid     bool // Valid is true if Languages is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullLanguages) Scan(value interface{}) error {
+	if value == nil {
+		ns.Languages, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.Languages.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullLanguages) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.Languages), nil
+}
+
 type Roles string
 
 const (
@@ -58,4 +100,5 @@ type User struct {
 	Username string
 	Password string
 	Role     Roles
+	Language Languages
 }

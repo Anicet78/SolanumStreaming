@@ -14,7 +14,7 @@ import (
 const createUser = `-- name: CreateUser :one
 INSERT INTO users (username, password)
 VALUES ($1, $2)
-RETURNING uuid, username, password, role
+RETURNING uuid, username, password, role, language
 `
 
 type CreateUserParams struct {
@@ -30,12 +30,13 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.Username,
 		&i.Password,
 		&i.Role,
+		&i.Language,
 	)
 	return i, err
 }
 
 const getUserByUUID = `-- name: GetUserByUUID :one
-SELECT uuid, username, password, role FROM users
+SELECT uuid, username, password, role, language FROM users
 WHERE uuid = $1
 `
 
@@ -47,12 +48,13 @@ func (q *Queries) GetUserByUUID(ctx context.Context, uuid pgtype.UUID) (User, er
 		&i.Username,
 		&i.Password,
 		&i.Role,
+		&i.Language,
 	)
 	return i, err
 }
 
 const getUserByUsername = `-- name: GetUserByUsername :one
-SELECT uuid, username, password, role FROM users
+SELECT uuid, username, password, role, language FROM users
 WHERE username = $1
 `
 
@@ -64,15 +66,16 @@ func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User,
 		&i.Username,
 		&i.Password,
 		&i.Role,
+		&i.Language,
 	)
 	return i, err
 }
 
 const updateUser = `-- name: UpdateUser :one
 UPDATE users
-SET username=$2, password=$3, role=$4
+SET username=$2, password=$3, role=$4, language=$5
 WHERE uuid = $1
-RETURNING uuid, username, password, role
+RETURNING uuid, username, password, role, language
 `
 
 type UpdateUserParams struct {
@@ -80,6 +83,7 @@ type UpdateUserParams struct {
 	Username string
 	Password string
 	Role     Roles
+	Language Languages
 }
 
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error) {
@@ -88,6 +92,7 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 		arg.Username,
 		arg.Password,
 		arg.Role,
+		arg.Language,
 	)
 	var i User
 	err := row.Scan(
@@ -95,6 +100,7 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 		&i.Username,
 		&i.Password,
 		&i.Role,
+		&i.Language,
 	)
 	return i, err
 }

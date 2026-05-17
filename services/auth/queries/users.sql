@@ -13,6 +13,6 @@ RETURNING *;
 
 -- name: UpdateUser :one
 UPDATE users
-SET username=$2, password=$3, role=$4
+SET username=$2, password=$3, role=$4, language=$5
 WHERE uuid = $1
 RETURNING *;

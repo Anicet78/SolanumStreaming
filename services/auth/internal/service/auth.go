@@ -92,6 +92,7 @@ func (s *AuthService) PatchProfile(ctx context.Context, uuid pgtype.UUID, newUse
 		Username: newUsername,
 		Password: found.Password,
 		Role: found.Role,
+		Language: found.Language,
 	})
 
 	return err
