@@ -21,6 +21,7 @@ migrate:
 
 sqlc:
 	cd services/auth && sqlc generate
+	cd services/movies && sqlc generate
 
 test:
 	cd bruno && bru run

@@ -23,12 +23,14 @@ services:
       - .env
     volumes:
       - ./services/auth/migrations:/migrations/auth
-    command:
-      [
-        "-path", "/migrations/auth",
-        "-database", "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_CONTAINER_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}?sslmode=disable",
-        "up"
-      ]
+      - ./services/movies/migrations:/migrations/movies
+    entrypoint:
+      - sh
+      - -c
+      - |
+        DB_URL="postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_CONTAINER_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}?sslmode=disable"
+        migrate -path /migrations/auth   -database "$${DB_URL}&x-migrations-table=internal.auth_schema_migrations" up &&
+        migrate -path /migrations/movies -database "$${DB_URL}&x-migrations-table=internal.movies_schema_migrations" up
     restart: on-failure:3
     depends_on:
       postgres:
