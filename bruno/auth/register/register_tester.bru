@@ -1,7 +1,7 @@
 meta {
-  name: register_success
+  name: register_tester
   type: http
-  seq: 1
+  seq: 4
 }
 
 post {
@@ -12,7 +12,7 @@ post {
 
 body:json {
   {
-    "username": "Anicet78",
+    "username": "Anicet78310",
     "password": "password123"
   }
 }
@@ -38,7 +38,7 @@ tests {
       expect(body).to.have.property("data");
       expect(body.data).to.not.be.empty;
       expect(body.data.uuid).to.not.be.empty;
-      expect(body.data.username).to.equal("Anicet78");
+      expect(body.data.username).to.equal("Anicet78310");
       expect(body.data.role).to.equal("user")
       expect(body.data.jwt).to.not.be.empty;
     } else if (status === 409) {
@@ -46,4 +46,8 @@ tests {
       expect(body.message).to.not.be.empty;
     }
   });
+}
+
+script:post-response {
+  bru.setEnvVar("testToken", res.body.data.jwt);
 }

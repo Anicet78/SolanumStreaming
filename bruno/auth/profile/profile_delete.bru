@@ -1,19 +1,12 @@
 meta {
-  name: profile_username
+  name: profile_delete
   type: http
-  seq: 1
+  seq: 3
 }
 
-patch {
+delete {
   url: {{baseUrl}}/profile
-  body: json
   auth: bearer
-}
-
-body:json {
-  {
-    "new_username": "Anicet67"
-  }
 }
 
 auth:bearer {

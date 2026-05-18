@@ -2,12 +2,11 @@ package service
 
 import (
 	"context"
-	"log/slog"
-	"os"
+	"shared/tmdb"
+	"strconv"
 
 	"github.com/Anicet78/SolanumStreaming/movies/internal/domain"
 	"github.com/Anicet78/SolanumStreaming/movies/internal/store"
-	"github.com/go-resty/resty/v2"
 )
 
 type MovieService struct {
@@ -19,20 +18,16 @@ func NewMovieService(store *store.Queries) *MovieService {
 }
 
 func (s *MovieService) Search(ctx context.Context, params domain.SearchRequestQuery) (domain.SearchResponse, error) {
-	client := resty.New().
-		SetBaseURL("https://api.themoviedb.org/3").
-		SetHeader("Authorization", "Bearer " + os.Getenv("TMDB_TOKEN"))
-
-	var result any
-	_, err := client.R().
-		SetQueryParam("query", "inception").
+	var result domain.SearchResponse
+	res, err := tmdb.New().
+		SetQueryParam("query", params.Title).
+		SetQueryParam("include_adult", "true").
+		SetQueryParam("page", strconv.Itoa(params.Page)).
 		SetResult(&result).
 		Get("/search/movie")
-	if err != nil {
-		return domain.SearchResponse{}, err
+	if err != nil || res.IsSuccess() == false {
+		return domain.SearchResponse{}, domain.ErrTMDBRequestFailed
 	}
 
-	slog.Error("Request result", "result", result)
-
-	return domain.SearchResponse{}, nil
+	return result, nil
 }

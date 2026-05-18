@@ -22,12 +22,12 @@ vars:pre-request {
 }
 
 tests {
-  test("Status code is 409", function() {
+  test("Returns approriate status code", function() {
     expect(res.status).to.equal(409);
   });
 
   test("Returns appropriate error", function() {
-    expect(res.body.message);
-    expect(res.body.code);
+    expect(res.body).to.have.property("message");
+    expect(res.body.message).to.not.be.empty;
   });
 }

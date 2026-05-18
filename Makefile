@@ -40,6 +40,6 @@ fclean:
 
 re:
 	docker compose down -v
-	docker compose up -d
+	docker compose up --build -d
 
 .PHONY: all front auth movies stream migrates sqlc test deploy up down clean fclean re

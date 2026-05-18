@@ -1,20 +1,23 @@
 meta {
-  name: login_invalid
+  name: profile_username_error
   type: http
   seq: 2
 }
 
-post {
-  url: {{baseUrl}}/login
+patch {
+  url: {{baseUrl}}/profile
   body: json
-  auth: none
+  auth: bearer
 }
 
 body:json {
   {
-    "username": "Anicet310",
-    "password": "password123"
+    "new_username": "Anicet78"
   }
+}
+
+auth:bearer {
+  token: {{testToken}}
 }
 
 vars:pre-request {
@@ -23,7 +26,7 @@ vars:pre-request {
 
 tests {
   test("Returns approriate status code", function() {
-    expect(res.status).to.equal(404);
+    expect(res.status).to.equal(409);
   });
 
   test("Returns appropriate error", function() {

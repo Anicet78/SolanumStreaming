@@ -37,5 +37,5 @@ func (h *MovieHandler) search(c *echo.Context) error {
 		return response.InternalServerError(c, "internal server error")
 	}
 
-	return response.Created(c, res)
+	return response.OK(c, res)
 }

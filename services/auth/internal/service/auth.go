@@ -81,17 +81,28 @@ func (s *AuthService) Login(ctx context.Context, username string, password strin
 	}, nil
 }
 
-func (s *AuthService) PatchProfile(ctx context.Context, uuid pgtype.UUID, newUsername string) (error) {
+func (s *AuthService) Delete(ctx context.Context, uuid pgtype.UUID) error {
+	_, err := s.store.DeleteUser(ctx, uuid)
+
+	return err
+}
+
+func (s *AuthService) PatchProfile(ctx context.Context, uuid pgtype.UUID, newUsername string) error {
 	found, err := s.store.GetUserByUUID(ctx, uuid)
 	if err != nil {
 		return domain.ErrUsernameDoesNotExists
 	}
 
+	_, err = s.store.GetUserByUsername(ctx, newUsername)
+	if err == nil {
+		return domain.ErrUsernameAlreadyExists
+	}
+
 	_, err = s.store.UpdateUser(ctx, store.UpdateUserParams{
-		Uuid: uuid,
+		Uuid:     uuid,
 		Username: newUsername,
 		Password: found.Password,
-		Role: found.Role,
+		Role:     found.Role,
 		Language: found.Language,
 	})
 
