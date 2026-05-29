@@ -26,15 +26,21 @@ jobs:
       - name: Install Bruno CLI
         run: npm install -g @usebruno/cli
 
+      - name: Start services
+        run: docker compose up -d --build
+
+
       - name: Prepare report directory
         run: mkdir -p reports
 
+      - name: Wait for APIs
+        run: npx wait-on http://localhost:8081 http://localhost:8082
+
       - name: Run Bruno demo collection
-        working-directory: collections/bruno-automation-demo
+        working-directory: bruno
         run: |
           bru run \
             --global-env ci \
-            --workspace-path ../.. \
             --env-var platform_name="GitHub Actions" \
             --env-var build_id="${{ github.run_id }}" \
             --env-var commit_sha="${{ github.sha }}" \

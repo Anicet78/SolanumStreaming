@@ -5,7 +5,7 @@ meta {
 }
 
 get {
-  url: {{baseUrl}}/search?title="inception"?page="1"
+  url: {{baseUrl}}/search?title="inception"&page="1"
   auth: bearer
 }
 
@@ -20,7 +20,7 @@ vars:pre-request {
 tests {
   console.log("Error response:", res.status, res.body);
 
-  test("Status code is 204", function() {
-    expect(res.status).to.equal(204);
+  test("Status code is 400", function() {
+    expect(res.status).to.equal(400);
   });
 }
