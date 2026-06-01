@@ -7,6 +7,7 @@ import (
 
 	"github.com/Anicet78/SolanumStreaming/movies/internal/domain"
 	"github.com/Anicet78/SolanumStreaming/movies/internal/store"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type MovieService struct {
@@ -30,4 +31,15 @@ func (s *MovieService) Search(ctx context.Context, params domain.SearchRequestQu
 	}
 
 	return result, nil
+}
+
+func (s *MovieService) Add(ctx context.Context, userId pgtype.UUID, movieID int) error {
+	s.store.UserAddFilmToCollection(ctx, store.UserAddFilmToCollectionParams{
+		UserID:      userId,
+		MovieID:     int32(movieID),
+		TorrentID:   "",
+		MovieLenght: 0,
+	})
+
+	return nil
 }

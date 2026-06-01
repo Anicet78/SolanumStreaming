@@ -24,4 +24,8 @@ type Movie struct {
 	ReleaseDate string  `json:"release_date"`
 }
 
+type AddRequestBody struct {
+	MovieID int `json:"movie_id"`
+}
+
 var ErrTMDBRequestFailed = errors.New("TMDB request failed")

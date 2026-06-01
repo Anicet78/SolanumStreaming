@@ -5,7 +5,7 @@ meta {
 }
 
 get {
-  url: {{baseUrl}}/search?title="inception"&page="1"
+  url: {{baseUrl}}/search?title=amelie&page=1
   auth: bearer
 }
 
@@ -18,9 +18,20 @@ vars:pre-request {
 }
 
 tests {
-  console.log("Error response:", res.status, res.body);
+  test("Returns approriate status code", function() {
+    expect(res.status).to.equal(200);
+  });
 
-  test("Status code is 400", function() {
-    expect(res.status).to.equal(400);
+  test("Returns valid data", function () {
+    expect(res.body).to.have.property("data");
+    expect(res.body.data).to.not.be.empty;
+    expect(res.body.data).to.have.property("page");
+    expect(res.body.data.page).to.equal(1);
+    expect(res.body.data).to.have.property("results");
+    expect(res.body.data.results[0]).to.have.property("id");
+    expect(res.body.data.results[0]).to.have.property("title");
+    expect(res.body.data.results[0].title).to.not.be.empty;
+    expect(res.body.data).to.have.property("total_pages");
+    expect(res.body.data).to.have.property("total_results");
   });
 }

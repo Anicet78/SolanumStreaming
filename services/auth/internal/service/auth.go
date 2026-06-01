@@ -82,7 +82,12 @@ func (s *AuthService) Login(ctx context.Context, username string, password strin
 }
 
 func (s *AuthService) Delete(ctx context.Context, uuid pgtype.UUID) error {
-	_, err := s.store.DeleteUser(ctx, uuid)
+	_, err := s.store.GetUserByUUID(ctx, uuid)
+	if err != nil {
+		return domain.ErrUsernameDoesNotExists
+	}
+
+	_, err = s.store.DeleteUser(ctx, uuid)
 
 	return err
 }

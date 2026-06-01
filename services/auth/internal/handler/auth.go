@@ -77,6 +77,9 @@ func (h *AuthHandler) delete(c *echo.Context) error {
 
 	err = h.service.Delete(c.Request().Context(), uuid)
 	if err != nil {
+		if errors.Is(err, domain.ErrUsernameDoesNotExists) {
+			return response.NotFound(c, err.Error())
+		}
 		slog.Error("Account deletion failed", "error", err)
 		return response.InternalServerError(c, "internal server error")
 	}
@@ -96,7 +99,9 @@ func (h *AuthHandler) patchProfile(c *echo.Context) error {
 
 	err = h.service.PatchProfile(c.Request().Context(), uuid, req.NewUsername)
 	if err != nil {
-		if errors.Is(err, domain.ErrUsernameAlreadyExists) {
+		if errors.Is(err, domain.ErrUsernameDoesNotExists) {
+			return response.NotFound(c, err.Error())
+		} else if errors.Is(err, domain.ErrUsernameAlreadyExists) {
 			return response.Conflict(c, err.Error())
 		}
 		slog.Error("Cannot update profile", "error", err)
