@@ -18,6 +18,9 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v6
 
+      - name: Prepare report directory
+        run: mkdir -p reports
+
       - name: Set up Node.js
         uses: actions/setup-node@v6
         with:
@@ -29,7 +32,6 @@ jobs:
           echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> .env
           echo "POSTGRES_DB=${{ secrets.POSTGRES_DB }}" >> .env
           echo "POSTGRES_HOST=${{ secrets.POSTGRES_HOST }}" >> .env
-          echo "POSTGRES_CONTAINER_HOST=${{ secrets.POSTGRES_CONTAINER_HOST }}" >> .env
           echo "POSTGRES_PORT=${{ secrets.POSTGRES_PORT }}" >> .env
           echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
           echo "TMDB_TOKEN=${{ secrets.TMDB_TOKEN }}" >> .env
@@ -40,11 +42,8 @@ jobs:
       - name: Install Bruno CLI
         run: npm install -g @usebruno/cli
 
-      - name: Prepare report directory
-        run: mkdir -p reports
-
       - name: Wait for APIs
-        run: npx wait-on http://localhost:8081 http://localhost:8082
+        run: npx wait-on --timeout 120000 http://localhost:8081/health http://localhost:8082/health
 
       - name: Run Bruno demo collection
         working-directory: bruno
@@ -61,5 +60,5 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           name: bruno-report
-          path: reports/github-actions-report.html
+          path: reports/report.html
           if-no-files-found: error

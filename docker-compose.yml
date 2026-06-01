@@ -28,7 +28,7 @@ services:
       - sh
       - -c
       - |
-        DB_URL="postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_CONTAINER_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}?sslmode=disable"
+        DB_URL="postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}?sslmode=disable"
         migrate -path /migrations/auth   -database "$${DB_URL}&x-migrations-table=internal.auth_schema_migrations" up &&
         migrate -path /migrations/movies -database "$${DB_URL}&x-migrations-table=internal.movies_schema_migrations" up
     restart: on-failure:3
@@ -52,9 +52,12 @@ services:
       - 8081:8081
     env_file:
       - .env
-    environment:
-      POSTGRES_HOST: postgres
     restart: on-failure:3
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
     depends_on:
       postgres:
         condition: service_healthy
@@ -70,9 +73,12 @@ services:
       - 8082:8082
     env_file:
       - .env
-    environment:
-      POSTGRES_HOST: postgres
     restart: on-failure:3
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8082/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
     depends_on:
       postgres:
         condition: service_healthy
