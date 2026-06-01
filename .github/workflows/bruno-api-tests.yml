@@ -59,6 +59,7 @@ jobs:
         working-directory: bruno
         run: |
           bru run \
+            --workspace-path . \
             --global-env ci \
             --env-var platform_name="GitHub Actions" \
             --env-var build_id="${{ github.run_id }}" \
