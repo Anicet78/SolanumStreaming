@@ -60,7 +60,6 @@ jobs:
         run: |
           bru run \
             --workspace-path . \
-            --global-env ci \
             --env-var platform_name="GitHub Actions" \
             --env-var build_id="${{ github.run_id }}" \
             --env-var commit_sha="${{ github.sha }}" \
