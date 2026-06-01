@@ -42,15 +42,18 @@ jobs:
       - name: Start services
         run: docker compose up -d --build
 
-      - name: Debug ports
-        run: |
-          docker ps -a
-          docker inspect auth-c --format '{{json .NetworkSettings.Ports}}'
-          curl -v http://localhost:8081/health || true
-          curl -v http://localhost:8082/health || true
-
       - name: Wait for APIs
-        run: npx wait-on --timeout 120000 http://localhost:8081/health http://localhost:8082/health
+        run: |
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:8081/health && curl -sf http://localhost:8082/health; then
+              echo "APIs ready"
+              exit 0
+            fi
+            echo "Attempt $i failed, retrying in 2s..."
+            sleep 2
+          done
+          echo "Timeout waiting for APIs"
+          exit 1
 
       - name: Run Bruno demo collection
         working-directory: bruno
