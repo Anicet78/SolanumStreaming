@@ -23,12 +23,20 @@ jobs:
         with:
           node-version: "24"
 
-      - name: Install Bruno CLI
-        run: npm install -g @usebruno/cli
-
       - name: Start services
         run: docker compose up -d --build
+        env:
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
+          POSTGRES_CONTAINER_HOST: ${{ secrets.POSTGRES_CONTAINER_HOST }}
+          POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          TMDB_TOKEN: ${{ secrets.TMDB_TOKEN }}
 
+      - name: Install Bruno CLI
+        run: npm install -g @usebruno/cli
 
       - name: Prepare report directory
         run: mkdir -p reports
@@ -44,7 +52,7 @@ jobs:
             --env-var platform_name="GitHub Actions" \
             --env-var build_id="${{ github.run_id }}" \
             --env-var commit_sha="${{ github.sha }}" \
-            --reporter-html ../../reports/github-actions-report.html
+            --reporter-html reports/report.html
 
       - name: Upload Bruno report
         if: ${{ !cancelled() }}
