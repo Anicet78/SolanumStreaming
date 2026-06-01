@@ -23,17 +23,19 @@ jobs:
         with:
           node-version: "24"
 
+      - name: Create .env
+        run: |
+          echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}" >> .env
+          echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> .env
+          echo "POSTGRES_DB=${{ secrets.POSTGRES_DB }}" >> .env
+          echo "POSTGRES_HOST=${{ secrets.POSTGRES_HOST }}" >> .env
+          echo "POSTGRES_CONTAINER_HOST=${{ secrets.POSTGRES_CONTAINER_HOST }}" >> .env
+          echo "POSTGRES_PORT=${{ secrets.POSTGRES_PORT }}" >> .env
+          echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
+          echo "TMDB_TOKEN=${{ secrets.TMDB_TOKEN }}" >> .env
+
       - name: Start services
         run: docker compose up -d --build
-        env:
-          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
-          POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
-          POSTGRES_CONTAINER_HOST: ${{ secrets.POSTGRES_CONTAINER_HOST }}
-          POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
-          TMDB_TOKEN: ${{ secrets.TMDB_TOKEN }}
 
       - name: Install Bruno CLI
         run: npm install -g @usebruno/cli
