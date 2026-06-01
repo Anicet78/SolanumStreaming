@@ -39,11 +39,18 @@ jobs:
       - name: Start services
         run: docker compose up -d --build
 
+      - name: Debug container logs
+        if: always()
+        run: |
+          docker logs migrate-c
+          docker logs auth-c
+          docker logs movies-c
+
       - name: Install Bruno CLI
         run: npm install -g @usebruno/cli
 
       - name: Wait for APIs
-        run: npx wait-on --timeout 120000 http://localhost:8081/health http://localhost:8082/health
+        run: npx wait-on --timeout 30000 http://localhost:8081/health http://localhost:8082/health
 
       - name: Run Bruno demo collection
         working-directory: bruno
