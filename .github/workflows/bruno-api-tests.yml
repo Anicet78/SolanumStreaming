@@ -63,7 +63,7 @@ jobs:
             --env-var platform_name="GitHub Actions" \
             --env-var build_id="${{ github.run_id }}" \
             --env-var commit_sha="${{ github.sha }}" \
-            --reporter-html reports/report.html
+            --reporter-html ../reports/report.html
 
       - name: Upload Bruno report
         if: ${{ !cancelled() }}
