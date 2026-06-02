@@ -55,6 +55,23 @@ func (s *MovieService) GetCollection(ctx context.Context, userId pgtype.UUID) ([
 	return res, nil
 }
 
+func (s *MovieService) GetInCollection(ctx context.Context, userId pgtype.UUID, movieId int) (domain.CollectionMovie, error) {
+	movie, err := s.store.GetMovieInCollection(ctx, store.GetMovieInCollectionParams{
+		UserID:  userId,
+		MovieID: int32(movieId),
+	})
+	if err != nil {
+		return domain.CollectionMovie{}, domain.ErrMovieNotInCollection
+	}
+
+	return domain.CollectionMovie{
+		MovieID: int(movie.MovieID),
+		TorrentID: movie.TorrentID,
+		Length: int(movie.Length),
+		Progression: movie.Progression,
+	}, nil
+}
+
 func (s *MovieService) AddToCollection(ctx context.Context, userId pgtype.UUID, movieId int) error {
 	exists, err := s.store.GetMovieInCollection(ctx, store.GetMovieInCollectionParams{
 		UserID:  userId,

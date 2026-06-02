@@ -25,6 +25,7 @@ func (h *MovieHandler) RegisterRoutes(e *echo.Echo) {
 	private.Use(auth.JWTMiddleware())
 	private.GET("/search", h.search)
 	private.GET("/collection", h.getCollection)
+	private.GET("/collection/:movie_id", h.getInCollection)
 	private.POST("/collection", h.addToCollection)
 	private.DELETE("/collection/:movie_id", h.removeFromCollection)
 }
@@ -53,6 +54,29 @@ func (h *MovieHandler) getCollection(c *echo.Context) error {
 	res, err := h.service.GetCollection(c.Request().Context(), uuid)
 	if err != nil {
 		slog.Error("Get collection failed", "error", err)
+		return response.InternalServerError(c, "internal server error")
+	}
+
+	return response.OK(c, res)
+}
+
+func (h *MovieHandler) getInCollection(c *echo.Context) error {
+	params, err := bind.Params[domain.MovieIDParam](c)
+	if err != nil {
+		return err
+	}
+
+	uuid, err := auth.StringToUUID(c.Get("uuid").(string))
+	if err != nil {
+		return response.InternalServerError(c, "internal server error")
+	}
+
+	res, err := h.service.GetInCollection(c.Request().Context(), uuid, params.MovieID)
+	if err != nil {
+		if errors.Is(err, domain.ErrMovieNotInCollection) {
+			return response.NotFound(c, err.Error())
+		}
+		slog.Error("Get movie in collection failed", "error", err)
 		return response.InternalServerError(c, "internal server error")
 	}
 
