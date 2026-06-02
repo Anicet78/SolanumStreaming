@@ -40,6 +40,10 @@ func main() {
 
 	authHandler.RegisterRoutes(e)
 
+	e.RouteNotFound("/*", func(c *echo.Context) error {
+		return echo.NewHTTPError(http.StatusNotFound, "Route Not Found")
+	})
+
 	e.GET("/health", func(c *echo.Context) error {
 		return c.JSON(http.StatusOK, map[string]string{"status": "ok"})
 	})

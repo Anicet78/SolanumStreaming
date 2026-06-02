@@ -1,0 +1,24 @@
+meta {
+  name: profile_delete_verify
+  type: http
+  seq: 4
+}
+
+delete {
+  url: {{baseUrl}}/profile
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{testToken}}
+}
+
+vars:pre-request {
+  baseUrl: http://localhost:8081
+}
+
+tests {
+  test("Returns approriate status code", function() {
+    expect(res.status).to.equal(404);
+  });
+}

@@ -8,4 +8,5 @@ CREATE TABLE collection (
     CONSTRAINT fk_user_identify
         FOREIGN KEY (user_id)
         REFERENCES users(uuid)
+        ON DELETE CASCADE
 );

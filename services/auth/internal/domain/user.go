@@ -30,6 +30,6 @@ type PatchProfileRequest struct {
 	NewUsername string `json:"new_username"`
 }
 
-var ErrUsernameAlreadyExists = errors.New("username already exists")
-var ErrUsernameDoesNotExists = errors.New("username doesn't exists")
-var ErrPasswordDoesNotMatch = errors.New("incorrect password")
+var ErrUsernameAlreadyExists = errors.New("Username already exists")
+var ErrUsernameDoesNotExists = errors.New("Username doesn't exists")
+var ErrPasswordDoesNotMatch = errors.New("Incorrect password")
