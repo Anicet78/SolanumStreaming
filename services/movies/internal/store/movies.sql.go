@@ -11,6 +11,29 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const getFilmInCollection = `-- name: GetFilmInCollection :one
+SELECT user_id, movie_id, torrent_id, movie_lenght, progression FROM collection
+WHERE user_id=$1 AND movie_id=$2
+`
+
+type GetFilmInCollectionParams struct {
+	UserID  pgtype.UUID
+	MovieID int32
+}
+
+func (q *Queries) GetFilmInCollection(ctx context.Context, arg GetFilmInCollectionParams) (Collection, error) {
+	row := q.db.QueryRow(ctx, getFilmInCollection, arg.UserID, arg.MovieID)
+	var i Collection
+	err := row.Scan(
+		&i.UserID,
+		&i.MovieID,
+		&i.TorrentID,
+		&i.MovieLenght,
+		&i.Progression,
+	)
+	return i, err
+}
+
 const userAddFilmToCollection = `-- name: UserAddFilmToCollection :one
 INSERT INTO collection (user_id, movie_id, torrent_id, movie_lenght)
 VALUES ($1, $2, $3, $4)
