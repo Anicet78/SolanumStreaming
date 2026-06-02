@@ -1,11 +1,11 @@
 meta {
-  name: search
+  name: search_fail
   type: http
-  seq: 1
+  seq: 2
 }
 
 get {
-  url: {{baseUrl}}/search?title=your'&page=1
+  url: {{baseUrl}}/search?title=yournamexxyyzzxyxz&page=1
   auth: bearer
 }
 
@@ -28,10 +28,7 @@ tests {
     expect(res.body.data).to.have.property("page");
     expect(res.body.data.page).to.equal(1);
     expect(res.body.data).to.have.property("results");
-    expect(res.body.data.results).to.be.an("array");
-    expect(res.body.data.results[0]).to.have.property("id");
-    expect(res.body.data.results[0]).to.have.property("title");
-    expect(res.body.data.results[0].title).to.not.be.empty;
+    expect(res.body.data.results).to.have.lengthOf(0);
     expect(res.body.data).to.have.property("total_pages");
     expect(res.body.data).to.have.property("total_results");
   });

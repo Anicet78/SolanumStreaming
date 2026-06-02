@@ -1,0 +1,36 @@
+meta {
+  name: add_to_collection_duplicate
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/collection
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "movie_id": 194
+  }
+}
+
+vars:pre-request {
+  baseUrl: http://localhost:8082
+}
+
+tests {
+  test("Returns approriate status code", function() {
+    expect(res.status).to.equal(409);
+  });
+
+  test("Returns appropriate error", function() {
+    expect(res.body).to.have.property("message");
+    expect(res.body.message).to.not.be.empty;
+  });
+}
