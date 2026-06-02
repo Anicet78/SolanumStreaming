@@ -12,6 +12,6 @@ type Collection struct {
 	UserID      pgtype.UUID
 	MovieID     int32
 	TorrentID   string
-	MovieLenght int32
+	Length      int32
 	Progression pgtype.Interval
 }

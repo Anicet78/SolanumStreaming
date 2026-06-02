@@ -25,6 +25,7 @@ func (h *MovieHandler) RegisterRoutes(e *echo.Echo) {
 	private.Use(auth.JWTMiddleware())
 	private.GET("/search", h.search)
 	private.POST("/collection", h.addToCollection)
+	private.GET("/collection", h.getCollection)
 }
 
 func (h *MovieHandler) search(c *echo.Context) error {
@@ -43,7 +44,7 @@ func (h *MovieHandler) search(c *echo.Context) error {
 }
 
 func (h *MovieHandler) addToCollection(c *echo.Context) error {
-	body, err := bind.Body[domain.PostCollectionRequestBody](c)
+	body, err := bind.Body[domain.CollectionRequestBody](c)
 	if err != nil {
 		return err
 	}
@@ -63,4 +64,19 @@ func (h *MovieHandler) addToCollection(c *echo.Context) error {
 	}
 
 	return response.NoContent(c)
+}
+
+func (h *MovieHandler) getCollection(c *echo.Context) error {
+	uuid, err := auth.StringToUUID(c.Get("uuid").(string))
+	if err != nil {
+		return response.InternalServerError(c, "internal server error")
+	}
+
+	res, err := h.service.GetCollection(c.Request().Context(), uuid)
+	if err != nil {
+		slog.Error("Add movie to collection failed", "error", err)
+		return response.InternalServerError(c, "internal server error")
+	}
+
+	return response.OK(c, res)
 }

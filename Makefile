@@ -6,15 +6,6 @@ all: up
 front:
 	cd frontend && npm run dev
 
-auth:
-	cd services/auth && go run cmd/main.go
-
-movies:
-	cd services/movies && go run cmd/main.go
-
-stream:
-	cd services/movies && npm run dev
-
 migrate:
 	docker compose up -d migrate
 
@@ -33,13 +24,12 @@ up:
 down:
 	docker compose down
 
-clean: down
+clean:
+	docker compose down -v
 
 fclean:
 	docker compose down --rmi all -v
 
-re:
-	docker compose down -v
-	docker compose up --build -d
+re: clean up
 
-.PHONY: all front auth movies stream migrates sqlc test deploy up down clean fclean re
+.PHONY: all front migrates sqlc test deploy up down clean fclean re

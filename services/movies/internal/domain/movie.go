@@ -1,6 +1,10 @@
 package domain
 
-import "errors"
+import (
+	"errors"
+
+	"github.com/jackc/pgx/v5/pgtype"
+)
 
 type SearchRequestQuery struct {
 	Title string `query:"title" validate:"required"`
@@ -24,8 +28,15 @@ type Movie struct {
 	ReleaseDate string  `json:"release_date"`
 }
 
-type PostCollectionRequestBody struct {
+type CollectionRequestBody struct {
 	MovieID int `json:"movie_id"`
+}
+
+type CollectionMovie struct {
+	MovieID     int             `json:"movie_id"`
+	TorrentID   string          `json:"torrent_id"`
+	Length      int             `json:"length"`
+	Progression pgtype.Interval `json:"progression"`
 }
 
 var ErrMovieAlreadyInCollection = errors.New("Movie already in collection")

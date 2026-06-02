@@ -36,7 +36,7 @@ func (s *MovieService) Search(ctx context.Context, params domain.SearchRequestQu
 }
 
 func (s *MovieService) AddToCollection(ctx context.Context, userId pgtype.UUID, movieId int) error {
-	exists, err := s.store.GetFilmInCollection(ctx, store.GetFilmInCollectionParams{
+	exists, err := s.store.GetMovieInCollection(ctx, store.GetMovieInCollectionParams{
 		UserID:  userId,
 		MovieID: int32(movieId),
 	})
@@ -48,12 +48,32 @@ func (s *MovieService) AddToCollection(ctx context.Context, userId pgtype.UUID, 
 		return domain.ErrMovieAlreadyInCollection
 	}
 
-	_, err = s.store.UserAddFilmToCollection(ctx, store.UserAddFilmToCollectionParams{
-		UserID:      userId,
-		MovieID:     int32(movieId),
-		TorrentID:   "",
-		MovieLenght: 0,
+	_, err = s.store.UserAddMovieToCollection(ctx, store.UserAddMovieToCollectionParams{
+		UserID:    userId,
+		MovieID:   int32(movieId),
+		TorrentID: "",
+		Length:    0,
 	})
 
 	return err
+}
+
+func (s *MovieService) GetCollection(ctx context.Context, userId pgtype.UUID) ([]domain.CollectionMovie, error) {
+	movies, err := s.store.GetAllMoviesInCollection(ctx, userId)
+	if err != nil {
+		return nil, err
+	}
+
+	res := make([]domain.CollectionMovie, 0, len(movies))
+
+	for _, u := range movies {
+		res = append(res, domain.CollectionMovie{
+			MovieID:     int(u.MovieID),
+			TorrentID:   u.TorrentID,
+			Length:      int(u.Length),
+			Progression: u.Progression,
+		})
+	}
+
+	return res, nil
 }
