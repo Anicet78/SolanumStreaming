@@ -1,23 +1,16 @@
 meta {
-  name: add_to_collection_duplicate
+  name: remove_from_collection_verify
   type: http
-  seq: 4
+  seq: 8
 }
 
-post {
-  url: {{baseUrl}}/collection
-  body: json
+delete {
+  url: {{baseUrl}}/collection/194
   auth: bearer
 }
 
 auth:bearer {
   token: {{token}}
-}
-
-body:json {
-  {
-    "movie_id": 194
-  }
 }
 
 vars:pre-request {
@@ -26,7 +19,7 @@ vars:pre-request {
 
 tests {
   test("Returns approriate status code", function() {
-    expect(res.status).to.equal(409);
+    expect(res.status).to.equal(404);
   });
 
   test("Returns appropriate error", function() {

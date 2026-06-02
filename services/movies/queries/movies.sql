@@ -10,3 +10,8 @@ WHERE user_id=$1 AND movie_id=$2;
 -- name: GetAllMoviesInCollection :many
 SELECT movie_id, torrent_id, length, progression FROM collection
 WHERE user_id=$1;
+
+-- name: DeleteMovieFromCollection :one
+DELETE FROM collection
+WHERE user_id=$1 AND movie_id=$2
+RETURNING *;

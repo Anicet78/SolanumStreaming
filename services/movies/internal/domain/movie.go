@@ -39,5 +39,10 @@ type CollectionMovie struct {
 	Progression pgtype.Interval `json:"progression"`
 }
 
+type MovieIDParam struct {
+	MovieID int `param:"movie_id"`
+}
+
+var ErrMovieNotInCollection = errors.New("Movie not in collection")
 var ErrMovieAlreadyInCollection = errors.New("Movie already in collection")
 var ErrTMDBRequestFailed = errors.New("TMDB request failed")

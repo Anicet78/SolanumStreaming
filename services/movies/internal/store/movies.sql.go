@@ -11,6 +11,30 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const deleteMovieFromCollection = `-- name: DeleteMovieFromCollection :one
+DELETE FROM collection
+WHERE user_id=$1 AND movie_id=$2
+RETURNING user_id, movie_id, torrent_id, length, progression
+`
+
+type DeleteMovieFromCollectionParams struct {
+	UserID  pgtype.UUID
+	MovieID int32
+}
+
+func (q *Queries) DeleteMovieFromCollection(ctx context.Context, arg DeleteMovieFromCollectionParams) (Collection, error) {
+	row := q.db.QueryRow(ctx, deleteMovieFromCollection, arg.UserID, arg.MovieID)
+	var i Collection
+	err := row.Scan(
+		&i.UserID,
+		&i.MovieID,
+		&i.TorrentID,
+		&i.Length,
+		&i.Progression,
+	)
+	return i, err
+}
+
 const getAllMoviesInCollection = `-- name: GetAllMoviesInCollection :many
 SELECT movie_id, torrent_id, length, progression FROM collection
 WHERE user_id=$1
