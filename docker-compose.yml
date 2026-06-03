@@ -37,6 +37,19 @@ services:
       postgres:
         condition: service_healthy
 
+  jackett:
+    image: docker.io/linuxserver/jackett
+    container_name: jackett-c
+    ports:
+      - 9117:9117
+    environment:
+      - TZ=Europe/Paris
+      - AUTO_UPDATE=true
+    userns_mode: keep-id
+    volumes:
+      - ./jackett:/config/Jackett
+    restart: on-failure:3
+
   # frontend:
   #   build: ./frontend
   #   container_name: frontend-c
@@ -85,6 +98,8 @@ services:
         condition: service_healthy
       migrate:
         condition: service_completed_successfully
+      jackett:
+        condition: service_started
 
   # stream:
   #   build: ./services/stream
