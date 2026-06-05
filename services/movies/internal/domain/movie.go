@@ -43,6 +43,24 @@ type MovieIDParam struct {
 	MovieID int `param:"movie_id"`
 }
 
+type MovieDetails struct {
+	ID          int     `json:"id"`
+	Title       string  `json:"title"`
+	Popularity  float64 `json:"popularity"`
+	Adult       bool    `json:"adult"`
+	Video       bool    `json:"video"`
+	PosterPath  string  `json:"poster_path"`
+	ReleaseDate string  `json:"release_date"`
+}
+
+type JackettResponse struct {
+	Page         int     `json:"page"`
+	Results      []Movie `json:"results"`
+	TotalPages   int     `json:"total_pages"`
+	TotalResults int     `json:"total_results"`
+}
+
 var ErrMovieNotInCollection = errors.New("Movie not in collection")
 var ErrMovieAlreadyInCollection = errors.New("Movie already in collection")
 var ErrTMDBRequestFailed = errors.New("TMDB request failed")
+var ErrJackettRequestFailed = errors.New("Jackett request failed")

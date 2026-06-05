@@ -8,3 +8,4 @@ node_modules/
 # Jackett
 jackett/DataProtection
 jackett/log.txt
+*.bak
