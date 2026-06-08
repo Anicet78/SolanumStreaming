@@ -21,8 +21,8 @@ func NewMovieService(store *store.Queries) *MovieService {
 	return &MovieService{store: store}
 }
 
-func (s *MovieService) Search(ctx context.Context, params domain.SearchRequestQuery) (domain.SearchResponse, error) {
-	var result domain.SearchResponse
+func (s *MovieService) Search(ctx context.Context, params domain.SearchRequestQuery) (tmdb.SearchResponse, error) {
+	var result tmdb.SearchResponse
 	res, err := tmdb.New().
 		SetQueryParam("query", params.Title).
 		SetQueryParam("include_adult", "true").
@@ -30,9 +30,9 @@ func (s *MovieService) Search(ctx context.Context, params domain.SearchRequestQu
 		SetResult(&result).
 		Get("/search/movie")
 	if err != nil {
-		return domain.SearchResponse{}, err
+		return tmdb.SearchResponse{}, err
 	} else if res.IsSuccess() == false {
-		return domain.SearchResponse{}, domain.ErrTMDBRequestFailed
+		return tmdb.SearchResponse{}, domain.ErrTMDBRequestFailed
 	}
 
 	return result, nil
@@ -88,7 +88,7 @@ func (s *MovieService) AddToCollection(ctx context.Context, userId pgtype.UUID, 
 		return domain.ErrMovieAlreadyInCollection
 	}
 
-	var TMDBResult domain.Movie
+	var TMDBResult tmdb.Movie
 	res, err := tmdb.New().
 		SetResult(&TMDBResult).
 		SetPathParam("movie_id", strconv.Itoa(movieId)).
@@ -101,9 +101,10 @@ func (s *MovieService) AddToCollection(ctx context.Context, userId pgtype.UUID, 
 
 	var JackettResult jackett.JackettResponse
 	res, err = jackett.New().
-		SetQueryParam("query", TMDBResult.Title).
 		SetQueryParam("apikey", "apikey").
+		SetQueryParam("Query", TMDBResult.Title).
 		SetQueryParam("Category[]", "2000").
+		SetQueryParam("Limit", "25").
 		SetResult(&JackettResult).
 		Get("/indexers/all/results")
 	if err != nil {
@@ -112,7 +113,11 @@ func (s *MovieService) AddToCollection(ctx context.Context, userId pgtype.UUID, 
 		return domain.ErrJackettRequestFailed
 	}
 
-	jackett.PrintResponse(JackettResult)
+	if len(JackettResult.Results) > 25 {
+		JackettResult.Results = JackettResult.Results[:25]
+	}
+
+	jackett.SortResults(&JackettResult, TMDBResult)
 
 	_, err = s.store.UserAddMovieToCollection(ctx, store.UserAddMovieToCollectionParams{
 		UserID:    userId,

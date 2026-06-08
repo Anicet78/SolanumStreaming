@@ -11,23 +11,6 @@ type SearchRequestQuery struct {
 	Page  int    `query:"page" validate:"required,min=1"`
 }
 
-type SearchResponse struct {
-	Page         int     `json:"page"`
-	Results      []Movie `json:"results"`
-	TotalPages   int     `json:"total_pages"`
-	TotalResults int     `json:"total_results"`
-}
-
-type Movie struct {
-	ID          int     `json:"id"`
-	Title       string  `json:"title"`
-	Popularity  float64 `json:"popularity"`
-	Adult       bool    `json:"adult"`
-	Video       bool    `json:"video"`
-	PosterPath  string  `json:"poster_path"`
-	ReleaseDate string  `json:"release_date"`
-}
-
 type CollectionRequestBody struct {
 	MovieID int `json:"movie_id"`
 }
@@ -41,23 +24,6 @@ type CollectionMovie struct {
 
 type MovieIDParam struct {
 	MovieID int `param:"movie_id"`
-}
-
-type MovieDetails struct {
-	ID          int     `json:"id"`
-	Title       string  `json:"title"`
-	Popularity  float64 `json:"popularity"`
-	Adult       bool    `json:"adult"`
-	Video       bool    `json:"video"`
-	PosterPath  string  `json:"poster_path"`
-	ReleaseDate string  `json:"release_date"`
-}
-
-type JackettResponse struct {
-	Page         int     `json:"page"`
-	Results      []Movie `json:"results"`
-	TotalPages   int     `json:"total_pages"`
-	TotalResults int     `json:"total_results"`
 }
 
 var ErrMovieNotInCollection = errors.New("Movie not in collection")
