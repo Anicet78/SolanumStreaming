@@ -18,16 +18,6 @@ type item struct {
 func infoScore(torrent Result, target tmdb.Movie) int {
 	score := 0
 
-	fmt.Printf("Torrent ID: %s  |  TMDB ID: %s", strconv.FormatInt(torrent.IMDbId, 10), target.IMDbID)
-
-	if torrent.IMDbId != 0 && target.IMDbID != "" {
-		if strconv.FormatInt(torrent.IMDbId, 10) == target.IMDbID {
-			score += 100
-		} else {
-			return -9999
-		}
-	}
-
 	score += torrent.Seeders * 10
 	score += torrent.Peers * 2
 
