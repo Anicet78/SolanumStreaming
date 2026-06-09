@@ -17,7 +17,7 @@ type CollectionRequestBody struct {
 
 type CollectionMovie struct {
 	MovieID     int             `json:"movie_id"`
-	TorrentID   string          `json:"torrent_id"`
+	TorrentLink string          `json:"torrent_link"`
 	Length      int             `json:"length"`
 	Progression pgtype.Interval `json:"progression"`
 }

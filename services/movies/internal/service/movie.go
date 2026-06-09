@@ -49,7 +49,7 @@ func (s *MovieService) GetCollection(ctx context.Context, userId pgtype.UUID) ([
 	for _, u := range movies {
 		res = append(res, domain.CollectionMovie{
 			MovieID:     int(u.MovieID),
-			TorrentID:   u.TorrentID,
+			TorrentLink: u.TorrentLink,
 			Length:      int(u.Length),
 			Progression: u.Progression,
 		})
@@ -69,7 +69,7 @@ func (s *MovieService) GetInCollection(ctx context.Context, userId pgtype.UUID, 
 
 	return domain.CollectionMovie{
 		MovieID:     int(movie.MovieID),
-		TorrentID:   movie.TorrentID,
+		TorrentLink: movie.TorrentLink,
 		Length:      int(movie.Length),
 		Progression: movie.Progression,
 	}, nil
@@ -99,13 +99,13 @@ func (s *MovieService) AddToCollection(ctx context.Context, userId pgtype.UUID, 
 		return domain.ErrTMDBRequestFailed
 	}
 
-	var JackettResult jackett.JackettResponse
+	var JackettResponse jackett.JackettResponse
 	res, err = jackett.New().
 		SetQueryParam("apikey", "apikey").
 		SetQueryParam("Query", TMDBResult.Title).
 		SetQueryParam("Category[]", "2000").
 		SetQueryParam("Limit", "25").
-		SetResult(&JackettResult).
+		SetResult(&JackettResponse).
 		Get("/indexers/all/results")
 	if err != nil {
 		return err
@@ -113,17 +113,17 @@ func (s *MovieService) AddToCollection(ctx context.Context, userId pgtype.UUID, 
 		return domain.ErrJackettRequestFailed
 	}
 
-	if len(JackettResult.Results) > 25 {
-		JackettResult.Results = JackettResult.Results[:25]
-	}
+	jackett.SortResults(&JackettResponse, TMDBResult)
 
-	jackett.SortResults(&JackettResult, TMDBResult)
+	/* for i, r := range JackettResponse.Results {
+		// test torrent
+	} */
 
 	_, err = s.store.UserAddMovieToCollection(ctx, store.UserAddMovieToCollectionParams{
-		UserID:    userId,
-		MovieID:   int32(movieId),
-		TorrentID: "",
-		Length:    0,
+		UserID:      userId,
+		MovieID:     int32(movieId),
+		TorrentLink: JackettResponse.Results[0].Link,
+		Length:      int32(TMDBResult.Runtime),
 	})
 
 	return err

@@ -8,10 +8,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"unicode"
-
-	"golang.org/x/text/transform"
-	"golang.org/x/text/unicode/norm"
 )
 
 type item struct {
@@ -19,45 +15,78 @@ type item struct {
 	score int
 }
 
-func removeAccents(s string) string {
-	t := transform.Chain(norm.NFD, transform.RemoveFunc(func(r rune) bool {
-		return unicode.Is(unicode.Mn, r) // Mn = non-spacing marks
-	}), norm.NFC)
-	result, _, _ := transform.String(t, s)
-	return result
-}
-
-func titleCoherenceScore(torrentTitle string, target tmdb.Movie) int {
+func infoScore(torrent Result, target tmdb.Movie) int {
 	score := 0
 
-	normalize := func(s string) string {
-		s = removeAccents(s)
-		s = strings.ToLower(s)
-		// Retire articles et ponctuation
-		re := regexp.MustCompile(`[^\w\s]`)
-		s = re.ReplaceAllString(s, " ")
-		s = strings.TrimSpace(s)
-		// Retire les articles en début
-		for _, article := range []string{"the ", "a ", "an ", "le ", "la ", "les ", "un ", "une "} {
-			if strings.HasPrefix(s, article) {
-				s = strings.TrimPrefix(s, article)
-			}
+	fmt.Printf("Torrent ID: %s  |  TMDB ID: %s", strconv.FormatInt(torrent.IMDbId, 10), target.IMDbID)
+
+	if torrent.IMDbId != 0 && target.IMDbID != "" {
+		if strconv.FormatInt(torrent.IMDbId, 10) == target.IMDbID {
+			score += 100
+		} else {
+			return -9999
 		}
-		return s
 	}
 
-	// Retire les tags techniques du titre torrent (qualité, codec, langue...)
+	score += torrent.Seeders * 10
+	score += torrent.Peers * 2
+
+	daysOld := time.Since(torrent.PublishDate.Time).Hours() / 24
+
+	if daysOld < 1 {
+		score += 40
+	} else if daysOld < 7 {
+		score += 20
+	} else if daysOld < 30 {
+		score += 5
+	} else {
+		score -= 10
+	}
+
+	if torrent.MagnetUri != "" {
+		score += 5
+	}
+
+	if torrent.Seeders == 0 {
+		score -= 100
+	}
+
+	if strconv.Itoa(torrent.Year) == target.ReleaseDate {
+		score += 10
+	}
+
+	const (
+		KB = 1024
+		MB = KB * 1024
+		GB = MB * 1024
+	)
+
+	const maxSize = 100 * GB
+	const minSize = 500 * MB
+
+	if torrent.Size > maxSize {
+		score -= 50
+	} else if torrent.Size < minSize {
+		score -= 50
+	}
+
+	if torrent.Files > 2 {
+		score -= 100
+	}
+
+	return score
+}
+
+func titleScore(torrentTitle string, target tmdb.Movie) int {
+	score := 0
+
 	cleanTorrent := func(s string) string {
-		// Patterns typiques : 1080p, BluRay, x264, HEVC, HDR, FRENCH, VOSTFR, etc.
 		re := regexp.MustCompile(`(?i)\b(1080p?|720p?|2160p?|4k|bluray|blu-ray|webrip|web-dl|webdl|hdtv|dvdrip|dvdscr|bdrip|remux|x264|x265|h264|h265|hevc|avc|aac|dts|ac3|mp3|atmos|truehd|hdr|hdr10|dolby|french|english|vostfr|multi|proper|repack|extended|theatrical|directors\.cut|\d{4})\b.*`)
 		return strings.TrimSpace(re.ReplaceAllString(s, ""))
 	}
 
 	targetNorm := normalize(target.Title)
-
-	// Utilise aussi le titre original si différent
-	targetOrigNorm := normalize(target.Title)
-
+	targetOrigNorm := normalize(target.OriginalTitle)
 	torrentClean := cleanTorrent(torrentTitle)
 	torrentNorm := normalize(torrentClean)
 
@@ -120,104 +149,123 @@ func titleCoherenceScore(torrentTitle string, target tmdb.Movie) int {
 		score += 10
 	}
 
+	yearRegex := regexp.MustCompile(`\b(19|20)\d{2}\b`)
+	torrentYear := yearRegex.FindString(torrentTitle)
+
+	var targetYear string
+	if len(target.ReleaseDate) >= 4 {
+		targetYear = target.ReleaseDate[:4]
+	}
+
+	if torrentYear != "" && targetYear != "" {
+		if torrentYear == targetYear {
+			score += 30
+		} else {
+			score -= 150
+		}
+	}
+
 	return score
 }
 
-func toSet(words []string) map[string]bool {
-	set := make(map[string]bool)
-	for _, w := range words {
-		if len(w) > 2 {
-			set[w] = true
-		}
-	}
-	return set
-}
+func qualityScore(torrentTitle string) int {
+	title := strings.ToLower(torrentTitle)
+	score := 0
 
-func levenshtein(a, b string) int {
-	ra, rb := []rune(a), []rune(b)
-	la, lb := len(ra), len(rb)
-	dp := make([][]int, la+1)
-	for i := range dp {
-		dp[i] = make([]int, lb+1)
-		dp[i][0] = i
+	// --- Source ---
+	switch {
+	case strings.Contains(title, "remux"):
+		score += 60
+	case strings.Contains(title, "bluray") || strings.Contains(title, "blu-ray"):
+		score += 50
+	case strings.Contains(title, "web-dl") || strings.Contains(title, "webdl"):
+		score += 35
+	case strings.Contains(title, "webrip"):
+		score += 25
+	case strings.Contains(title, "hdtv"):
+		score += 15
+	case strings.Contains(title, "dvdrip") || strings.Contains(title, "dvdscr"):
+		score += 5
+	case strings.Contains(title, "cam") || strings.Contains(title, "ts") || strings.Contains(title, "telecine"):
+		score -= 50
 	}
-	for j := 0; j <= lb; j++ {
-		dp[0][j] = j
+
+	// --- Resolution ---
+	switch {
+	case strings.Contains(title, "2160p") || strings.Contains(title, "4k"):
+		score += 60
+	case strings.Contains(title, "1080p"):
+		score += 40
+	case strings.Contains(title, "720p"):
+		score += 20
+	case strings.Contains(title, "480p") || strings.Contains(title, "576p"):
+		score -= 10
 	}
-	for i := 1; i <= la; i++ {
-		for j := 1; j <= lb; j++ {
-			if ra[i-1] == rb[j-1] {
-				dp[i][j] = dp[i-1][j-1]
-			} else {
-				dp[i][j] = 1 + min(dp[i-1][j], min(dp[i][j-1], dp[i-1][j-1]))
-			}
-		}
+
+	// --- Video codec ---
+	switch {
+	case strings.Contains(title, "av1"):
+		score += 15
+	case strings.Contains(title, "x265") || strings.Contains(title, "h265") || strings.Contains(title, "hevc"):
+		score += 10
+	case strings.Contains(title, "x264") || strings.Contains(title, "h264") || strings.Contains(title, "avc"):
+		score += 5
 	}
-	return dp[la][lb]
+
+	// --- HDR ---
+	if strings.Contains(title, "hdr10+") {
+		score += 15
+	} else if strings.Contains(title, "hdr10") || strings.Contains(title, "hdr") {
+		score += 10
+	}
+	if strings.Contains(title, "dolby vision") || strings.Contains(title, "dv.") || strings.Contains(title, ".dv.") {
+		score += 10
+	}
+
+	// --- Audio ---
+	switch {
+	case strings.Contains(title, "truehd") || strings.Contains(title, "atmos"):
+		score += 10
+	case strings.Contains(title, "dts-hd") || strings.Contains(title, "dtshd"):
+		score += 8
+	case strings.Contains(title, "dts"):
+		score += 5
+	case strings.Contains(title, "ddp") || strings.Contains(title, "eac3"):
+		score += 4
+	case strings.Contains(title, "ac3") || strings.Contains(title, "dd5"):
+		score += 2
+	case strings.Contains(title, "aac"):
+		score += 1
+	}
+
+	return score
 }
 
 func getScore(torrent Result, target tmdb.Movie) int {
 	score := 0
 
-	score += torrent.Seeders * 10
-	score += torrent.Peers * 2
-
-	daysOld := time.Since(torrent.PublishDate.Time).Hours() / 24
-
-	if daysOld < 1 {
-		score += 40
-	} else if daysOld < 7 {
-		score += 20
-	} else if daysOld < 30 {
-		score += 5
-	} else {
-		score -= 10
+	infoScore := infoScore(torrent, target)
+	if infoScore < -100 {
+		return -999
 	}
+	score += infoScore
 
-	if torrent.MagnetUri != "" {
-		score += 5
-	}
-
-	if torrent.Seeders == 0 {
-		score -= 100
-	}
-
-	if strconv.Itoa(torrent.Year) == target.ReleaseDate {
-		score += 10
-	}
-
-	titleScore := titleCoherenceScore(torrent.Title, target)
-
-	// Seuil minimal : si le titre ne matche pas du tout, on rejette directement
+	titleScore := titleScore(torrent.Title, target)
 	if titleScore < -50 {
-		return -9999 // éliminé
+		return -9999
 	}
-
 	score += titleScore
 
-	const (
-		KB = 1024
-		MB = KB * 1024
-		GB = MB * 1024
-	)
-
-	const maxSize = 100 * GB
-	const minSize = 500 * MB
-
-	if torrent.Size > maxSize {
-		score -= 50
-	} else if torrent.Size < minSize {
-		score -= 50
-	}
-
-	if torrent.Files > 2 {
-		score -= 100
-	}
+	score += qualityScore(torrent.Title)
 
 	return score
 }
 
 func SortResults(resp *JackettResponse, target tmdb.Movie) {
+	if len(resp.Results) > 25 {
+		resp.Results = resp.Results[:25]
+	}
+
 	scores := make([]int, len(resp.Results))
 	for i, r := range resp.Results {
 		scores[i] = getScore(r, target)

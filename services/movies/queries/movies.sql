@@ -1,5 +1,5 @@
 -- name: UserAddMovieToCollection :one
-INSERT INTO collection (user_id, movie_id, torrent_id, length)
+INSERT INTO collection (user_id, movie_id, torrent_link, length)
 VALUES ($1, $2, $3, $4)
 RETURNING *;
 
@@ -8,7 +8,7 @@ SELECT * FROM collection
 WHERE user_id=$1 AND movie_id=$2;
 
 -- name: GetAllMoviesInCollection :many
-SELECT movie_id, torrent_id, length, progression FROM collection
+SELECT movie_id, torrent_link, length, progression FROM collection
 WHERE user_id=$1;
 
 -- name: DeleteMovieFromCollection :one

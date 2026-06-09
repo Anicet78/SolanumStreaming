@@ -79,7 +79,7 @@ func printResult(r Result, index int) {
 		printAge(r.PublishDate.Time),
 	)
 
-	// External IDs (optional)
+	// External IDs
 	if ids := printOptionalIDs(r); ids != "" {
 		fmt.Printf("       %s\n", dim(ids))
 	}
@@ -101,7 +101,7 @@ func PrintResponse(resp JackettResponse) {
 	bold := func(s string) string { return "\033[1m" + s + "\033[0m" }
 	dim := func(s string) string { return "\033[2m" + s + "\033[0m" }
 
-	// ── Header ──────────────────────────────────────────────────────────────
+	// Header
 	fmt.Printf("\n%s\n", sep)
 	fmt.Printf("  %s   %s\n",
 		bold(fmt.Sprintf("%d results", len(resp.Results))),
@@ -109,7 +109,7 @@ func PrintResponse(resp JackettResponse) {
 	)
 	fmt.Printf("%s\n\n", sep)
 
-	// ── Indexer summary ─────────────────────────────────────────────────────
+	// Indexer summary
 	for _, idx := range resp.Indexers {
 		status := "✓"
 		if idx.Status != 2 {
@@ -128,7 +128,7 @@ func PrintResponse(resp JackettResponse) {
 
 	fmt.Printf("\n%s\n", sep)
 
-	// ── Results ─────────────────────────────────────────────────────────────
+	// Results
 	for i, r := range resp.Results {
 		printResult(r, i)
 		fmt.Printf("       %s\n", dim(sep))

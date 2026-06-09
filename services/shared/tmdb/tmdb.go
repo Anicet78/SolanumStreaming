@@ -14,13 +14,16 @@ type SearchResponse struct {
 }
 
 type Movie struct {
-	ID          int     `json:"id"`
-	Title       string  `json:"title"`
-	Popularity  float64 `json:"popularity"`
-	Adult       bool    `json:"adult"`
-	Video       bool    `json:"video"`
-	PosterPath  string  `json:"poster_path"`
-	ReleaseDate string  `json:"release_date"`
+	ID            int     `json:"id"`
+	Title         string  `json:"title"`
+	OriginalTitle string  `json:"original_title"`
+	Popularity    float64 `json:"popularity"`
+	Adult         bool    `json:"adult"`
+	Video         bool    `json:"video"`
+	PosterPath    string  `json:"poster_path"`
+	ReleaseDate   string  `json:"release_date"`
+	IMDbID        string  `json:"imdb_id"`
+	Runtime       int     `json:"runtime"`
 }
 
 func New() *resty.Request {
