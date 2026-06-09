@@ -56,7 +56,7 @@ func printOptionalIDs(r Result) string {
 	return strings.Join(ids, " · ")
 }
 
-func printResult(r Result, index int) {
+func PrintResult(r Result, index int) {
 	cyan := func(s string) string { return "\033[36m" + s + "\033[0m" }
 	bold := func(s string) string { return "\033[1m" + s + "\033[0m" }
 	dim := func(s string) string { return "\033[2m" + s + "\033[0m" }
@@ -130,7 +130,7 @@ func PrintResponse(resp JackettResponse) {
 
 	// Results
 	for i, r := range resp.Results {
-		printResult(r, i)
+		PrintResult(r, i)
 		fmt.Printf("       %s\n", dim(sep))
 	}
 }

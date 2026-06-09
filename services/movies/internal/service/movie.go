@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 	"shared/jackett"
 	"shared/tmdb"
 	"strconv"
@@ -115,14 +116,27 @@ func (s *MovieService) AddToCollection(ctx context.Context, userId pgtype.UUID, 
 
 	jackett.SortResults(&JackettResponse, TMDBResult)
 
-	/* for i, r := range JackettResponse.Results {
-		// test torrent
-	} */
+	var link string
+	for i, r := range JackettResponse.Results {
+		jackett.PrintResult(r, i)
+
+		if r.MagnetUri != "" {
+			link = r.MagnetUri
+		} else {
+			link = r.Link
+		}
+
+		if i == 0 {
+			break
+		}
+	}
+
+	fmt.Printf("MovieId: %d  |  TorrentLink: %s  |  Lenght: %d\n", movieId, link, TMDBResult.Runtime)
 
 	_, err = s.store.UserAddMovieToCollection(ctx, store.UserAddMovieToCollectionParams{
 		UserID:      userId,
 		MovieID:     int32(movieId),
-		TorrentLink: JackettResponse.Results[0].Link,
+		TorrentLink: link,
 		Length:      int32(TMDBResult.Runtime),
 	})
 

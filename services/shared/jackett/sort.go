@@ -1,7 +1,6 @@
 package jackett
 
 import (
-	"fmt"
 	"regexp"
 	"shared/tmdb"
 	"slices"
@@ -278,8 +277,6 @@ func SortResults(resp *JackettResponse, target tmdb.Movie) {
 	sorted := make([]Result, len(resp.Results))
 	for i, it := range tmp {
 		sorted[i] = resp.Results[it.idx]
-		printResult(sorted[i], i)
-		fmt.Printf("       🩻  %d\n", it.score)
 	}
 
 	resp.Results = sorted
