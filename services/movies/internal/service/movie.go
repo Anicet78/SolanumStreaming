@@ -131,7 +131,7 @@ func (s *MovieService) AddToCollection(ctx context.Context, userId pgtype.UUID, 
 		}
 	}
 
-	fmt.Printf("MovieId: %d  |  TorrentLink: %s  |  Lenght: %d\n", movieId, link, TMDBResult.Runtime)
+	fmt.Printf("Movie Name: %s | MovieId: %d  |  TorrentLink: %s  |  Lenght: %d\n", TMDBResult.Title, movieId, link, TMDBResult.Runtime)
 
 	_, err = s.store.UserAddMovieToCollection(ctx, store.UserAddMovieToCollectionParams{
 		UserID:      userId,

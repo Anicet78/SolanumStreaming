@@ -33,7 +33,7 @@ func infoScore(torrent Result, target tmdb.Movie) int {
 	}
 
 	if torrent.MagnetUri != "" {
-		score += 5
+		score += 25
 	}
 
 	if torrent.Seeders == 0 {
@@ -251,10 +251,6 @@ func getScore(torrent Result, target tmdb.Movie) int {
 }
 
 func SortResults(resp *JackettResponse, target tmdb.Movie) {
-	if len(resp.Results) > 25 {
-		resp.Results = resp.Results[:25]
-	}
-
 	scores := make([]int, len(resp.Results))
 	for i, r := range resp.Results {
 		scores[i] = getScore(r, target)
