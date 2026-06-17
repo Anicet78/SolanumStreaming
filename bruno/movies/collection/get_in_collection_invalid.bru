@@ -1,23 +1,16 @@
 meta {
-  name: add_to_collection_other
+  name: get_in_collection_invalid
   type: http
-  seq: 5
+  seq: 10
 }
 
-post {
-  url: {{baseUrl}}/collection
-  body: json
+get {
+  url: {{baseUrl}}/collection/194
   auth: bearer
 }
 
 auth:bearer {
   token: {{token}}
-}
-
-body:json {
-  {
-    "movie_id": 553301
-  }
 }
 
 vars:pre-request {
@@ -26,6 +19,6 @@ vars:pre-request {
 
 tests {
   test("Returns approriate status code", function() {
-    expect(res.status).to.equal(204);
+    expect(res.status).to.equal(404);
   });
 }

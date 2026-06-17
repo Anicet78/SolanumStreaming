@@ -11,7 +11,7 @@ import (
 type Collection struct {
 	UserID      pgtype.UUID
 	MovieID     int32
-	TorrentID   string
-	MovieLenght int32
+	TorrentLink string
+	Length      int32
 	Progression pgtype.Interval
 }

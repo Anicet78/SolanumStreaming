@@ -1,0 +1,31 @@
+meta {
+  name: get_collection_empty
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/collection
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+vars:pre-request {
+  baseUrl: http://localhost:8082
+}
+
+tests {
+  test("Returns approriate status code", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Returns valid data", function () {
+    expect(res.body).to.have.property("data");
+    expect(res.body.data).to.be.empty;
+    expect(res.body.data).to.be.an("array");
+    expect(res.body.data).to.have.lengthOf(0);
+  });
+}

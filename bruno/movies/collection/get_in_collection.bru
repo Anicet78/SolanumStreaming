@@ -1,0 +1,33 @@
+meta {
+  name: get_in_collection
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{baseUrl}}/collection/194
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+vars:pre-request {
+  baseUrl: http://localhost:8082
+}
+
+tests {
+  test("Returns approriate status code", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Returns valid data", function () {
+    expect(res.body).to.have.property("data");
+    expect(res.body.data).to.not.be.empty;
+    expect(res.body.data).to.have.property("movie_id");
+    expect(res.body.data).to.have.property("torrent_link");
+    expect(res.body.data).to.have.property("length");
+    expect(res.body.data).to.have.property("progression");
+  })
+}

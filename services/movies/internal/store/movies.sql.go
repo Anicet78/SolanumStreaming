@@ -11,55 +11,116 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const getFilmInCollection = `-- name: GetFilmInCollection :one
-SELECT user_id, movie_id, torrent_id, movie_lenght, progression FROM collection
+const deleteMovieFromCollection = `-- name: DeleteMovieFromCollection :one
+DELETE FROM collection
 WHERE user_id=$1 AND movie_id=$2
+RETURNING user_id, movie_id, torrent_link, length, progression
 `
 
-type GetFilmInCollectionParams struct {
+type DeleteMovieFromCollectionParams struct {
 	UserID  pgtype.UUID
 	MovieID int32
 }
 
-func (q *Queries) GetFilmInCollection(ctx context.Context, arg GetFilmInCollectionParams) (Collection, error) {
-	row := q.db.QueryRow(ctx, getFilmInCollection, arg.UserID, arg.MovieID)
+func (q *Queries) DeleteMovieFromCollection(ctx context.Context, arg DeleteMovieFromCollectionParams) (Collection, error) {
+	row := q.db.QueryRow(ctx, deleteMovieFromCollection, arg.UserID, arg.MovieID)
 	var i Collection
 	err := row.Scan(
 		&i.UserID,
 		&i.MovieID,
-		&i.TorrentID,
-		&i.MovieLenght,
+		&i.TorrentLink,
+		&i.Length,
 		&i.Progression,
 	)
 	return i, err
 }
 
-const userAddFilmToCollection = `-- name: UserAddFilmToCollection :one
-INSERT INTO collection (user_id, movie_id, torrent_id, movie_lenght)
-VALUES ($1, $2, $3, $4)
-RETURNING user_id, movie_id, torrent_id, movie_lenght, progression
+const getAllMoviesInCollection = `-- name: GetAllMoviesInCollection :many
+SELECT movie_id, torrent_link, length, progression FROM collection
+WHERE user_id=$1
 `
 
-type UserAddFilmToCollectionParams struct {
-	UserID      pgtype.UUID
+type GetAllMoviesInCollectionRow struct {
 	MovieID     int32
-	TorrentID   string
-	MovieLenght int32
+	TorrentLink string
+	Length      int32
+	Progression pgtype.Interval
 }
 
-func (q *Queries) UserAddFilmToCollection(ctx context.Context, arg UserAddFilmToCollectionParams) (Collection, error) {
-	row := q.db.QueryRow(ctx, userAddFilmToCollection,
+func (q *Queries) GetAllMoviesInCollection(ctx context.Context, userID pgtype.UUID) ([]GetAllMoviesInCollectionRow, error) {
+	rows, err := q.db.Query(ctx, getAllMoviesInCollection, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetAllMoviesInCollectionRow
+	for rows.Next() {
+		var i GetAllMoviesInCollectionRow
+		if err := rows.Scan(
+			&i.MovieID,
+			&i.TorrentLink,
+			&i.Length,
+			&i.Progression,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getMovieInCollection = `-- name: GetMovieInCollection :one
+SELECT user_id, movie_id, torrent_link, length, progression FROM collection
+WHERE user_id=$1 AND movie_id=$2
+`
+
+type GetMovieInCollectionParams struct {
+	UserID  pgtype.UUID
+	MovieID int32
+}
+
+func (q *Queries) GetMovieInCollection(ctx context.Context, arg GetMovieInCollectionParams) (Collection, error) {
+	row := q.db.QueryRow(ctx, getMovieInCollection, arg.UserID, arg.MovieID)
+	var i Collection
+	err := row.Scan(
+		&i.UserID,
+		&i.MovieID,
+		&i.TorrentLink,
+		&i.Length,
+		&i.Progression,
+	)
+	return i, err
+}
+
+const userAddMovieToCollection = `-- name: UserAddMovieToCollection :one
+INSERT INTO collection (user_id, movie_id, torrent_link, length)
+VALUES ($1, $2, $3, $4)
+RETURNING user_id, movie_id, torrent_link, length, progression
+`
+
+type UserAddMovieToCollectionParams struct {
+	UserID      pgtype.UUID
+	MovieID     int32
+	TorrentLink string
+	Length      int32
+}
+
+func (q *Queries) UserAddMovieToCollection(ctx context.Context, arg UserAddMovieToCollectionParams) (Collection, error) {
+	row := q.db.QueryRow(ctx, userAddMovieToCollection,
 		arg.UserID,
 		arg.MovieID,
-		arg.TorrentID,
-		arg.MovieLenght,
+		arg.TorrentLink,
+		arg.Length,
 	)
 	var i Collection
 	err := row.Scan(
 		&i.UserID,
 		&i.MovieID,
-		&i.TorrentID,
-		&i.MovieLenght,
+		&i.TorrentLink,
+		&i.Length,
 		&i.Progression,
 	)
 	return i, err
