@@ -38,7 +38,7 @@ func (h *MovieHandler) search(c *echo.Context) error {
 
 	res, err := h.service.Search(c.Request().Context(), params)
 	if err != nil {
-		slog.Error("Search creation failed", "error", err)
+		slog.Error("Search failed", "error", err)
 		return response.InternalServerError(c, "internal server error")
 	}
 

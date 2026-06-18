@@ -1,27 +1,21 @@
-FROM node:slim AS dev
+FROM golang:1.25.8 AS build
 
-WORKDIR /app
+WORKDIR /src
 
-COPY ./package*.json ./
-RUN npm install
+COPY shared ./shared
+COPY movies ./stream
 
-COPY . .
+RUN go work init ./shared ./stream
 
-RUN npm run build
+WORKDIR /src/stream
+RUN go mod download
+RUN CGO_ENABLED=0 GOOS=linux go build -o /out/stream ./cmd
 
-CMD ["npm", "start"]
+FROM gcr.io/distroless/base-debian12:nonroot
 
-FROM node:slim AS prod
+COPY --from=build /out/stream /stream
 
-WORKDIR /app
+EXPOSE 8082
 
-COPY ./package*.json ./
-RUN npm install
-
-COPY . .
-
-RUN npm run build
-
-EXPOSE 8083
-
-CMD ["npm", "start"]
+USER nonroot:nonroot
+ENTRYPOINT [ "/stream" ]
