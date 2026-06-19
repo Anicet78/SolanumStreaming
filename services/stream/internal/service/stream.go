@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"shared/tmdb"
 )
 
 type StreamService struct{}
@@ -11,8 +10,7 @@ func NewStreamService() *StreamService {
 	return &StreamService{}
 }
 
-func (s *StreamService) Stream(ctx context.Context) (tmdb.SearchResponse, error) {
-	var result tmdb.SearchResponse
+func (s *StreamService) Stream(ctx context.Context) error {
 
-	return result, nil
+	return nil
 }

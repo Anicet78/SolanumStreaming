@@ -24,11 +24,11 @@ func (h *StreamHandler) RegisterRoutes(e *echo.Echo) {
 }
 
 func (h *StreamHandler) stream(c *echo.Context) error {
-	res, err := h.service.Stream(c.Request().Context())
+	err := h.service.Stream(c.Request().Context())
 	if err != nil {
 		slog.Error("Torrent stream failed", "error", err)
 		return response.InternalServerError(c, "internal server error")
 	}
 
-	return response.OK(c, res)
+	return response.NoContent(c)
 }
