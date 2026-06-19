@@ -2,11 +2,9 @@ package main
 
 import (
 	"net/http"
-	"shared/database"
 
-	"github.com/Anicet78/SolanumStreaming/movies/internal/handler"
-	"github.com/Anicet78/SolanumStreaming/movies/internal/service"
-	"github.com/Anicet78/SolanumStreaming/movies/internal/store"
+	"github.com/Anicet78/SolanumStreaming/stream/internal/handler"
+	"github.com/Anicet78/SolanumStreaming/stream/internal/service"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v5"
 	"github.com/labstack/echo/v5/middleware"
@@ -21,24 +19,16 @@ func (cv *CustomValidator) Validate(i interface{}) error {
 }
 
 func main() {
-	pool, err := database.Connect()
-	if err != nil {
-		return
-	}
-	defer pool.Close()
+	streamService := service.NewStreamService()
 
-	store := store.New(pool)
-
-	movieService := service.NewMovieService(store)
-
-	movieHandler := handler.NewMovieHandler(movieService)
+	streamHandler := handler.NewStreamHandler(streamService)
 
 	e := echo.New()
 
 	e.Use(middleware.RequestLogger())
 	e.Validator = &CustomValidator{validator: validator.New()}
 
-	movieHandler.RegisterRoutes(e)
+	streamHandler.RegisterRoutes(e)
 
 	e.RouteNotFound("/*", func(c *echo.Context) error {
 		return echo.NewHTTPError(http.StatusNotFound, "Route Not Found")
