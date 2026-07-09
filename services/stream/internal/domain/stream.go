@@ -2,8 +2,8 @@ package domain
 
 import "errors"
 
-type TorrentLinkParam struct {
-	TorrentLink string `param:"torrent_link"`
+type TorrentLinkQuery struct {
+	TorrentLink string `query:"torrent_link"`
 }
 
 type StreamResponse struct {

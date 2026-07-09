@@ -25,11 +25,11 @@ func NewStreamHandler(service *service.StreamService) *StreamHandler {
 func (h *StreamHandler) RegisterRoutes(e *echo.Echo) {
 	private := e.Group("")
 	private.Use(auth.JWTMiddleware())
-	private.GET("/:torrent_link", h.stream)
+	private.GET("/", h.stream)
 }
 
 func (h *StreamHandler) stream(c *echo.Context) error {
-	params, err := bind.Params[domain.TorrentLinkParam](c)
+	params, err := bind.Query[domain.TorrentLinkQuery](c)
 	if err != nil {
 		return err
 	}

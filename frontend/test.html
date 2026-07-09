@@ -59,7 +59,7 @@
 				result = await response.json();
 				let torrent_link = result.data.torrent_link;
 
-				response = await fetch("http://localhost:8083/" + torrent_link, {
+				response = await fetch("http://localhost:8083/?torrent_link=" + encodeURIComponent(torrent_link), {
 					headers: {
 						"Authorization": "Bearer " + token
 					}
