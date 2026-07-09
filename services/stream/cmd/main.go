@@ -1,10 +1,12 @@
 package main
 
 import (
+	"log/slog"
 	"net/http"
 
 	"github.com/Anicet78/SolanumStreaming/stream/internal/handler"
 	"github.com/Anicet78/SolanumStreaming/stream/internal/service"
+	"github.com/anacrolix/torrent"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v5"
 	"github.com/labstack/echo/v5/middleware"
@@ -19,12 +21,25 @@ func (cv *CustomValidator) Validate(i interface{}) error {
 }
 
 func main() {
-	streamService := service.NewStreamService()
+	cfg := torrent.NewDefaultClientConfig()
+	cfg.DataDir = "./downloads"
+
+	client, err := torrent.NewClient(cfg)
+	if err != nil {
+		slog.Error("Unable create a torrent client", "error", err)
+	}
+	defer client.Close()
+
+	streamService := service.NewStreamService(client)
 
 	streamHandler := handler.NewStreamHandler(streamService)
 
 	e := echo.New()
 
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"http://localhost:5500"},
+		AllowMethods: []string{http.MethodGet, http.MethodPost},
+	}))
 	e.Use(middleware.RequestLogger())
 	e.Validator = &CustomValidator{validator: validator.New()}
 
@@ -38,7 +53,7 @@ func main() {
 		return c.JSON(http.StatusOK, map[string]string{"status": "ok"})
 	})
 
-	if err := e.Start(":8082"); err != nil {
+	if err := e.Start(":8083"); err != nil {
 		e.Logger.Error("Failed to start server", "error", err)
 	}
 }

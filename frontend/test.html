@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+	<meta charset='utf-8'>
+	<meta name='viewport' content='width=device-width, initial-scale=1'>
+	<title>Test</title>
+</head>
+<body>
+	<script>
+		async function test() {
+			try {
+				let response = await fetch("http://localhost:8081/register", {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json"
+					},
+					body: JSON.stringify({ "username": "TestAnicet", "password": "password123" })
+				});
+
+				if (!response.ok) {
+					response = await fetch("http://localhost:8081/login", {
+						method: "POST",
+						headers: {
+							"Content-Type": "application/json"
+						},
+						body: JSON.stringify({ "username": "TestAnicet", "password": "password123" })
+					});
+
+					if (!response.ok) {
+						throw new Error(`Response status: ${response.status}`);
+					}
+				}
+
+				let result = await response.json();
+
+				let token = result.data.jwt
+
+				response = await fetch("http://localhost:8082/collection/194", {
+					headers: {
+						"Authorization": "Bearer " + token
+					},
+				});
+
+				if (!response.ok) {
+					const response = await fetch("http://localhost:8082/collection", {
+						method: "POST",
+						headers: {
+							"Content-Type": "application/json",
+							"Authorization": "Bearer " + token
+						},
+						body: JSON.stringify({ "movie_id": 194 })
+					});
+
+					if (!response.ok) {
+						throw new Error(`Response status: ${response.status}`);
+					}
+				}
+
+				result = await response.json();
+				let torrent_link = result.data.torrent_link;
+
+				response = await fetch("http://localhost:8083/" + torrent_link, {
+					headers: {
+						"Authorization": "Bearer " + token
+					}
+				});
+
+				if (!response.ok) {
+					throw new Error(`Response status: ${response.status}`);
+				}
+
+				console.log(response)
+
+			} catch (error) {
+				console.error(error.message);
+			}
+		}
+		test()
+	</script>
+</body>
+</html>
