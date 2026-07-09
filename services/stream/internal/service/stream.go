@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"net/http"
 	"strings"
 	"time"
 
@@ -28,14 +29,38 @@ func (s *StreamService) Stream(ctx context.Context, torrentLink string) (torrent
 			return nil, err
 		}
 	} else {
-		mi, err := metainfo.LoadFromFile(torrentLink)
+		httpClient := &http.Client{
+			CheckRedirect: func(req *http.Request, via []*http.Request) error {
+				if strings.HasPrefix(req.URL.String(), "magnet:") {
+					return http.ErrUseLastResponse
+				}
+				return nil
+			},
+		}
+
+		resp, err := httpClient.Get(torrentLink)
 		if err != nil {
 			return nil, err
 		}
+		defer resp.Body.Close()
 
-		t, err = s.client.AddTorrent(mi)
-		if err != nil {
-			return nil, err
+		if resp.StatusCode == http.StatusFound || resp.StatusCode == http.StatusMovedPermanently {
+			location := resp.Header.Get("Location")
+			if strings.HasPrefix(location, "magnet:") {
+				t, err = s.client.AddMagnet(location)
+				if err != nil {
+					return nil, err
+				}
+			}
+		} else {
+			mi, err := metainfo.Load(resp.Body)
+			if err != nil {
+				return nil, err
+			}
+			t, err = s.client.AddTorrent(mi)
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 
