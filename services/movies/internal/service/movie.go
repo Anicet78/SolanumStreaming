@@ -76,17 +76,17 @@ func (s *MovieService) GetInCollection(ctx context.Context, userId pgtype.UUID, 
 	}, nil
 }
 
-func (s *MovieService) AddToCollection(ctx context.Context, userId pgtype.UUID, movieId int) error {
+func (s *MovieService) AddToCollection(ctx context.Context, userId pgtype.UUID, movieId int) (domain.CollectionMovie, error) {
 	exists, err := s.store.GetMovieInCollection(ctx, store.GetMovieInCollectionParams{
 		UserID:  userId,
 		MovieID: int32(movieId),
 	})
 	if err != nil {
 		if !errors.Is(err, pgx.ErrNoRows) {
-			return err
+			return domain.CollectionMovie{}, err
 		}
 	} else if exists.UserID.Valid {
-		return domain.ErrMovieAlreadyInCollection
+		return domain.CollectionMovie{}, domain.ErrMovieAlreadyInCollection
 	}
 
 	var TMDBResult tmdb.Movie
@@ -95,9 +95,9 @@ func (s *MovieService) AddToCollection(ctx context.Context, userId pgtype.UUID, 
 		SetPathParam("movie_id", strconv.Itoa(movieId)).
 		Get("/movie/{movie_id}")
 	if err != nil {
-		return err
+		return domain.CollectionMovie{}, err
 	} else if res.IsSuccess() == false {
-		return domain.ErrTMDBRequestFailed
+		return domain.CollectionMovie{}, domain.ErrTMDBRequestFailed
 	}
 
 	var JackettResponse jackett.JackettResponse
@@ -109,9 +109,9 @@ func (s *MovieService) AddToCollection(ctx context.Context, userId pgtype.UUID, 
 		SetResult(&JackettResponse).
 		Get("/indexers/all/results")
 	if err != nil {
-		return err
+		return domain.CollectionMovie{}, err
 	} else if res.IsSuccess() == false {
-		return domain.ErrJackettRequestFailed
+		return domain.CollectionMovie{}, domain.ErrJackettRequestFailed
 	}
 
 	jackett.SortResults(&JackettResponse, TMDBResult)
@@ -126,21 +126,26 @@ func (s *MovieService) AddToCollection(ctx context.Context, userId pgtype.UUID, 
 			link = r.Link
 		}
 
-		if i == 0 {
+		if i == 9 {
 			break
 		}
 	}
 
 	fmt.Printf("Movie Name: %s | MovieId: %d  |  TorrentLink: %s  |  Lenght: %d\n", TMDBResult.Title, movieId, link, TMDBResult.Runtime)
 
-	_, err = s.store.UserAddMovieToCollection(ctx, store.UserAddMovieToCollectionParams{
+	movie, err := s.store.UserAddMovieToCollection(ctx, store.UserAddMovieToCollectionParams{
 		UserID:      userId,
 		MovieID:     int32(movieId),
 		TorrentLink: link,
 		Length:      int32(TMDBResult.Runtime),
 	})
 
-	return err
+	return domain.CollectionMovie{
+		MovieID: int(movie.MovieID),
+		TorrentLink: movie.TorrentLink,
+		Length: int(movie.Length),
+		Progression: movie.Progression,
+	}, err
 }
 
 func (s *MovieService) RemoveFromCollection(ctx context.Context, userId pgtype.UUID, movieId int) error {

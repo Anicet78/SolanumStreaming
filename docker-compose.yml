@@ -101,17 +101,26 @@ services:
       jackett:
         condition: service_started
 
-  # stream:
-  #   build: ./services/stream
-  #   container_name: stream-c
-  #   ports:
-  #     - 8083:8083
-  #   restart: on-failure:3
-  #   depends_on:
-  #     postgres:
-  #       condition: service_healthy
-  #     migrate:
-  #       condition: service_completed_successfully
+  stream:
+    build:
+      context: ./services
+      dockerfile: stream/Dockerfile
+    container_name: stream-c
+    ports:
+      - 8083:8083
+    env_file:
+      - .env
+    restart: on-failure:3
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8083/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
 
 volumes:
   postgres-v:

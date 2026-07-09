@@ -3,7 +3,7 @@ FROM golang:1.25.8 AS build
 WORKDIR /src
 
 COPY shared ./shared
-COPY movies ./stream
+COPY stream ./stream
 
 RUN go work init ./shared ./stream
 
@@ -15,7 +15,7 @@ FROM gcr.io/distroless/base-debian12:nonroot
 
 COPY --from=build /out/stream /stream
 
-EXPOSE 8082
+EXPOSE 8083
 
 USER nonroot:nonroot
 ENTRYPOINT [ "/stream" ]

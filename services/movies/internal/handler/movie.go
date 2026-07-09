@@ -94,7 +94,7 @@ func (h *MovieHandler) addToCollection(c *echo.Context) error {
 		return response.InternalServerError(c, "internal server error")
 	}
 
-	err = h.service.AddToCollection(c.Request().Context(), uuid, body.MovieID)
+	res, err := h.service.AddToCollection(c.Request().Context(), uuid, body.MovieID)
 	if err != nil {
 		if errors.Is(err, domain.ErrMovieAlreadyInCollection) {
 			return response.Conflict(c, err.Error())
@@ -103,7 +103,7 @@ func (h *MovieHandler) addToCollection(c *echo.Context) error {
 		return response.InternalServerError(c, "internal server error")
 	}
 
-	return response.NoContent(c)
+	return response.OK(c, res)
 }
 
 func (h *MovieHandler) removeFromCollection(c *echo.Context) error {
