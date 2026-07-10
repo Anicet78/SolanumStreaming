@@ -4,6 +4,8 @@ services:
     container_name: postgres-c
     ports:
       - 5432:5432
+    networks:
+      - solanum-streaming
     env_file:
       - .env
     volumes:
@@ -19,6 +21,8 @@ services:
   migrate:
     image: docker.io/migrate/migrate
     container_name: migrate-c
+    networks:
+      - solanum-streaming
     env_file:
       - .env
     volumes:
@@ -42,6 +46,8 @@ services:
     container_name: jackett-c
     ports:
       - 9117:9117
+    networks:
+      - solanum-streaming
     environment:
       - TZ=Europe/Paris
       - AUTO_UPDATE=true
@@ -64,6 +70,8 @@ services:
     container_name: auth-c
     ports:
       - 8081:8081
+    networks:
+      - solanum-streaming
     env_file:
       - .env
     restart: on-failure:3
@@ -85,6 +93,8 @@ services:
     container_name: movies-c
     ports:
       - 8082:8082
+    networks:
+      - solanum-streaming
     env_file:
       - .env
     restart: on-failure:3
@@ -108,6 +118,8 @@ services:
     container_name: stream-c
     ports:
       - 8083:8083
+    networks:
+      - solanum-streaming
     env_file:
       - .env
     volumes:
@@ -126,3 +138,7 @@ services:
 
 volumes:
   postgres-v:
+
+networks:
+  solanum-streaming:
+    driver: bridge
