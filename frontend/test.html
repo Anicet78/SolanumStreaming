@@ -6,6 +6,7 @@
 	<title>Test</title>
 </head>
 <body>
+	<video id="player" controls width="800"></video>
 	<script>
 		async function test() {
 			try {
@@ -59,17 +60,20 @@
 				result = await response.json();
 				let torrent_link = result.data.torrent_link;
 
-				response = await fetch("http://localhost:8083/?torrent_link=" + encodeURIComponent(torrent_link), {
-					headers: {
-						"Authorization": "Bearer " + token
-					}
-				});
+				// response = await fetch("http://localhost:8083/?torrent_link=" + encodeURIComponent(torrent_link), {
+				// 	headers: {
+				// 		"Authorization": "Bearer " + token
+				// 	}
+				// });
 
-				if (!response.ok) {
-					throw new Error(`Response status: ${response.status}`);
-				}
+				// if (!response.ok) {
+				// 	throw new Error(`Response status: ${response.status}`);
+				// }
 
-				console.log(response)
+				const streamUrl = `http://localhost:8083/?torrent_link=${encodeURIComponent(torrent_link)}`
+				console.log(streamUrl) 
+				document.getElementById("player").src = streamUrl
+
 
 			} catch (error) {
 				console.error(error.message);

@@ -4,7 +4,6 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
-	"shared/auth"
 	"shared/bind"
 	"shared/response"
 	"time"
@@ -24,7 +23,7 @@ func NewStreamHandler(service *service.StreamService) *StreamHandler {
 
 func (h *StreamHandler) RegisterRoutes(e *echo.Echo) {
 	private := e.Group("")
-	private.Use(auth.JWTMiddleware())
+	// private.Use(auth.JWTMiddleware())
 	private.GET("/", h.stream)
 }
 
@@ -43,8 +42,8 @@ func (h *StreamHandler) stream(c *echo.Context) error {
 		return response.InternalServerError(c, "internal server error")
 	}
 
-	http.ServeContent(c.Response(), c.Request(), "test", time.Time{}, reader)
 	defer reader.Close()
+	http.ServeContent(c.Response(), c.Request(), "test", time.Time{}, reader)
 
 	return response.NoContent(c)
 }

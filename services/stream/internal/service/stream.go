@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -70,12 +71,25 @@ func (s *StreamService) Stream(ctx context.Context, torrentLink string) (torrent
 		return nil, domain.ErrTorrentLoadingTimeout
 	}
 
+	go func() {
+		for {
+			time.Sleep(2 * time.Second)
+			stats := t.Stats()
+			log.Printf("peers: %d, downloaded: %d bytes",
+				stats.ActivePeers,
+				stats.BytesReadUsefulData.Int64())
+		}
+	}()
+
 	var file *torrent.File
 	for _, f := range t.Files() {
 		if file == nil || f.Length() > file.Length() {
 			file = f
 		}
 	}
+
+	log.Println("got info, files:", len(t.Files()))
+	log.Println("selected file:", file.DisplayPath(), "size:", file.Length())
 
 	file.SetPriority(torrent.PiecePriorityNow)
 
