@@ -11,11 +11,14 @@ WORKDIR /src/stream
 RUN go mod download
 RUN CGO_ENABLED=0 GOOS=linux go build -o /out/stream ./cmd
 
-FROM gcr.io/distroless/base-debian12:nonroot
+FROM debian:bookworm-slim
+
+RUN apt-get update && \
+	apt-get install -q -y --no-install-recommends ffmpeg && \
+	apt-get clean
 
 COPY --from=build /out/stream /stream
 
 EXPOSE 8083
 
-USER nonroot:nonroot
 ENTRYPOINT [ "/stream" ]

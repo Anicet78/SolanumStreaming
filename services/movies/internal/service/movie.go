@@ -126,7 +126,7 @@ func (s *MovieService) AddToCollection(ctx context.Context, userId pgtype.UUID, 
 			link = r.Link
 		}
 
-		if i == 9 {
+		if i == 0 {
 			break
 		}
 	}

@@ -3,10 +3,8 @@ package handler
 import (
 	"errors"
 	"log/slog"
-	"net/http"
 	"shared/bind"
 	"shared/response"
-	"time"
 
 	"github.com/Anicet78/SolanumStreaming/stream/internal/domain"
 	"github.com/Anicet78/SolanumStreaming/stream/internal/service"
@@ -33,7 +31,7 @@ func (h *StreamHandler) stream(c *echo.Context) error {
 		return err
 	}
 
-	reader, err := h.service.Stream(c.Request().Context(), params.TorrentLink)
+	err = h.service.Stream(c.Request().Context(), c.Response(), params.TorrentLink)
 	if err != nil {
 		if errors.Is(err, domain.ErrTorrentLoadingTimeout) {
 			return response.GatewayTimeout(c, err.Error())
@@ -41,9 +39,6 @@ func (h *StreamHandler) stream(c *echo.Context) error {
 		slog.Error("Torrent stream failed", "error", err)
 		return response.InternalServerError(c, "internal server error")
 	}
-
-	defer reader.Close()
-	http.ServeContent(c.Response(), c.Request(), "test", time.Time{}, reader)
 
 	return response.NoContent(c)
 }

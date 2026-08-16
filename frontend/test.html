@@ -6,6 +6,7 @@
 	<title>Test</title>
 </head>
 <body>
+	<button onclick="test()">▶ Stream</button>
 	<video id="player" controls width="800"></video>
 	<script>
 		async function test() {
@@ -71,7 +72,7 @@
 				// }
 
 				const streamUrl = `http://localhost:8083/?torrent_link=${encodeURIComponent(torrent_link)}`
-				console.log(streamUrl) 
+				console.log(streamUrl)
 				document.getElementById("player").src = streamUrl
 
 
@@ -79,7 +80,6 @@
 				console.error(error.message);
 			}
 		}
-		test()
 	</script>
 </body>
 </html>

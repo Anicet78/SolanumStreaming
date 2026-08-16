@@ -4,6 +4,8 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"os"
+	"os/exec"
 	"strings"
 	"time"
 
@@ -20,14 +22,14 @@ func NewStreamService(client *torrent.Client) *StreamService {
 	return &StreamService{client: client}
 }
 
-func (s *StreamService) Stream(ctx context.Context, torrentLink string) (torrent.Reader, error) {
+func (s *StreamService) Stream(ctx context.Context, responseWriter http.ResponseWriter, torrentLink string) error {
 	var t *torrent.Torrent
 	var err error
 
 	if strings.HasPrefix(torrentLink, "magnet:") {
 		t, err = s.client.AddMagnet(torrentLink)
 		if err != nil {
-			return nil, err
+			return err
 		}
 	} else {
 		httpClient := &http.Client{
@@ -41,7 +43,7 @@ func (s *StreamService) Stream(ctx context.Context, torrentLink string) (torrent
 
 		resp, err := httpClient.Get(torrentLink)
 		if err != nil {
-			return nil, err
+			return err
 		}
 		defer resp.Body.Close()
 
@@ -50,17 +52,17 @@ func (s *StreamService) Stream(ctx context.Context, torrentLink string) (torrent
 			if strings.HasPrefix(location, "magnet:") {
 				t, err = s.client.AddMagnet(location)
 				if err != nil {
-					return nil, err
+					return err
 				}
 			}
 		} else {
 			mi, err := metainfo.Load(resp.Body)
 			if err != nil {
-				return nil, err
+				return err
 			}
 			t, err = s.client.AddTorrent(mi)
 			if err != nil {
-				return nil, err
+				return err
 			}
 		}
 	}
@@ -68,18 +70,8 @@ func (s *StreamService) Stream(ctx context.Context, torrentLink string) (torrent
 	select {
 	case <-t.GotInfo():
 	case <-time.After(30 * time.Second):
-		return nil, domain.ErrTorrentLoadingTimeout
+		return domain.ErrTorrentLoadingTimeout
 	}
-
-	go func() {
-		for {
-			time.Sleep(2 * time.Second)
-			stats := t.Stats()
-			log.Printf("peers: %d, downloaded: %d bytes",
-				stats.ActivePeers,
-				stats.BytesReadUsefulData.Int64())
-		}
-	}()
 
 	var file *torrent.File
 	for _, f := range t.Files() {
@@ -88,13 +80,60 @@ func (s *StreamService) Stream(ctx context.Context, torrentLink string) (torrent
 		}
 	}
 
-	log.Println("got info, files:", len(t.Files()))
-	log.Println("selected file:", file.DisplayPath(), "size:", file.Length())
-
 	file.SetPriority(torrent.PiecePriorityNow)
 
 	reader := file.NewReader()
-	reader.SetReadahead(file.Length() / 100)
+	reader.SetReadahead(20 * 1024 * 1024)
+	defer reader.Close()
 
-	return reader, nil
+	responseWriter.Header().Set("Content-Type", "video/mp4")
+	responseWriter.Header().Set("Cache-Control", "no-cache")
+	responseWriter.Header().Del("Accept-Ranges")
+	responseWriter.WriteHeader(http.StatusOK)
+	if f, ok := responseWriter.(http.Flusher); ok {
+		f.Flush()
+	}
+
+	// log.Println("waiting for initial pieces...")
+	// for {
+	// 	stats := t.Stats()
+	// 	downloaded := stats.BytesReadUsefulData.Int64()
+	// 	log.Printf("downloaded: %d bytes", downloaded)
+	// 	if downloaded > 5*1024*1024 { // attend 5MB
+	// 		break
+	// 	}
+	// 	time.Sleep(500 * time.Millisecond)
+	// }
+	// log.Println("enough data, starting ffmpeg")
+
+	cmd := exec.CommandContext(ctx, "ffmpeg",
+		"-probesize", "10M", // analyse moins de données au démarrage
+		"-analyzeduration", "0", // n'attend pas pour analyser
+		"-i", "pipe:0",
+		"-c:v", "libx264",
+		"-preset", "ultrafast",
+		"-tune", "zerolatency", // optimisé pour le streaming temps réel
+		"-profile:v", "baseline",
+		"-level", "3.0",
+		"-c:a", "aac",
+		"-b:a", "128k",
+		"-ac", "2",
+		"-movflags", "frag_keyframe+empty_moov",
+		"-f", "mp4",
+		"pipe:1",
+	)
+
+	cmd.Stdin = reader
+	cmd.Stdout = responseWriter
+	cmd.Stderr = os.Stderr
+
+	if err := cmd.Run(); err != nil {
+		if ctx.Err() != nil {
+			return nil
+		}
+		log.Printf("ffmpeg error: %v", err)
+		return err
+	}
+
+	return nil
 }
