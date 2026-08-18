@@ -84,7 +84,9 @@ func (s *StreamService) Stream(ctx context.Context, responseWriter http.Response
 
 	reader := file.NewReader()
 	reader.SetReadahead(20 * 1024 * 1024)
+
 	defer reader.Close()
+	defer t.Drop()
 
 	responseWriter.Header().Set("Content-Type", "video/mp4")
 	responseWriter.Header().Set("Cache-Control", "no-cache")
@@ -107,6 +109,8 @@ func (s *StreamService) Stream(ctx context.Context, responseWriter http.Response
 	// log.Println("enough data, starting ffmpeg")
 
 	cmd := exec.CommandContext(ctx, "ffmpeg",
+		"-fflags", "nobuffer", // ajoute ça
+		"-flags", "low_delay", // et ça
 		"-probesize", "10M", // analyse moins de données au démarrage
 		"-analyzeduration", "0", // n'attend pas pour analyser
 		"-i", "pipe:0",

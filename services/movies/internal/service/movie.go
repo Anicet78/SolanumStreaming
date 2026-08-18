@@ -126,7 +126,7 @@ func (s *MovieService) AddToCollection(ctx context.Context, userId pgtype.UUID, 
 			link = r.Link
 		}
 
-		if i == 0 {
+		if i == 25 {
 			break
 		}
 	}
@@ -141,9 +141,9 @@ func (s *MovieService) AddToCollection(ctx context.Context, userId pgtype.UUID, 
 	})
 
 	return domain.CollectionMovie{
-		MovieID: int(movie.MovieID),
+		MovieID:     int(movie.MovieID),
 		TorrentLink: movie.TorrentLink,
-		Length: int(movie.Length),
+		Length:      int(movie.Length),
 		Progression: movie.Progression,
 	}, err
 }

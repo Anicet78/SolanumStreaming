@@ -37,7 +37,7 @@
 
 				let token = result.data.jwt
 
-				response = await fetch("http://localhost:8082/collection/194", {
+				response = await fetch("http://localhost:8082/collection/1083381", {
 					headers: {
 						"Authorization": "Bearer " + token
 					},
@@ -50,7 +50,7 @@
 							"Content-Type": "application/json",
 							"Authorization": "Bearer " + token
 						},
-						body: JSON.stringify({ "movie_id": 194 })
+						body: JSON.stringify({ "movie_id": 1083381 })
 					});
 
 					if (!response.ok) {
