@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"shared/jackett"
 	"shared/tmdb"
 	"strconv"
@@ -105,7 +106,7 @@ func (s *MovieService) AddToCollection(ctx context.Context, userId pgtype.UUID, 
 		SetQueryParam("apikey", "apikey").
 		SetQueryParam("Query", TMDBResult.Title).
 		SetQueryParam("Category[]", "2000").
-		SetQueryParam("Limit", "25").
+		SetQueryParam("Limit", "150").
 		SetResult(&JackettResponse).
 		Get("/indexers/all/results")
 	if err != nil {
@@ -114,19 +115,27 @@ func (s *MovieService) AddToCollection(ctx context.Context, userId pgtype.UUID, 
 		return domain.CollectionMovie{}, domain.ErrJackettRequestFailed
 	}
 
+	for _, idx := range JackettResponse.Indexers {
+		if idx.Error != "" || idx.Status != 2 {
+			log.Printf("Indexer lent/down: %s | status: %d | error: %s", idx.Name, idx.Status, idx.Error)
+		}
+	}
+
 	jackett.SortResults(&JackettResponse, TMDBResult)
 
 	var link string
 	for i, r := range JackettResponse.Results {
 		jackett.PrintResult(r, i)
 
-		if r.MagnetUri != "" {
-			link = r.MagnetUri
-		} else {
-			link = r.Link
+		if i == 0 {
+			if r.MagnetUri != "" {
+				link = r.MagnetUri
+			} else {
+				link = r.Link
+			}
 		}
 
-		if i == 25 {
+		if i == 5 {
 			break
 		}
 	}

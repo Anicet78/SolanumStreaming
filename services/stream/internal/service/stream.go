@@ -109,14 +109,14 @@ func (s *StreamService) Stream(ctx context.Context, responseWriter http.Response
 	// log.Println("enough data, starting ffmpeg")
 
 	cmd := exec.CommandContext(ctx, "ffmpeg",
-		"-fflags", "nobuffer", // ajoute ça
-		"-flags", "low_delay", // et ça
-		"-probesize", "10M", // analyse moins de données au démarrage
-		"-analyzeduration", "0", // n'attend pas pour analyser
+		"-fflags", "nobuffer",
+		"-flags", "low_delay",
+		"-probesize", "10M",
+		"-analyzeduration", "0",
 		"-i", "pipe:0",
 		"-c:v", "libx264",
 		"-preset", "ultrafast",
-		"-tune", "zerolatency", // optimisé pour le streaming temps réel
+		"-tune", "zerolatency",
 		"-profile:v", "baseline",
 		"-level", "3.0",
 		"-c:a", "aac",
