@@ -121,23 +121,18 @@ func (s *MovieService) AddToCollection(ctx context.Context, userId pgtype.UUID, 
 		}
 	}
 
-	jackett.SortResults(&JackettResponse, TMDBResult)
+	bestResult, err := jackett.FindBestResult(&JackettResponse, TMDBResult)
+	if err != nil {
+		return domain.CollectionMovie{}, err
+	}
+
+	jackett.PrintResult(bestResult.Torrent, 0)
 
 	var link string
-	for i, r := range JackettResponse.Results {
-		jackett.PrintResult(r, i)
-
-		if i == 0 {
-			if r.MagnetUri != "" {
-				link = r.MagnetUri
-			} else {
-				link = r.Link
-			}
-		}
-
-		if i == 5 {
-			break
-		}
+	if bestResult.Torrent.MagnetUri != "" {
+		link = bestResult.Torrent.MagnetUri
+	} else {
+		link = bestResult.Torrent.Link
 	}
 
 	fmt.Printf("Movie Name: %s | MovieId: %d  |  TorrentLink: %s  |  Lenght: %d\n", TMDBResult.Title, movieId, link, TMDBResult.Runtime)

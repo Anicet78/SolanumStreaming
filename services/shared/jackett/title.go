@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-func approxNameScore(targetNorm string, targetOrigNorm string, torrentNorm string) int {
+/* func approxNameScore(targetNorm string, targetOrigNorm string, torrentNorm string) int {
 	score := 0
 
 	targetWords := strings.Fields(targetNorm)
@@ -59,7 +59,7 @@ func approxNameScore(targetNorm string, targetOrigNorm string, torrentNorm strin
 	}
 
 	return score
-}
+} */
 
 func titleScore(torrentTitle string, target tmdb.Movie) int {
 	score := 0
@@ -75,9 +75,10 @@ func titleScore(torrentTitle string, target tmdb.Movie) int {
 	torrentNorm := normalize(torrentClean)
 
 	if torrentNorm == targetNorm || torrentNorm == targetOrigNorm {
-		score += 100
+		score += 70
 	} else {
-		score += approxNameScore(targetNorm, targetOrigNorm, torrentNorm)
+		// score += approxNameScore(targetNorm, targetOrigNorm, torrentNorm)
+		return 0
 	}
 
 	yearRegex := regexp.MustCompile(`\b(19|20)\d{2}\b`)
@@ -88,15 +89,11 @@ func titleScore(torrentTitle string, target tmdb.Movie) int {
 		targetYear = target.ReleaseDate[:4]
 	}
 
-	if torrentYear != "" && targetYear != "" {
-		if torrentYear == targetYear {
-			return score + 30
-		} else {
-			return -999
-		}
+	if targetYear == "" || (torrentYear != "" && torrentYear == targetYear) {
+		return score + 30
+	} else {
+		return 0
 	}
-
-	return score
 }
 
 var (
@@ -110,12 +107,14 @@ var (
 	reCam    = regexp.MustCompile(`\b(cam|ts|telecine|telesync)\b`)
 
 	// Resolution
-	reDS4K  = regexp.MustCompile(`\bds4k\b`) // upscale/downscale marketing, pas un vrai natif 4K
-	re4K    = regexp.MustCompile(`\b(4k|2160p|uhd)\b`)
-	re1440p = regexp.MustCompile(`\b1440p\b`)
-	re1080p = regexp.MustCompile(`\b1080p\b`)
-	re720p  = regexp.MustCompile(`\b720p\b`)
-	re480p  = regexp.MustCompile(`\b(480p|576p)\b`)
+	reDS4K   = regexp.MustCompile(`\bds4k\b`)
+	re4K     = regexp.MustCompile(`\b(4k|2160p|uhd)\b`)
+	re1440p  = regexp.MustCompile(`\b1440p\b`)
+	re1080p  = regexp.MustCompile(`\b1080p\b`)
+	reM1080p = regexp.MustCompile(`\bm1080p\b`)
+	re720p   = regexp.MustCompile(`\b720p\b`)
+	reM720p  = regexp.MustCompile(`\bm720p\b`)
+	re480p   = regexp.MustCompile(`\b(480p|576p)\b`)
 
 	// Video codec
 	reAV1  = regexp.MustCompile(`\bav1\b`)
@@ -127,7 +126,7 @@ var (
 	reHDR         = regexp.MustCompile(`\bhdr(10)?\b`)
 	reDolbyVision = regexp.MustCompile(`\b(dolby[.\s]?vision|dv)\b`)
 
-	// Audio (poids volontairement faible, voir note en bas)
+	// Audio
 	reAtmosTrueHD = regexp.MustCompile(`\b(truehd|atmos)\b`)
 	reDTSHD       = regexp.MustCompile(`\bdts-?hd\b`)
 	reDTS         = regexp.MustCompile(`\bdts\b`)
@@ -143,64 +142,65 @@ func qualityScore(torrentTitle string) int {
 	// --- Source ---
 	switch {
 	case reRemux.MatchString(title):
-		score += 60
+		score += 10
 	case reBluRay.MatchString(title):
-		score += 50
+		score += 8
 	case reWebDL.MatchString(title):
-		score += 35
+		score += 8
 	case reWebRip.MatchString(title):
-		score += 25
+		score += 3
 	case reHDTV.MatchString(title):
-		score += 15
-	case reDVDRip.MatchString(title):
-		score += 5
+		score += 1
 	case reCam.MatchString(title):
-		score -= 50
+		return 0
 	}
 
 	// --- Resolution ---
 	switch {
 	case reDS4K.MatchString(title):
-		score -= 20
 		switch {
 		case re1080p.MatchString(title):
-			score += 100
+			score += 65
 		case re720p.MatchString(title):
-			score += 30
+			score += 40
 		default:
-			score += 60
+			score += 50
 		}
 	case re4K.MatchString(title):
-		score += 220
+		score += 75
 	case re1440p.MatchString(title):
-		score += 200
+		score += 70
 	case re1080p.MatchString(title):
-		score += 100
+		score += 60
+	case reM1080p.MatchString(title):
+		score += 50
 	case re720p.MatchString(title):
-		score += 30
+		score += 35
+	case reM720p.MatchString(title):
+		score += 25
 	case re480p.MatchString(title):
-		score -= 110
+		score += 10
 	}
 
 	// --- Video codec ---
 	switch {
 	case reAV1.MatchString(title):
-		score += 15
+		score += 3
 	case reX265.MatchString(title):
-		score += 10
+		score += 2
 	case reX264.MatchString(title):
-		score += 5
+		score += 1
 	}
 
 	// --- HDR ---
 	switch {
 	case reHDR10Plus.MatchString(title):
-		score += 15
+		score += 4
 	case reHDR.MatchString(title):
-		score += 10
+		score += 2
 	}
 	if reDolbyVision.MatchString(title) {
-		score += 10
+		score += 5
 	}
 
 	// --- Audio ---
