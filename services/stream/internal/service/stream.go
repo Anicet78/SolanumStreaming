@@ -85,44 +85,27 @@ func (s *StreamService) Stream(ctx context.Context, responseWriter http.Response
 	reader := file.NewReader()
 	reader.SetReadahead(20 * 1024 * 1024)
 
+	streamCtx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 	defer reader.Close()
 	defer t.Drop()
 
 	responseWriter.Header().Set("Content-Type", "video/mp4")
 	responseWriter.Header().Set("Cache-Control", "no-cache")
-	responseWriter.Header().Del("Accept-Ranges")
 	responseWriter.WriteHeader(http.StatusOK)
 	if f, ok := responseWriter.(http.Flusher); ok {
 		f.Flush()
 	}
 
-	// log.Println("waiting for initial pieces...")
-	// for {
-	// 	stats := t.Stats()
-	// 	downloaded := stats.BytesReadUsefulData.Int64()
-	// 	log.Printf("downloaded: %d bytes", downloaded)
-	// 	if downloaded > 5*1024*1024 { // attend 5MB
-	// 		break
-	// 	}
-	// 	time.Sleep(500 * time.Millisecond)
-	// }
-	// log.Println("enough data, starting ffmpeg")
-
-	cmd := exec.CommandContext(ctx, "ffmpeg",
+	cmd := exec.CommandContext(streamCtx, "ffmpeg",
 		"-fflags", "nobuffer",
-		"-flags", "low_delay",
 		"-probesize", "10M",
 		"-analyzeduration", "0",
 		"-i", "pipe:0",
-		"-c:v", "libx264",
-		"-preset", "ultrafast",
-		"-tune", "zerolatency",
-		"-vf", "format=yuv420p",
-		"-profile:v", "high",
-		"-level", "4.1",
-		"-c:a", "aac",
-		"-b:a", "128k",
-		"-ac", "2",
+		"-map", "0:v:0",
+		"-map", "0:a:0",
+		"-c:v", "copy",
+		"-c:a", "copy",
 		"-movflags", "frag_keyframe+empty_moov",
 		"-f", "mp4",
 		"pipe:1",
@@ -132,8 +115,16 @@ func (s *StreamService) Stream(ctx context.Context, responseWriter http.Response
 	cmd.Stdout = responseWriter
 	cmd.Stderr = os.Stderr
 
+	go func() {
+		select {
+		case <-ctx.Done():
+			cancel()
+		case <-streamCtx.Done():
+		}
+	}()
+
 	if err := cmd.Run(); err != nil {
-		if ctx.Err() != nil {
+		if streamCtx.Err() != nil || ctx.Err() != nil {
 			return nil
 		}
 		log.Printf("ffmpeg error: %v", err)

@@ -6,7 +6,9 @@ import (
 
 	"github.com/Anicet78/SolanumStreaming/stream/internal/handler"
 	"github.com/Anicet78/SolanumStreaming/stream/internal/service"
+	"github.com/Anicet78/SolanumStreaming/stream/internal/store"
 	"github.com/anacrolix/torrent"
+	"github.com/anacrolix/torrent/storage"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v5"
 	"github.com/labstack/echo/v5/middleware"
@@ -21,8 +23,11 @@ func (cv *CustomValidator) Validate(i interface{}) error {
 }
 
 func main() {
+	ramProvider := store.NewProvider(store.DefaultCapacity)
+	ramStorage := storage.NewResourcePieces(ramProvider)
+
 	cfg := torrent.NewDefaultClientConfig()
-	cfg.DataDir = "./downloads"
+	cfg.DefaultStorage = ramStorage
 
 	client, err := torrent.NewClient(cfg)
 	if err != nil {

@@ -1,6 +1,5 @@
 {
 	"liveServer.settings.ignoreFiles": [
-		"downloads/**",
 		".vscode/**",
 		"**/*.scss",
 		"**/*.sass",

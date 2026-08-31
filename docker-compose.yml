@@ -124,8 +124,6 @@ services:
       - solanum-streaming
     env_file:
       - .env
-    volumes:
-      - ./downloads:/downloads
     restart: on-failure:3
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8083/health"]
