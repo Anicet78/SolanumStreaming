@@ -23,8 +23,16 @@ func (cv *CustomValidator) Validate(i interface{}) error {
 }
 
 func main() {
-	ramProvider := store.NewProvider(store.DefaultCapacity)
-	ramStorage := storage.NewResourcePieces(ramProvider)
+	ramProvider := store.NewProvider()
+
+	capacityFunc := func() (int64, bool) {
+		return 512 * 1024 * 1024, true
+	}
+	var tc storage.TorrentCapacity = &capacityFunc
+
+	ramStorage := storage.NewResourcePiecesOpts(ramProvider, storage.ResourcePiecesOpts{
+		Capacity: tc,
+	})
 
 	cfg := torrent.NewDefaultClientConfig()
 	cfg.DefaultStorage = ramStorage

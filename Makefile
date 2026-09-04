@@ -16,6 +16,9 @@ sqlc:
 test:
 	cd bruno && bru run
 
+stream:
+	cd services/stream && go run cmd/main.go
+
 deploy: # k8s
 
 up:

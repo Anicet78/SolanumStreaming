@@ -13,18 +13,14 @@ import (
 type Provider struct {
 	instances map[string]*Instance
 	dirs      map[string]map[string]struct{}
-	capacity  int64
 	size      int64
 	mu        sync.Mutex
 }
 
-const DefaultCapacity int64 = 512 * 1024 * 1024
-
-func NewProvider(capacity int64) *Provider {
+func NewProvider() *Provider {
 	return &Provider{
 		instances: make(map[string]*Instance),
 		dirs:      make(map[string]map[string]struct{}),
-		capacity:  capacity,
 	}
 }
 
