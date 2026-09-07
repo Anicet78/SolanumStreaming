@@ -22,7 +22,7 @@ func NewStreamHandler(service *service.StreamService) *StreamHandler {
 func (h *StreamHandler) RegisterRoutes(e *echo.Echo) {
 	private := e.Group("")
 	// private.Use(auth.JWTMiddleware())
-	private.GET("/", h.stream)
+	private.GET("/playlist.m3u8", h.stream)
 }
 
 func (h *StreamHandler) stream(c *echo.Context) error {
