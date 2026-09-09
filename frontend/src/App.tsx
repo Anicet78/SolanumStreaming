@@ -3,7 +3,7 @@ import Home from './Home'
 import Search from './Search'
 
 function App() {
-  return <Search/>
+  return <Home/>
 }
 
 export default App

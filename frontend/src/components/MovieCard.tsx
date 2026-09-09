@@ -1,8 +1,10 @@
-const MovieCard = () => {
+import type { MovieT } from "../api/types"
+
+const MovieCard = (movie: MovieT) => {
 	return (
 		<div class="hover-3d">
 		<figure class="max-w-100 rounded-2xl">
-		<img src="https://img.daisyui.com/images/stock/creditcard.webp" alt="3D card" />
+		<img src={movie.poster_path} alt={movie.title} />
 		</figure>
 		<div></div>
 		<div></div>

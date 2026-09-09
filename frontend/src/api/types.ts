@@ -1,11 +1,11 @@
 export interface SearchResponse {
   page: number;
-  results: Movie[];
+  results: MovieT[];
   total_pages: number;
   total_results: number;
 }
 
-export interface Movie {
+export interface MovieT {
   id: number;
   title: string;
   original_title: string;
