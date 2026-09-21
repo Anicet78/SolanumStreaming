@@ -1,7 +1,7 @@
 import { createSignal } from "solid-js";
 import Password from "./Password"
 import Username from "./Username"
-import { usersApi } from "../../api/users";
+import { usersApi } from "../../api/auth";
 import { action, useAction, useSubmission } from "@solidjs/router";
 
 

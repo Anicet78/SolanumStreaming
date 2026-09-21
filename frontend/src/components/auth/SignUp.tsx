@@ -2,7 +2,7 @@ import { createSignal } from "solid-js";
 import Password from "./Password"
 import PasswordConfirm from "./PasswordConfirm"
 import Username from "./Username"
-import { usersApi } from "../../api/users";
+import { usersApi } from "../../api/auth";
 import { action, useAction, useSubmission } from "@solidjs/router";
 
 export const signupAction = action(async (username: string, password: string) => {
