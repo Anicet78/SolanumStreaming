@@ -12,13 +12,13 @@ const Home = () => {
       <Switch>
         <Match when={view() === "login"}>
           <LogIn
-            // onSuccess={() => setIsConnected(true)}
+            onSuccess={() => setIsConnected(true)}
             onGoToSignup={() => setView("signup")}
           />
         </Match>
         <Match when={view() === "signup"}>
           <SignUp
-            // onSuccess={() => setIsConnected(true)}
+            onSuccess={() => setIsConnected(true)}
             onGoToLogin={() => setView("login")}
           />
         </Match>

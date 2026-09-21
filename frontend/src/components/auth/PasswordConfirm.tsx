@@ -1,4 +1,12 @@
-const PasswordConfirm = () => {
+import type { Component } from "solid-js";
+
+type PasswordProps = {
+  password: () => string;
+};
+
+const escapeRegex = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+const PasswordConfirm: Component<PasswordProps> = (props) => {
   return (
     <>
       <label class="input validator">
@@ -20,8 +28,8 @@ const PasswordConfirm = () => {
           type="password"
           required
           placeholder="Confirm password"
-          minlength="8"
-          pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
+          minlength="5"
+          pattern={escapeRegex(props.password())}
           title="Must be more than 8 characters, including number, lowercase letter, uppercase letter"
         />
       </label>

@@ -12,8 +12,8 @@ export interface User {
 }
 
 export const usersApi = {
-  create: (data: Credentials) => api.post<User>("/users/register", data),
-  login: (data: Credentials) => api.post<User>("/users/login", data),
-  delete: () => api.delete<void>("/users/profile"),
-  rename: (data: Omit<Credentials, "password">) => api.patch<void>("/users/profile", data),
+  create: (data: Credentials) => api.post<User>(":8081/register", data),
+  login: (data: Credentials) => api.post<User>(":8081/login", data),
+  delete: () => api.delete<void>(":8081/profile"),
+  rename: (data: Omit<Credentials, "password">) => api.patch<void>(":8081/profile", data),
 };
