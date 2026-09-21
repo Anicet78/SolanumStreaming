@@ -1,5 +1,5 @@
-import Login from './components/auth/Login.tsx';
-import Register from './components/auth/Register.tsx';
+import LogIn from './components/auth/LogIn.tsx';
+import SignUp from './components/auth/SignUp.tsx';
 import SearchBar from './components/SearchBar.tsx';
 import { createSignal, Show, Switch, Match } from "solid-js";
 
@@ -11,13 +11,13 @@ const Home = () => {
     <Show when={isConnected()} fallback={
       <Switch>
         <Match when={view() === "login"}>
-          <Login
+          <LogIn
             // onSuccess={() => setIsConnected(true)}
-            onGoToRegister={() => setView("register")}
+            onGoToSignup={() => setView("signup")}
           />
         </Match>
-        <Match when={view() === "register"}>
-          <Register
+        <Match when={view() === "signup"}>
+          <SignUp
             // onSuccess={() => setIsConnected(true)}
             onGoToLogin={() => setView("login")}
           />
