@@ -1,4 +1,4 @@
-import type { MovieT } from "../api/types"
+import type { MovieT } from "../api/movies"
 
 const MovieCard = (movie: MovieT) => {
   return (

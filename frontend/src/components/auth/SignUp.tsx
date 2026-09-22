@@ -1,4 +1,4 @@
-import { createSignal } from "solid-js";
+import { createSignal, type Component } from "solid-js";
 import Password from "./Password"
 import PasswordConfirm from "./PasswordConfirm"
 import Username from "./Username"
@@ -14,7 +14,7 @@ type SignupProps = {
   onSuccess?: (data: unknown) => void
 };
 
-const SignUp = (props: SignupProps) => {
+const SignUp: Component<SignupProps> = (props) => {
   const [username, setUsername] = createSignal("");
   const [password, setPassword] = createSignal("");
 

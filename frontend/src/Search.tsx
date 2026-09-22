@@ -21,9 +21,11 @@ const Search = () => {
   return (
     <div class="flex align-items justify-center h-screen flex-col">
       <Show when={results.loading}>
-        <For each={Array.from({ length: 30 })}>
-          {(_, i) => <div class="skeleton w-50 h-70 rounded-2xl"></div>}
-        </For>
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 bg-base-100 rounded-box shadow-md p-4">
+          <For each={Array.from({ length: 30 })}>
+            {(_, __) => <div class="skeleton w-full aspect-5/7 rounded-2xl"></div>}
+          </For>
+        </div>
       </Show>
 
       <Show when={results.error}>
@@ -36,11 +38,11 @@ const Search = () => {
       </Show>
 
       <Show when={!results.loading && !results.error}>
-        <ul class="list bg-base-100 rounded-box shadow-md">
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 bg-base-100 rounded-box shadow-md p-4">
           <For each={results()?.results}>
             {(movie) => <li><MovieCard {...movie} /></li>}
           </For>
-        </ul>
+        </div>
       </Show>
     </div>
   );
