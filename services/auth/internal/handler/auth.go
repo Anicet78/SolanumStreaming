@@ -3,6 +3,7 @@ package handler
 import (
 	"errors"
 	"log/slog"
+	"net/http"
 	"shared/auth"
 	"shared/bind"
 	"shared/response"
@@ -24,6 +25,7 @@ func (h *AuthHandler) RegisterRoutes(e *echo.Echo) {
 	public := e.Group("")
 	public.POST("/register", h.register)
 	public.POST("/login", h.login)
+	public.GET("/refresh", h.refresh)
 
 	private := e.Group("")
 	private.Use(auth.JWTMiddleware())
@@ -65,6 +67,58 @@ func (h *AuthHandler) login(c *echo.Context) error {
 		slog.Error("Log into account failed", "error", err)
 		return response.InternalServerError(c, "internal server error")
 	}
+
+	token, err := service.GenerateRefreshToken()
+	if err != nil {
+		return response.InternalServerError(c, "internal server error")
+	}
+
+	cookie := new(http.Cookie)
+	cookie.Name = "refreshToken"
+	cookie.Value = token
+	cookie.Path = "/"
+	cookie.HttpOnly = true
+	cookie.Secure = true
+	cookie.SameSite = http.SameSiteStrictMode
+	cookie.MaxAge = 7 * 24 * 60 * 60
+
+	c.SetCookie(cookie)
+
+	return response.OK(c, res)
+}
+
+func (h *AuthHandler) refresh(c *echo.Context) error {
+	req, err := bind.Body[domain.LoginUserRequest](c)
+	if err != nil {
+		return err
+	}
+
+	res, err := h.service.Login(c.Request().Context(), req.Username, req.Password)
+	if err != nil {
+		if errors.Is(err, domain.ErrUsernameDoesNotExists) {
+			return response.NotFound(c, err.Error())
+		} else if errors.Is(err, domain.ErrPasswordDoesNotMatch) {
+			return response.BadRequest(c, err.Error())
+		}
+		slog.Error("Log into account failed", "error", err)
+		return response.InternalServerError(c, "internal server error")
+	}
+
+	token, err := service.GenerateRefreshToken()
+	if err != nil {
+		return response.InternalServerError(c, "internal server error")
+	}
+
+	cookie := new(http.Cookie)
+	cookie.Name = "refreshToken"
+	cookie.Value = token
+	cookie.Path = "/"
+	cookie.HttpOnly = true
+	cookie.Secure = true
+	cookie.SameSite = http.SameSiteStrictMode
+	cookie.MaxAge = 7 * 24 * 60 * 60
+
+	c.SetCookie(cookie)
 
 	return response.OK(c, res)
 }

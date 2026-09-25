@@ -95,6 +95,14 @@ func (ns NullRoles) Value() (driver.Value, error) {
 	return string(ns.Roles), nil
 }
 
+type Refresh struct {
+	TokenID   pgtype.UUID
+	UserID    pgtype.UUID
+	TokenHash string
+	ExpiresAt pgtype.Timestamptz
+	RevokedAt pgtype.Timestamptz
+}
+
 type User struct {
 	Uuid     pgtype.UUID
 	Username string
