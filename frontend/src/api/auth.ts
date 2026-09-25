@@ -9,6 +9,7 @@ export interface User {
   uuid: string;
   name: string;
   role: string;
+  jwt: string;
 }
 
 export const usersApi = {

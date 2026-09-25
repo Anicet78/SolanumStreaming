@@ -3,6 +3,7 @@ import Password from "./Password"
 import Username from "./Username"
 import { usersApi } from "../../api/auth";
 import { action, useAction, useSubmission } from "@solidjs/router";
+import { useAuthContext } from "../../contexts/AuthContext";
 
 
 export const loginAction = action(async (username: string, password: string) => {
@@ -15,6 +16,8 @@ type LoginProps = {
 };
 
 const LogIn: Component<LoginProps> = (props) => {
+  const auth = useAuthContext();
+
   const [username, setUsername] = createSignal("");
   const [password, setPassword] = createSignal("");
 
@@ -24,6 +27,7 @@ const LogIn: Component<LoginProps> = (props) => {
   const handleSubmit = async (e: SubmitEvent) => {
     e.preventDefault();
     const user = await login(username(), password());
+    if (auth) auth.login(user);
     if (user) props.onSuccess?.(user);
   };
 

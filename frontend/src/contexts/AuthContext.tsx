@@ -1,26 +1,32 @@
-import { createContext, useContext } from "solid-js";
-import { createStore } from "solid-js/store";
+import { createContext, useContext, createEffect, createSignal } from "solid-js";
 import type { User } from "../api/auth";
 import type { ParentProps } from "solid-js";
+import { setAuthToken } from "../api/token";
 
-const AuthContext = createContext();
+interface AuthContextValue {
+  login: (user: User) => void;
+  logout: () => void;
+}
+
+const AuthContext = createContext<AuthContextValue>();
 
 export function AuthProvider(props: ParentProps) {
-  const [auth, setAuth] = createStore<{ token: string; user: User | null }>({
-    token: "",
-    user: null,
+  const [auth, setAuth] = createSignal<User | null>(null);
+
+  createEffect(() => {
+    setAuthToken(auth()?.jwt || null);
   });
 
-  const login = (token: string, user: User) => {
-    setAuth({ token, user });
+  const login = (user: User) => {
+    setAuth(user);
   };
 
   const logout = () => {
-    setAuth({ token: "", user: null });
+    setAuth(null);
   };
 
   return (
-    <AuthContext.Provider value={{ auth, login, logout }}>
+    <AuthContext.Provider value={{ login, logout }}>
       {props.children}
     </AuthContext.Provider>
   );

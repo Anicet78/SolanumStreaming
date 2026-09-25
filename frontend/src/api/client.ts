@@ -1,3 +1,5 @@
+import { getAuthToken } from "./token";
+
 const BASE_URL = import.meta.env.VITE_API_URL;
 
 class ApiError extends Error {
@@ -10,12 +12,15 @@ class ApiError extends Error {
 }
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
+  const token = getAuthToken();
+
   const res = await fetch(`${BASE_URL}${path}`, {
+    ...options,
     headers: {
       "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...options.headers,
     },
-    ...options,
   });
 
   if (!res.ok) {
