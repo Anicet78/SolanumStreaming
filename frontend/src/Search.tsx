@@ -40,7 +40,7 @@ const Search = () => {
       <Show when={!results.loading && !results.error}>
         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 bg-base-100 rounded-box shadow-md p-4">
           <For each={results()?.results}>
-            {(movie) => <li><MovieCard {...movie} /></li>}
+            {(movie) => <MovieCard {...movie} />}
           </For>
         </div>
       </Show>

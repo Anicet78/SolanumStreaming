@@ -37,6 +37,7 @@ func main() {
 
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"http://localhost:5500", "http://localhost:5173"},
+		AllowCredentials: true,
 		AllowMethods: []string{http.MethodGet, http.MethodPost},
 	}))
 	e.Use(middleware.RequestLogger())

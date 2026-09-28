@@ -50,19 +50,31 @@ func (s *AuthService) Register(c *echo.Context, username string, password string
 		return domain.CreateUserResponse{}, err
 	}
 
-	token, err = generateRefreshToken()
+	newRefreshToken, err := generateRefreshToken()
 	if err != nil {
 		return domain.CreateUserResponse{}, err
 	}
 
 	cookie := new(http.Cookie)
 	cookie.Name = "refreshToken"
-	cookie.Value = token
+	cookie.Value = newRefreshToken
 	cookie.Path = "/"
 	cookie.HttpOnly = true
 	cookie.Secure = true
 	cookie.SameSite = http.SameSiteStrictMode
 	cookie.MaxAge = 7 * 24 * 60 * 60
+
+	_, err = s.store.CreateRefreshToken(c.Request().Context(), store.CreateRefreshTokenParams{
+		UserID:    created.Uuid,
+		TokenHash: newRefreshToken,
+		ExpiresAt: pgtype.Timestamptz{
+			Time:  time.Now().UTC().Add(time.Duration(cookie.MaxAge)),
+			Valid: true,
+		},
+	})
+	if err != nil {
+		return domain.CreateUserResponse{}, err
+	}
 
 	c.SetCookie(cookie)
 
@@ -92,19 +104,31 @@ func (s *AuthService) Login(c *echo.Context, username string, password string) (
 		return domain.LoginUserResponse{}, err
 	}
 
-	token, err = generateRefreshToken()
+	newRefreshToken, err := generateRefreshToken()
 	if err != nil {
 		return domain.LoginUserResponse{}, err
 	}
 
 	cookie := new(http.Cookie)
 	cookie.Name = "refreshToken"
-	cookie.Value = token
+	cookie.Value = newRefreshToken
 	cookie.Path = "/"
 	cookie.HttpOnly = true
 	cookie.Secure = true
 	cookie.SameSite = http.SameSiteStrictMode
 	cookie.MaxAge = 7 * 24 * 60 * 60
+
+	_, err = s.store.CreateRefreshToken(c.Request().Context(), store.CreateRefreshTokenParams{
+		UserID:    found.Uuid,
+		TokenHash: newRefreshToken,
+		ExpiresAt: pgtype.Timestamptz{
+			Time:  time.Now().UTC().Add(time.Duration(cookie.MaxAge)),
+			Valid: true,
+		},
+	})
+	if err != nil {
+		return domain.LoginUserResponse{}, err
+	}
 
 	c.SetCookie(cookie)
 
@@ -122,7 +146,7 @@ func (s *AuthService) Refresh(c *echo.Context, refreshTokenCookie *http.Cookie) 
 		return domain.RefreshResponse{}, domain.ErrRefreshTokenNotFound
 	}
 
-	if found.RevokedAt.Valid || found.ExpiresAt.Time.After(time.Now()) {
+	if found.RevokedAt.Valid || found.ExpiresAt.Time.UTC().After(time.Now()) {
 		return domain.RefreshResponse{}, domain.ErrRefreshTokenExpired
 	}
 
@@ -151,20 +175,24 @@ func (s *AuthService) Refresh(c *echo.Context, refreshTokenCookie *http.Cookie) 
 	cookie.SameSite = http.SameSiteStrictMode
 	cookie.MaxAge = 7 * 24 * 60 * 60
 
-	_, err = s.store.CreateRefreshToken(c.Request().Context(), store.CreateRefreshTokenParams{
-		UserID:    found.UserID,
-		TokenHash: newRefreshToken,
-	})
-	if err != nil {
-		return domain.RefreshResponse{}, err
-	}
-
 	user, err := s.store.GetUserByUUID(c.Request().Context(), found.UserID)
 	if err != nil {
 		return domain.RefreshResponse{}, err
 	}
 
 	token, err := auth.GenerateToken(user.Uuid.String(), string(user.Role))
+	if err != nil {
+		return domain.RefreshResponse{}, err
+	}
+
+	_, err = s.store.CreateRefreshToken(c.Request().Context(), store.CreateRefreshTokenParams{
+		UserID:    found.UserID,
+		TokenHash: newRefreshToken,
+		ExpiresAt: pgtype.Timestamptz{
+			Time:  time.Now().UTC().Add(time.Duration(cookie.MaxAge)),
+			Valid: true,
+		},
+	})
 	if err != nil {
 		return domain.RefreshResponse{}, err
 	}

@@ -28,7 +28,6 @@ const LogIn: Component<LoginProps> = (props) => {
     e.preventDefault();
     const user = await login(username(), password());
     if (auth) auth.login(user);
-    if (user) props.onSuccess?.(user);
   };
 
   return (

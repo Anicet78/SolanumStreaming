@@ -16,6 +16,7 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 
   const res = await fetch(`${BASE_URL}${path}`, {
     ...options,
+    "credentials": 'include',
     headers: {
       "Content-Type": "application/json",
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -28,7 +29,11 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     throw new ApiError(res.status, body?.message ?? res.statusText);
   }
 
-  return res.json();
+  const text = await res.text();
+  if (!text) return undefined as T;
+
+  const body = JSON.parse(text);
+  return body.data as T;
 }
 
 export const api = {

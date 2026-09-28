@@ -6,11 +6,9 @@ import { AuthProvider } from './contexts/AuthContext'
 
 function App() {
   return (
-  <Router>
-    <AuthProvider>
-      <Route path="/" component={Home} />
-      <Route path="/search" component={Search} />
-    </AuthProvider>
+  <Router root={(props) => <AuthProvider>{props.children}</AuthProvider>}>
+    <Route path="/" component={Home} />
+    <Route path="/search" component={Search} />
   </Router>
 )}
 
