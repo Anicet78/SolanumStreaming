@@ -7,8 +7,7 @@ import { action, useAction, useSubmission } from "@solidjs/router";
 import { useAuthContext } from "../../contexts/AuthContext";
 
 export const signupAction = action(async (username: string, password: string) => {
-  const res = await usersApi.login({ username, password });
-  return res;
+  return usersApi.create({ username, password });
 });
 
 type SignupProps = {

@@ -27,7 +27,7 @@ func (s *MovieService) Search(ctx context.Context, params domain.SearchRequestQu
 	var result tmdb.SearchResponse
 	res, err := tmdb.New().
 		SetQueryParam("query", params.Title).
-		SetQueryParam("include_adult", "true").
+		SetQueryParam("include_adult", "false").
 		SetQueryParam("page", strconv.Itoa(params.Page)).
 		SetResult(&result).
 		Get("/search/movie")
