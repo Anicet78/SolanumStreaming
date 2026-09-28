@@ -15,7 +15,7 @@ func passwordMatch(rawPassword string, hashedPassword string) (match bool, err e
 	return argon2id.ComparePasswordAndHash(rawPassword, hashedPassword)
 }
 
-func GenerateRefreshToken() (string, error) {
+func generateRefreshToken() (string, error) {
 	bytes := make([]byte, 40)
 	if _, err := rand.Read(bytes); err != nil {
 		return "", err

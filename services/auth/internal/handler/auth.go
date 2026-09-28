@@ -3,7 +3,6 @@ package handler
 import (
 	"errors"
 	"log/slog"
-	"net/http"
 	"shared/auth"
 	"shared/bind"
 	"shared/response"
@@ -39,7 +38,7 @@ func (h *AuthHandler) register(c *echo.Context) error {
 		return err
 	}
 
-	res, err := h.service.Register(c.Request().Context(), req.Username, req.Password)
+	res, err := h.service.Register(c, req.Username, req.Password)
 	if err != nil {
 		if errors.Is(err, domain.ErrUsernameAlreadyExists) {
 			return response.Conflict(c, err.Error())
@@ -57,7 +56,7 @@ func (h *AuthHandler) login(c *echo.Context) error {
 		return err
 	}
 
-	res, err := h.service.Login(c.Request().Context(), req.Username, req.Password)
+	res, err := h.service.Login(c, req.Username, req.Password)
 	if err != nil {
 		if errors.Is(err, domain.ErrUsernameDoesNotExists) {
 			return response.NotFound(c, err.Error())
@@ -67,58 +66,26 @@ func (h *AuthHandler) login(c *echo.Context) error {
 		slog.Error("Log into account failed", "error", err)
 		return response.InternalServerError(c, "internal server error")
 	}
-
-	token, err := service.GenerateRefreshToken()
-	if err != nil {
-		return response.InternalServerError(c, "internal server error")
-	}
-
-	cookie := new(http.Cookie)
-	cookie.Name = "refreshToken"
-	cookie.Value = token
-	cookie.Path = "/"
-	cookie.HttpOnly = true
-	cookie.Secure = true
-	cookie.SameSite = http.SameSiteStrictMode
-	cookie.MaxAge = 7 * 24 * 60 * 60
-
-	c.SetCookie(cookie)
 
 	return response.OK(c, res)
 }
 
 func (h *AuthHandler) refresh(c *echo.Context) error {
-	req, err := bind.Body[domain.LoginUserRequest](c)
+	cookie, err := c.Cookie("refreshToken")
 	if err != nil {
-		return err
+		return response.Unauthorized(c, "no refresh token")
 	}
 
-	res, err := h.service.Login(c.Request().Context(), req.Username, req.Password)
+	res, err := h.service.Refresh(c, cookie)
 	if err != nil {
-		if errors.Is(err, domain.ErrUsernameDoesNotExists) {
+		if errors.Is(err, domain.ErrRefreshTokenNotFound) {
 			return response.NotFound(c, err.Error())
-		} else if errors.Is(err, domain.ErrPasswordDoesNotMatch) {
-			return response.BadRequest(c, err.Error())
+		} else if errors.Is(err, domain.ErrRefreshTokenExpired) {
+			return response.Unauthorized(c, err.Error())
 		}
-		slog.Error("Log into account failed", "error", err)
+		slog.Error("Token refresh failed", "error", err)
 		return response.InternalServerError(c, "internal server error")
 	}
-
-	token, err := service.GenerateRefreshToken()
-	if err != nil {
-		return response.InternalServerError(c, "internal server error")
-	}
-
-	cookie := new(http.Cookie)
-	cookie.Name = "refreshToken"
-	cookie.Value = token
-	cookie.Path = "/"
-	cookie.HttpOnly = true
-	cookie.Secure = true
-	cookie.SameSite = http.SameSiteStrictMode
-	cookie.MaxAge = 7 * 24 * 60 * 60
-
-	c.SetCookie(cookie)
 
 	return response.OK(c, res)
 }

@@ -26,6 +26,12 @@ type LoginUserResponse struct {
 	JWT      string `json:"jwt"`
 }
 
+type RefreshResponse struct {
+	UUID     string `json:"uuid"`
+	Username string `json:"username"`
+	Role     string `json:"role"`
+	JWT      string `json:"jwt"`
+}
 type PatchProfileRequest struct {
 	NewUsername string `json:"new_username"`
 }
@@ -33,3 +39,5 @@ type PatchProfileRequest struct {
 var ErrUsernameAlreadyExists = errors.New("Username already exists")
 var ErrUsernameDoesNotExists = errors.New("Username doesn't exists")
 var ErrPasswordDoesNotMatch = errors.New("Incorrect password")
+var ErrRefreshTokenNotFound = errors.New("Refresh token not found")
+var ErrRefreshTokenExpired = errors.New("Refresh token expired")
