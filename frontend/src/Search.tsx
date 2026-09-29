@@ -1,7 +1,8 @@
 import { createResource, For, Show } from "solid-js"
 import MovieCard from "./components/MovieCard"
 import { moviesApi } from "./api/movies"
-import { useSearchParams } from "@solidjs/router";
+import { A, useNavigate, useSearchParams } from "@solidjs/router";
+import SearchBar from "./components/SearchBar";
 
 function toSingleString(v: string | string[] | undefined): string | undefined {
   return Array.isArray(v) ? v[0] : v;
@@ -9,6 +10,7 @@ function toSingleString(v: string | string[] | undefined): string | undefined {
 
 const Search = () => {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
 
   const [results] = createResource(
     () => ({
@@ -19,30 +21,40 @@ const Search = () => {
   );
 
   return (
-    <div class="min-h-screen flex flex-col items-center p-4">
-      <Show when={results.loading}>
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 bg-base-100 rounded-box shadow-md p-4">
-          <For each={Array.from({ length: 30 })}>
-            {() => <div class="skeleton max-w-100 w-full aspect-5/7 rounded-2xl"></div>}
-          </For>
-        </div>
-      </Show>
+    <>
+      <div class="min-h-screen flex flex-col items-center p-4">
+        <Show when={results.loading}>
+          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 bg-base-100 rounded-box shadow-md p-4">
+            <For each={Array.from({ length: 30 })}>
+              {() => <div class="skeleton max-w-100 w-full aspect-5/7 rounded-2xl"></div>}
+            </For>
+          </div>
+        </Show>
 
-      <Show when={results.error}>
-        <div class="flex flex-1 flex-col items-center justify-center">
-          <span class="text-2xl">Cannot load your search</span>
-          <span class="text-xl text-gray-300">{results.error?.message}</span>
+        <div class="flex flex-col m-4 items-center justify-center">
+          <SearchBar/>
         </div>
-      </Show>
 
-      <Show when={!results.loading && !results.error}>
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 bg-base-100 rounded-box shadow-md p-4">
-          <For each={results()?.results}>
-            {(movie) => <MovieCard {...movie} />}
-          </For>
-        </div>
-      </Show>
-    </div>
+        <Show when={results.error}>
+          <div class="flex flex-1 flex-col items-center justify-center">
+            <span class="text-2xl">Cannot load your search</span>
+            <span class="text-xl text-gray-300">{results.error?.message}</span>
+          </div>
+        </Show>
+
+        <Show when={!results.loading && !results.error}>
+          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 bg-base-100 rounded-box shadow-md p-4">
+            <For each={results()?.results}>
+              {(movie) =>
+                <A href={`/${encodeURIComponent(movie.title)}-${movie.id}`}>
+                  <MovieCard {...movie} />
+                </A>
+              }
+            </For>
+          </div>
+        </Show>
+      </div>
+    </>
   );
 };
 

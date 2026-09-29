@@ -53,7 +53,7 @@ func (s *MovieService) GetCollection(ctx context.Context, userId pgtype.UUID) ([
 			MovieID:     int(u.MovieID),
 			TorrentLink: u.TorrentLink,
 			Length:      int(u.Length),
-			Progression: u.Progression,
+			Progression: u.Progression.Microseconds / 1000,
 		})
 	}
 
@@ -73,7 +73,7 @@ func (s *MovieService) GetInCollection(ctx context.Context, userId pgtype.UUID, 
 		MovieID:     int(movie.MovieID),
 		TorrentLink: movie.TorrentLink,
 		Length:      int(movie.Length),
-		Progression: movie.Progression,
+		Progression: movie.Progression.Microseconds / 1000,
 	}, nil
 }
 
@@ -148,7 +148,7 @@ func (s *MovieService) AddToCollection(ctx context.Context, userId pgtype.UUID, 
 		MovieID:     int(movie.MovieID),
 		TorrentLink: movie.TorrentLink,
 		Length:      int(movie.Length),
-		Progression: movie.Progression,
+		Progression: movie.Progression.Microseconds / 1000,
 	}, err
 }
 

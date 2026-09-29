@@ -20,6 +20,13 @@ export interface MovieT {
   runtime: number;
 }
 
+export interface CollectionMovie {
+  movie_id: number,
+  torrent_link: string
+  length: number
+  progression: number
+}
+
 export const moviesApi = {
   search: (filters: { title?: string; page?: number }) => {
     const params = new URLSearchParams();
@@ -28,4 +35,8 @@ export const moviesApi = {
 
     return api.get<SearchResponse>(`:8082/search?${params.toString()}`);
   },
+  getCollection: () => api.get<CollectionMovie[]>(":8082/collection"),
+  getInCollection: (movieId: number) => api.get<CollectionMovie>(`:8082/collection/${movieId}`),
+  addToCollection: (data: { movie_id: number }) => api.post<CollectionMovie>(`:8082/collection`, data),
+  removeFromCollection: (movieId: number) => api.delete<void>(`:8082/collection/${movieId}`),
 };
