@@ -10,7 +10,6 @@ function toSingleString(v: string | string[] | undefined): string | undefined {
 
 const Search = () => {
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
 
   const [results] = createResource(
     () => ({

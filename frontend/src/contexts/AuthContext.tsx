@@ -1,4 +1,4 @@
-import { createContext, useContext, createEffect, createSignal, createResource, Switch, Match } from "solid-js";
+import { createContext, useContext, createSignal, createResource, Switch, Match, createComputed } from "solid-js";
 import { usersApi, type User } from "../api/auth";
 import type { Accessor, ParentProps } from "solid-js";
 import { setAuthToken } from "../api/token";
@@ -27,7 +27,7 @@ export function AuthProvider(props: ParentProps) {
     }
   });
 
-  createEffect(() => {
+  createComputed(() => {
     setAuthToken(user()?.jwt || null);
   });
 
