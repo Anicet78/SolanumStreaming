@@ -46,6 +46,23 @@ func (s *MovieService) Search(ctx context.Context, params domain.SearchRequestQu
 	return result, nil
 }
 
+func (s *MovieService) GetMovieInfos(ctx context.Context, userId pgtype.UUID, movieId int, lang string) (tmdb.Movie, error) {
+	var result tmdb.Movie
+	res, err := tmdb.New().
+		SetQueryParam("language", lang).
+		SetResult(&result).
+		Get("/movie/" + strconv.Itoa(movieId))
+	if err != nil {
+		return tmdb.Movie{}, err
+	} else if res.IsSuccess() == false {
+		fmt.Printf("TMDB failed: status=%d url=%s body=%s",
+			res.StatusCode(), res.Request.URL, res.String())
+		return tmdb.Movie{}, domain.ErrTMDBRequestFailed
+	}
+
+	return result, nil
+}
+
 func (s *MovieService) GetCollection(ctx context.Context, userId pgtype.UUID) ([]domain.CollectionMovie, error) {
 	movies, err := s.store.GetAllMoviesInCollection(ctx, userId)
 	if err != nil {

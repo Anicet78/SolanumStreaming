@@ -13,10 +13,9 @@ export const removeFromCollectionAction = action(async (movie_id: number) => {
 const Movie = () => {
   const params = useParams()
 
-  if (!params.title)
+  if (!params.movie_id)
     return <span>Not Found</span>
-
-  const id: number = Number(params.title)
+  const id: number = Number(params.movie_id)
 
   const [movieInCollection] = createResource(() => id, moviesApi.getInCollection);
 

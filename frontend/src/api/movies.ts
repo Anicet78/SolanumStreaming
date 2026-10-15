@@ -35,6 +35,7 @@ export const moviesApi = {
 
     return api.get<SearchResponse>(`:8082/search?${params.toString()}`);
   },
+  getMovieInfos: (movieId: number) => api.get<MovieT>(`:8082/${movieId}`),
   getCollection: () => api.get<CollectionMovieT[]>(":8082/collection"),
   getInCollection: (movieId: number) => api.get<CollectionMovieT>(`:8082/collection/${movieId}`),
   addToCollection: (data: { movie_id: number }) => api.post<CollectionMovieT>(`:8082/collection`, data),

@@ -6,6 +6,7 @@ import { AuthProvider } from './contexts/AuthContext'
 import Movie from './Movie'
 import Layout from './components/Layout'
 import Collection from './Collection'
+import CollectionMovie from './components/CollectionMovie'
 
 function App() {
   return (
@@ -21,7 +22,8 @@ function App() {
       <Route path="/" component={Home} />
       <Route path="/search" component={Search} />
       <Route path="/collection" component={Collection} />
-      <Route path="/:title" component={Movie} />
+      <Route path="/collection/:movie_id" component={CollectionMovie} />
+      <Route path="/:movie_id" component={Movie} />
     </Router>
   );
 }
