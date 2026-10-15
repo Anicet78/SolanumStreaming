@@ -1,7 +1,7 @@
 import { createResource, For, Show } from "solid-js"
 import MovieCard from "./components/MovieCard"
 import { moviesApi } from "./api/movies"
-import { A, useNavigate, useSearchParams } from "@solidjs/router";
+import { A, useSearchParams } from "@solidjs/router";
 import SearchBar from "./components/SearchBar";
 
 function toSingleString(v: string | string[] | undefined): string | undefined {
