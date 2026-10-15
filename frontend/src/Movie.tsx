@@ -1,6 +1,6 @@
 import { action, useAction, useParams, useSubmission } from "@solidjs/router";
 import { moviesApi } from "./api/movies";
-import { createResource, Show } from "solid-js";
+import { createEffect, createResource, createSignal, Match, Show, Switch } from "solid-js";
 
 export const addToCollectionAction = action(async (movie_id: number) => {
   return moviesApi.addToCollection({ movie_id });
@@ -11,7 +11,7 @@ export const removeFromCollectionAction = action(async (movie_id: number) => {
 });
 
 const Movie = () => {
-  const params = useParams();
+  const params = useParams()
 
   if (!params.title)
     return <span>Not Found</span>
@@ -22,6 +22,13 @@ const Movie = () => {
 
   const [movieInCollection] = createResource(() => id, moviesApi.getInCollection);
 
+  const [inCollection, setInCollection] = createSignal(false);
+
+  createEffect(() => {
+    if (movieInCollection.state === "ready") setInCollection(true);
+    else if (movieInCollection.state === "errored") setInCollection(false);
+  });
+
   const addToCollection = useAction(addToCollectionAction);
   const addSubmission = useSubmission(addToCollectionAction);
 
@@ -30,25 +37,29 @@ const Movie = () => {
 
   const handleAddToCollection = async () => {
     await addToCollection(id);
+    if (!addSubmission.error) setInCollection(true)
   };
 
   const handleRemoveFromCollection = async () => {
     await removeFromCollection(id);
+    if (!removeSubmission.error) setInCollection(false)
   };
 
   return (
     <main class="flex flex-col justify-center items-center">
       <h1 class="mt-10">{decodeURIComponent(title)}</h1>
       <h1 class="m-2 mb-10">{id}</h1>
-      <Show when={movieInCollection.loading || addSubmission.pending || removeSubmission.pending}>
-        <button class="btn btn-soft btn-primary btn-wide"><span class="loading loading-spinner loading-sm"></span></button>
-      </Show>
-      <Show when={movieInCollection.error }>
-        <button class="btn btn-soft btn-primary btn-wide" onClick={handleAddToCollection}>Add to collection</button>
-      </Show>
-      <Show when={!movieInCollection.loading && !movieInCollection.error}>
-        <button class="btn btn-soft btn-primary btn-wide" onClick={handleRemoveFromCollection}>Remove from collection</button>
-      </Show>
+      <Switch fallback={<p>An error has occured</p>}>
+        <Match when={movieInCollection.loading || addSubmission.pending || removeSubmission.pending}>
+          <button class="btn btn-soft btn-primary btn-wide"><span class="loading loading-spinner loading-sm"></span></button>
+        </Match>
+        <Match when={inCollection()}>
+          <button class="btn btn-soft btn-primary btn-wide" onClick={handleRemoveFromCollection}>Remove from collection</button>
+        </Match>
+        <Match when={!inCollection()}>
+          <button class="btn btn-soft btn-primary btn-wide" onClick={handleAddToCollection}>Add to collection</button>
+        </Match>
+      </Switch>
     </main>
   );
 }
