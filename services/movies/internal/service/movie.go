@@ -7,6 +7,7 @@ import (
 	"log"
 	"shared/jackett"
 	"shared/tmdb"
+	"slices"
 	"strconv"
 
 	"github.com/Anicet78/SolanumStreaming/movies/internal/domain"
@@ -26,6 +27,7 @@ func NewMovieService(store *store.Queries) *MovieService {
 func (s *MovieService) Search(ctx context.Context, params domain.SearchRequestQuery) (tmdb.SearchResponse, error) {
 	var result tmdb.SearchResponse
 	res, err := tmdb.New().
+		SetQueryParam("language", "fr-FR").
 		SetQueryParam("query", params.Title).
 		SetQueryParam("include_adult", "false").
 		SetQueryParam("page", strconv.Itoa(params.Page)).
@@ -36,6 +38,10 @@ func (s *MovieService) Search(ctx context.Context, params domain.SearchRequestQu
 	} else if res.IsSuccess() == false {
 		return tmdb.SearchResponse{}, domain.ErrTMDBRequestFailed
 	}
+
+	result.Results = slices.DeleteFunc(result.Results, func(m tmdb.Movie) bool {
+		return m.PosterPath == ""
+	})
 
 	return result, nil
 }
