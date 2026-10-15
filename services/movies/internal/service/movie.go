@@ -24,10 +24,10 @@ func NewMovieService(store *store.Queries) *MovieService {
 	return &MovieService{store: store}
 }
 
-func (s *MovieService) Search(ctx context.Context, params domain.SearchRequestQuery) (tmdb.SearchResponse, error) {
+func (s *MovieService) Search(ctx context.Context, params domain.SearchRequestQuery, lang string) (tmdb.SearchResponse, error) {
 	var result tmdb.SearchResponse
 	res, err := tmdb.New().
-		SetQueryParam("language", "fr-FR").
+		SetQueryParam("language", lang).
 		SetQueryParam("query", params.Title).
 		SetQueryParam("include_adult", "false").
 		SetQueryParam("page", strconv.Itoa(params.Page)).

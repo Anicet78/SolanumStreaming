@@ -36,7 +36,15 @@ func (h *MovieHandler) search(c *echo.Context) error {
 		return err
 	}
 
-	res, err := h.service.Search(c.Request().Context(), params)
+	var lang string
+	cookie, err := c.Cookie("lang")
+	if err == nil {
+		lang = cookie.Value
+	} else {
+		lang = "fr-FR"
+	}
+
+	res, err := h.service.Search(c.Request().Context(), params, lang)
 	if err != nil {
 		slog.Error("Search failed", "error", err)
 		return response.InternalServerError(c, "internal server error")

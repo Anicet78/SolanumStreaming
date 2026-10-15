@@ -5,10 +5,13 @@ export interface Credentials {
   password: string;
 }
 
+export type Languages = "fr-FR" | "en-US"
+
 export interface User {
   uuid: string;
   name: string;
   role: string;
+  language: Languages;
   jwt: string;
 }
 
