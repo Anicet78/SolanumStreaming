@@ -45,7 +45,7 @@ const Search = () => {
           <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 bg-base-100 rounded-box shadow-md p-4">
             <For each={results()?.results}>
               {(movie) =>
-                <A href={`/${encodeURIComponent(movie.title)}-${movie.id}`}>
+                <A href={`/${movie.id}`}>
                   <MovieCard {...movie} />
                 </A>
               }

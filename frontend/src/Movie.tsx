@@ -1,6 +1,6 @@
 import { action, useAction, useParams, useSubmission } from "@solidjs/router";
 import { moviesApi } from "./api/movies";
-import { createEffect, createResource, createSignal, Match, Show, Switch } from "solid-js";
+import { createEffect, createResource, createSignal, Match, Switch } from "solid-js";
 
 export const addToCollectionAction = action(async (movie_id: number) => {
   return moviesApi.addToCollection({ movie_id });
@@ -16,9 +16,7 @@ const Movie = () => {
   if (!params.title)
     return <span>Not Found</span>
 
-  const sep: number = params.title.lastIndexOf("-")
-  const title: string = params.title.substring(0, sep)
-  const id: number = Number(params.title.substring(sep + 1))
+  const id: number = Number(params.title)
 
   const [movieInCollection] = createResource(() => id, moviesApi.getInCollection);
 
@@ -47,7 +45,6 @@ const Movie = () => {
 
   return (
     <main class="flex flex-col justify-center items-center">
-      <h1 class="mt-10">{decodeURIComponent(title)}</h1>
       <h1 class="m-2 mb-10">{id}</h1>
       <Switch fallback={<p>An error has occured</p>}>
         <Match when={movieInCollection.loading || addSubmission.pending || removeSubmission.pending}>
