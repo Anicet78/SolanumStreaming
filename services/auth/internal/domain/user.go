@@ -1,6 +1,10 @@
 package domain
 
-import "errors"
+import (
+	"errors"
+
+	"github.com/Anicet78/SolanumStreaming/auth/internal/store"
+)
 
 type CreateUserRequest struct {
 	Username string `json:"username" validate:"required"`
@@ -8,10 +12,11 @@ type CreateUserRequest struct {
 }
 
 type CreateUserResponse struct {
-	UUID     string `json:"uuid"`
-	Username string `json:"username"`
-	Role     string `json:"role"`
-	JWT      string `json:"jwt"`
+	UUID     string          `json:"uuid"`
+	Username string          `json:"username"`
+	Role     string          `json:"role"`
+	Language store.Languages `json:"lang"`
+	JWT      string          `json:"jwt"`
 }
 
 type LoginUserRequest struct {
@@ -20,20 +25,23 @@ type LoginUserRequest struct {
 }
 
 type LoginUserResponse struct {
-	UUID     string `json:"uuid"`
-	Username string `json:"username"`
-	Role     string `json:"role"`
-	JWT      string `json:"jwt"`
+	UUID     string          `json:"uuid"`
+	Username string          `json:"username"`
+	Role     string          `json:"role"`
+	Language store.Languages `json:"lang"`
+	JWT      string          `json:"jwt"`
 }
 
 type RefreshResponse struct {
-	UUID     string `json:"uuid"`
-	Username string `json:"username"`
-	Role     string `json:"role"`
-	JWT      string `json:"jwt"`
+	UUID     string          `json:"uuid"`
+	Username string          `json:"username"`
+	Role     string          `json:"role"`
+	Language store.Languages `json:"lang"`
+	JWT      string          `json:"jwt"`
 }
 type PatchProfileRequest struct {
-	NewUsername string `json:"new_username"`
+	NewUsername string          `json:"new_username"`
+	NewLanguage store.Languages `json:"new_language"`
 }
 
 var ErrUsernameAlreadyExists = errors.New("Username already exists")

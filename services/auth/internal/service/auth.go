@@ -50,38 +50,15 @@ func (s *AuthService) Register(c *echo.Context, username string, password string
 		return domain.CreateUserResponse{}, err
 	}
 
-	newRefreshToken, err := generateRefreshToken()
-	if err != nil {
+	if AddNewRefreshTokenCookie(c, s.store, created.Uuid) != nil {
 		return domain.CreateUserResponse{}, err
 	}
-
-	cookie := new(http.Cookie)
-	cookie.Name = "refreshToken"
-	cookie.Value = newRefreshToken
-	cookie.Path = "/"
-	cookie.HttpOnly = true
-	cookie.Secure = true
-	cookie.SameSite = http.SameSiteStrictMode
-	cookie.MaxAge = 7 * 24 * 60 * 60
-
-	_, err = s.store.CreateRefreshToken(c.Request().Context(), store.CreateRefreshTokenParams{
-		UserID:    created.Uuid,
-		TokenHash: newRefreshToken,
-		ExpiresAt: pgtype.Timestamptz{
-			Time:  time.Now().UTC().Add(time.Duration(cookie.MaxAge)),
-			Valid: true,
-		},
-	})
-	if err != nil {
-		return domain.CreateUserResponse{}, err
-	}
-
-	c.SetCookie(cookie)
 
 	return domain.CreateUserResponse{
 		UUID:     created.Uuid.String(),
 		Username: created.Username,
 		Role:     string(created.Role),
+		Language: created.Language,
 		JWT:      token,
 	}, nil
 }
@@ -104,38 +81,15 @@ func (s *AuthService) Login(c *echo.Context, username string, password string) (
 		return domain.LoginUserResponse{}, err
 	}
 
-	newRefreshToken, err := generateRefreshToken()
-	if err != nil {
+	if AddNewRefreshTokenCookie(c, s.store, found.Uuid) != nil {
 		return domain.LoginUserResponse{}, err
 	}
-
-	cookie := new(http.Cookie)
-	cookie.Name = "refreshToken"
-	cookie.Value = newRefreshToken
-	cookie.Path = "/"
-	cookie.HttpOnly = true
-	cookie.Secure = true
-	cookie.SameSite = http.SameSiteStrictMode
-	cookie.MaxAge = 7 * 24 * 60 * 60
-
-	_, err = s.store.CreateRefreshToken(c.Request().Context(), store.CreateRefreshTokenParams{
-		UserID:    found.Uuid,
-		TokenHash: newRefreshToken,
-		ExpiresAt: pgtype.Timestamptz{
-			Time:  time.Now().UTC().Add(time.Duration(cookie.MaxAge)),
-			Valid: true,
-		},
-	})
-	if err != nil {
-		return domain.LoginUserResponse{}, err
-	}
-
-	c.SetCookie(cookie)
 
 	return domain.LoginUserResponse{
 		UUID:     found.Uuid.String(),
 		Username: found.Username,
 		Role:     string(found.Role),
+		Language: found.Language,
 		JWT:      token,
 	}, nil
 }
@@ -161,20 +115,6 @@ func (s *AuthService) Refresh(c *echo.Context, refreshTokenCookie *http.Cookie) 
 		return domain.RefreshResponse{}, err
 	}
 
-	newRefreshToken, err := generateRefreshToken()
-	if err != nil {
-		return domain.RefreshResponse{}, err
-	}
-
-	cookie := new(http.Cookie)
-	cookie.Name = "refreshToken"
-	cookie.Value = newRefreshToken
-	cookie.Path = "/"
-	cookie.HttpOnly = true
-	cookie.Secure = true
-	cookie.SameSite = http.SameSiteStrictMode
-	cookie.MaxAge = 7 * 24 * 60 * 60
-
 	user, err := s.store.GetUserByUUID(c.Request().Context(), found.UserID)
 	if err != nil {
 		return domain.RefreshResponse{}, err
@@ -185,24 +125,15 @@ func (s *AuthService) Refresh(c *echo.Context, refreshTokenCookie *http.Cookie) 
 		return domain.RefreshResponse{}, err
 	}
 
-	_, err = s.store.CreateRefreshToken(c.Request().Context(), store.CreateRefreshTokenParams{
-		UserID:    found.UserID,
-		TokenHash: newRefreshToken,
-		ExpiresAt: pgtype.Timestamptz{
-			Time:  time.Now().UTC().Add(time.Duration(cookie.MaxAge)),
-			Valid: true,
-		},
-	})
-	if err != nil {
+	if AddNewRefreshTokenCookie(c, s.store, user.Uuid) != nil {
 		return domain.RefreshResponse{}, err
 	}
-
-	c.SetCookie(cookie)
 
 	return domain.RefreshResponse{
 		UUID:     user.Uuid.String(),
 		Username: user.Username,
 		Role:     string(user.Role),
+		Language: user.Language,
 		JWT:      token,
 	}, nil
 }
@@ -218,20 +149,22 @@ func (s *AuthService) Delete(ctx context.Context, uuid pgtype.UUID) error {
 	return err
 }
 
-func (s *AuthService) PatchProfile(ctx context.Context, uuid pgtype.UUID, newUsername string) error {
+func (s *AuthService) PatchProfile(ctx context.Context, uuid pgtype.UUID, newData domain.PatchProfileRequest) error {
 	found, err := s.store.GetUserByUUID(ctx, uuid)
 	if err != nil {
 		return domain.ErrUsernameDoesNotExists
 	}
 
-	_, err = s.store.GetUserByUsername(ctx, newUsername)
-	if err == nil {
-		return domain.ErrUsernameAlreadyExists
+	if newData.NewUsername != found.Username {
+		_, err = s.store.GetUserByUsername(ctx, newData.NewUsername)
+		if err == nil {
+			return domain.ErrUsernameAlreadyExists
+		}
 	}
 
 	_, err = s.store.UpdateUser(ctx, store.UpdateUserParams{
 		Uuid:     uuid,
-		Username: newUsername,
+		Username: newData.NewUsername,
 		Password: found.Password,
 		Role:     found.Role,
 		Language: found.Language,

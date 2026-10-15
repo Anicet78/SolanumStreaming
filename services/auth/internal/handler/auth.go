@@ -47,6 +47,8 @@ func (h *AuthHandler) register(c *echo.Context) error {
 		return response.InternalServerError(c, "internal server error")
 	}
 
+	service.AddLangCookie(c, res.Language)
+
 	return response.Created(c, res)
 }
 
@@ -67,6 +69,8 @@ func (h *AuthHandler) login(c *echo.Context) error {
 		return response.InternalServerError(c, "internal server error")
 	}
 
+	service.AddLangCookie(c, res.Language)
+
 	return response.OK(c, res)
 }
 
@@ -86,6 +90,8 @@ func (h *AuthHandler) refresh(c *echo.Context) error {
 		slog.Error("Token refresh failed", "error", err)
 		return response.InternalServerError(c, "internal server error")
 	}
+
+	service.AddLangCookie(c, res.Language)
 
 	return response.OK(c, res)
 }
@@ -118,7 +124,7 @@ func (h *AuthHandler) patchProfile(c *echo.Context) error {
 		return response.InternalServerError(c, "internal server error")
 	}
 
-	err = h.service.PatchProfile(c.Request().Context(), uuid, req.NewUsername)
+	err = h.service.PatchProfile(c.Request().Context(), uuid, req)
 	if err != nil {
 		if errors.Is(err, domain.ErrUsernameDoesNotExists) {
 			return response.NotFound(c, err.Error())
@@ -128,6 +134,8 @@ func (h *AuthHandler) patchProfile(c *echo.Context) error {
 		slog.Error("Cannot update profile", "error", err)
 		return response.InternalServerError(c, "internal server error")
 	}
+
+	service.AddLangCookie(c, req.NewLanguage)
 
 	return response.NoContent(c)
 }
