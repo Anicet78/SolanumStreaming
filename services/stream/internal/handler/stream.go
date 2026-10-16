@@ -22,19 +22,22 @@ func NewStreamHandler(service *service.StreamService) *StreamHandler {
 func (h *StreamHandler) RegisterRoutes(e *echo.Echo) {
 	private := e.Group("")
 	// private.Use(auth.JWTMiddleware())
-	private.GET("/playlist.m3u8", h.stream)
+	private.GET("/playlist.m3u8", h.serveRaw)
+	// private.GET("/:segment", h.serveFile)
 }
 
-func (h *StreamHandler) stream(c *echo.Context) error {
+func (h *StreamHandler) serveRaw(c *echo.Context) error {
 	params, err := bind.Query[domain.TorrentLinkQuery](c)
 	if err != nil {
 		return err
 	}
 
-	err = h.service.Stream(c.Request().Context(), c.Response(), params.TorrentLink)
+	err = h.service.ServeRaw(c.Response(), c.Request(), params.TorrentLink)
 	if err != nil {
 		if errors.Is(err, domain.ErrTorrentLoadingTimeout) {
 			return response.GatewayTimeout(c, err.Error())
+		} else if errors.Is(err, domain.ErrTorrentNoFile) {
+			return response.ServiceUnavailable(c, err.Error())
 		}
 		slog.Error("Torrent stream failed", "error", err)
 		return response.InternalServerError(c, "internal server error")

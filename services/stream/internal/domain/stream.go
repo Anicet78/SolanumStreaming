@@ -10,3 +10,4 @@ type StreamResponse struct {
 }
 
 var ErrTorrentLoadingTimeout = errors.New("Torrent loading timeout")
+var ErrTorrentNoFile = errors.New("Torrent has no files")
