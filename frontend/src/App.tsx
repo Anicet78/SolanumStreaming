@@ -6,7 +6,7 @@ import { AuthProvider } from './contexts/AuthContext'
 import Movie from './Movie'
 import Layout from './components/Layout'
 import Collection from './Collection'
-import CollectionMovie from './components/CollectionMovie'
+import CollectionMovie from './CollectionMovie'
 
 function App() {
   return (

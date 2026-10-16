@@ -1,7 +1,7 @@
 import { moviesApi } from "./api/movies";
 import { createResource, For } from "solid-js";
 import { A } from "@solidjs/router";
-import CollectionMovie from "./components/CollectionMovie";
+import CollectionMovieCard from "./components/CollectionMovieCard";
 
 const Collection = () => {
   const [results] = createResource(moviesApi.getCollection);
@@ -12,7 +12,7 @@ const Collection = () => {
         <For each={results()}>
           {(movie) =>
             <A href={`/collection/${movie.movie_id}`}>
-              <CollectionMovie/>
+              <CollectionMovieCard {...movie}/>
             </A>
           }
         </For>
