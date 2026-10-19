@@ -25,6 +25,7 @@ func (h *MovieHandler) RegisterRoutes(e *echo.Echo) {
 	private.Use(auth.JWTMiddleware())
 	private.GET("/search", h.search)
 	private.GET("/:movie_id", h.getMovieInfos)
+	private.GET("/:movie_id/torrent", h.searchTorrent)
 	private.GET("/collection", h.getCollection)
 	private.GET("/collection/:movie_id", h.getInCollection)
 	private.POST("/collection", h.addToCollection)
@@ -82,6 +83,26 @@ func (h *MovieHandler) getMovieInfos(c *echo.Context) error {
 			return response.InternalServerError(c, err.Error())
 		}
 		slog.Error("Search failed", "error", err)
+		return response.InternalServerError(c, "internal server error")
+	}
+
+	return response.OK(c, res)
+}
+
+func (h *MovieHandler) searchTorrent(c *echo.Context) error {
+	uuid, err := auth.StringToUUID(c.Get("uuid").(string))
+	if err != nil {
+		return response.InternalServerError(c, "internal server error")
+	}
+
+	params, err := bind.Params[domain.SearchTorrentParams](c)
+	if err != nil {
+		return err
+	}
+
+	res, err := h.service.SearchTorrent(c.Request().Context(), uuid, params.MovieID, params.ClientCaps)
+	if err != nil {
+		slog.Error("Get collection failed", "error", err)
 		return response.InternalServerError(c, "internal server error")
 	}
 

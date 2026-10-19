@@ -4,8 +4,9 @@ import (
 	"errors"
 	"fmt"
 	"math"
-	"shared/tmdb"
 	"time"
+
+	"github.com/Anicet78/SolanumStreaming/movies/internal/tmdb"
 )
 
 type TorrentScore struct {
@@ -83,7 +84,7 @@ func infoScore(torrent Result) int {
 	return score
 }
 
-func getScore(currentTorrent TorrentScore, bestTorrent *TorrentScore, target tmdb.Movie) {
+func getScore(currentTorrent TorrentScore, bestTorrent *TorrentScore, target tmdb.Movie, profile *ClientProfile) {
 	fmt.Printf("%s> ", currentTorrent.Torrent.Title)
 
 	infoScore := infoScore(currentTorrent.Torrent)
@@ -92,7 +93,7 @@ func getScore(currentTorrent TorrentScore, bestTorrent *TorrentScore, target tmd
 	titleScore := titleScore(currentTorrent.Torrent.Title, target)
 	fmt.Printf("TITLE: %d | ", titleScore)
 
-	qualityScore := qualityScore(currentTorrent.Torrent.Title)
+	qualityScore := qualityScore(currentTorrent.Torrent.Title, profile)
 	fmt.Printf("QUALITY: %d\n", qualityScore)
 
 	currentTorrent.InfoScore = infoScore
@@ -105,7 +106,7 @@ func getScore(currentTorrent TorrentScore, bestTorrent *TorrentScore, target tmd
 	}
 }
 
-func FindBestResult(resp *JackettResponse, target tmdb.Movie) (TorrentScore, error) {
+func FindBestResult(resp *JackettResponse, target tmdb.Movie, profile *ClientProfile) (TorrentScore, error) {
 	if len(resp.Results) > 150 {
 		resp.Results = resp.Results[:150]
 	}
@@ -122,7 +123,7 @@ func FindBestResult(resp *JackettResponse, target tmdb.Movie) (TorrentScore, err
 	}
 
 	if len(resp.Results) == 1 {
-		getScore(bestTorrent, &bestTorrent, target)
+		getScore(bestTorrent, &bestTorrent, target, profile)
 
 		if bestTorrent.Score < 150 {
 			return TorrentScore{}, ErrNoTorrentFound
@@ -138,7 +139,7 @@ func FindBestResult(resp *JackettResponse, target tmdb.Movie) (TorrentScore, err
 			TitleScore:   0,
 			QualityScore: 0,
 			Score:        0,
-		}, &bestTorrent, target)
+		}, &bestTorrent, target, profile)
 
 		if bestTorrent.Score == 300 || (bestTorrent.InfoScore >= 95 && bestTorrent.TitleScore == 100 && bestTorrent.QualityScore >= 95) {
 			break

@@ -5,13 +5,13 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"shared/jackett"
-	"shared/tmdb"
 	"slices"
 	"strconv"
 
 	"github.com/Anicet78/SolanumStreaming/movies/internal/domain"
+	"github.com/Anicet78/SolanumStreaming/movies/internal/jackett"
 	"github.com/Anicet78/SolanumStreaming/movies/internal/store"
+	"github.com/Anicet78/SolanumStreaming/movies/internal/tmdb"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -61,6 +61,73 @@ func (s *MovieService) GetMovieInfos(ctx context.Context, userId pgtype.UUID, mo
 	}
 
 	return result, nil
+}
+
+func (s *MovieService) SearchTorrent(ctx context.Context, userId pgtype.UUID, movieId int, clientCaps string) (domain.CollectionMovie, error) {
+	var TMDBResult tmdb.Movie
+	res, err := tmdb.New().
+		SetResult(&TMDBResult).
+		SetPathParam("movie_id", strconv.Itoa(movieId)).
+		Get("/movie/{movie_id}")
+	if err != nil {
+		return domain.CollectionMovie{}, err
+	} else if res.IsSuccess() == false {
+		return domain.CollectionMovie{}, domain.ErrTMDBRequestFailed
+	}
+
+	var JackettResponse jackett.JackettResponse
+	res, err = jackett.New().
+		SetQueryParam("apikey", "apikey").
+		SetQueryParam("Query", TMDBResult.Title).
+		SetQueryParam("Category[]", "2000").
+		SetQueryParam("Limit", "150").
+		SetResult(&JackettResponse).
+		Get("/indexers/all/results")
+	if err != nil {
+		return domain.CollectionMovie{}, err
+	} else if res.IsSuccess() == false {
+		return domain.CollectionMovie{}, domain.ErrJackettRequestFailed
+	}
+
+	for _, idx := range JackettResponse.Indexers {
+		if idx.Error != "" || idx.Status != 2 {
+			log.Printf("Indexer slow/down: %s | status: %d | error: %s", idx.Name, idx.Status, idx.Error)
+		}
+	}
+
+	profile, err := jackett.ParseClientProfile(clientCaps)
+	if err != nil {
+		profile = nil
+	}
+
+	bestResult, err := jackett.FindBestResult(&JackettResponse, TMDBResult, profile)
+	if err != nil {
+		return domain.CollectionMovie{}, err
+	}
+
+	jackett.PrintResult(bestResult.Torrent, 0)
+
+	var link string
+	if bestResult.Torrent.MagnetUri != "" {
+		link = bestResult.Torrent.MagnetUri
+	} else {
+		link = bestResult.Torrent.Link
+	}
+
+	fmt.Printf("Movie Name: %s | MovieId: %d  |  TorrentLink: %s  |  Lenght: %d\n", TMDBResult.Title, movieId, link, TMDBResult.Runtime)
+
+	movie, err := s.store.UpdateTorrent(ctx, store.UpdateTorrentParams{
+		UserID:      userId,
+		MovieID:     int32(movieId),
+		TorrentLink: link,
+	})
+
+	return domain.CollectionMovie{
+		MovieID:     int(movie.MovieID),
+		TorrentLink: "",
+		Length:      int(movie.Length),
+		Progression: movie.Progression.Microseconds / 1000,
+	}, err
 }
 
 func (s *MovieService) GetCollection(ctx context.Context, userId pgtype.UUID) ([]domain.CollectionMovie, error) {
@@ -124,46 +191,10 @@ func (s *MovieService) AddToCollection(ctx context.Context, userId pgtype.UUID, 
 		return domain.CollectionMovie{}, domain.ErrTMDBRequestFailed
 	}
 
-	var JackettResponse jackett.JackettResponse
-	res, err = jackett.New().
-		SetQueryParam("apikey", "apikey").
-		SetQueryParam("Query", TMDBResult.Title).
-		SetQueryParam("Category[]", "2000").
-		SetQueryParam("Limit", "150").
-		SetResult(&JackettResponse).
-		Get("/indexers/all/results")
-	if err != nil {
-		return domain.CollectionMovie{}, err
-	} else if res.IsSuccess() == false {
-		return domain.CollectionMovie{}, domain.ErrJackettRequestFailed
-	}
-
-	for _, idx := range JackettResponse.Indexers {
-		if idx.Error != "" || idx.Status != 2 {
-			log.Printf("Indexer lent/down: %s | status: %d | error: %s", idx.Name, idx.Status, idx.Error)
-		}
-	}
-
-	bestResult, err := jackett.FindBestResult(&JackettResponse, TMDBResult)
-	if err != nil {
-		return domain.CollectionMovie{}, err
-	}
-
-	jackett.PrintResult(bestResult.Torrent, 0)
-
-	var link string
-	if bestResult.Torrent.MagnetUri != "" {
-		link = bestResult.Torrent.MagnetUri
-	} else {
-		link = bestResult.Torrent.Link
-	}
-
-	fmt.Printf("Movie Name: %s | MovieId: %d  |  TorrentLink: %s  |  Lenght: %d\n", TMDBResult.Title, movieId, link, TMDBResult.Runtime)
-
 	movie, err := s.store.UserAddMovieToCollection(ctx, store.UserAddMovieToCollectionParams{
 		UserID:      userId,
 		MovieID:     int32(movieId),
-		TorrentLink: link,
+		TorrentLink: "",
 		Length:      int32(TMDBResult.Runtime),
 	})
 

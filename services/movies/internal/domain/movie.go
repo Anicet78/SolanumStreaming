@@ -24,6 +24,11 @@ type MovieIDParam struct {
 	MovieID int `param:"movie_id"`
 }
 
+type SearchTorrentParams struct {
+	MovieID    int    `param:"movie_id"`
+	ClientCaps string `param:"caps"`
+}
+
 var ErrMovieNotInCollection = errors.New("Movie not in collection")
 var ErrMovieAlreadyInCollection = errors.New("Movie already in collection")
 var ErrTMDBRequestFailed = errors.New("TMDB request failed")

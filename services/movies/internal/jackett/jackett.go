@@ -19,13 +19,11 @@ func (ft *FlexTime) UnmarshalJSON(data []byte) error {
 		return nil
 	}
 
-	// Avec timezone
 	if t, err := time.Parse(time.RFC3339, s); err == nil {
 		ft.Time = t
 		return nil
 	}
 
-	// Sans timezone
 	if t, err := time.Parse("2006-01-02T15:04:05", s); err == nil {
 		ft.Time = t
 		return nil

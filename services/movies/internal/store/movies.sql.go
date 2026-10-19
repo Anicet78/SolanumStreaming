@@ -95,6 +95,32 @@ func (q *Queries) GetMovieInCollection(ctx context.Context, arg GetMovieInCollec
 	return i, err
 }
 
+const updateTorrent = `-- name: UpdateTorrent :one
+UPDATE collection
+SET torrent_link=$3
+WHERE user_id=$1 AND movie_id=$2
+RETURNING user_id, movie_id, torrent_link, length, progression
+`
+
+type UpdateTorrentParams struct {
+	UserID      pgtype.UUID
+	MovieID     int32
+	TorrentLink string
+}
+
+func (q *Queries) UpdateTorrent(ctx context.Context, arg UpdateTorrentParams) (Collection, error) {
+	row := q.db.QueryRow(ctx, updateTorrent, arg.UserID, arg.MovieID, arg.TorrentLink)
+	var i Collection
+	err := row.Scan(
+		&i.UserID,
+		&i.MovieID,
+		&i.TorrentLink,
+		&i.Length,
+		&i.Progression,
+	)
+	return i, err
+}
+
 const userAddMovieToCollection = `-- name: UserAddMovieToCollection :one
 INSERT INTO collection (user_id, movie_id, torrent_link, length)
 VALUES ($1, $2, $3, $4)

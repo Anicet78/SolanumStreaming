@@ -15,3 +15,9 @@ WHERE user_id=$1;
 DELETE FROM collection
 WHERE user_id=$1 AND movie_id=$2
 RETURNING *;
+
+-- name: UpdateTorrent :one
+UPDATE collection
+SET torrent_link=$3
+WHERE user_id=$1 AND movie_id=$2
+RETURNING *;
