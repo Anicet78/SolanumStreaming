@@ -249,6 +249,12 @@ export function buildProfile(): ClientProfile | null {
   };
 }
 
+export async function getProfileParam(): Promise<string> {
+  await ensureCapabilities();
+  const profile = buildProfile();
+  return profile ? profileToParam(profile) : "";
+}
+
 export function profileToParam(p: ClientProfile): string {
   return encodeURIComponent(btoa(JSON.stringify(p)));
 }

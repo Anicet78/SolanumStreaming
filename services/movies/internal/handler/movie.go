@@ -95,13 +95,21 @@ func (h *MovieHandler) searchTorrent(c *echo.Context) error {
 		return response.InternalServerError(c, "internal server error")
 	}
 
-	params, err := bind.Params[domain.SearchTorrentParams](c)
+	params, err := bind.Params[domain.MovieIDParam](c)
 	if err != nil {
 		return err
 	}
 
-	res, err := h.service.SearchTorrent(c.Request().Context(), uuid, params.MovieID, params.ClientCaps)
+	query, err := bind.Params[domain.SearchTorrentQuery](c)
 	if err != nil {
+		return err
+	}
+
+	res, err := h.service.SearchTorrent(c.Request().Context(), uuid, params.MovieID, query.ClientCaps)
+	if err != nil {
+		if errors.Is(err, domain.ErrMovieNotInCollection) {
+			return response.NotFound(c, err.Error())
+		}
 		slog.Error("Get collection failed", "error", err)
 		return response.InternalServerError(c, "internal server error")
 	}

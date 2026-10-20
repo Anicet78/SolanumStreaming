@@ -1,7 +1,7 @@
 import { createSignal, onCleanup, onMount } from "solid-js";
 import { ensureCapabilities, getDisplay, getOverride, subscribeCapabilities } from "./api/capabilities";
 
-function useDisplay() {
+export function useDisplay() {
   const [display, setDisplay] = createSignal(getDisplay());
   const [override, setOverride] = createSignal(getOverride());
 
@@ -15,4 +15,16 @@ function useDisplay() {
   return { display, override };
 }
 
-export default useDisplay;
+const Capabilities = () => {
+  const display = useDisplay().display
+
+  return (
+    <div>
+      <p>{display()?.tier}</p>
+      <p>{display()?.height}</p>
+      <p>{display()?.width}</p>
+    </div>
+  )
+}
+
+export default Capabilities

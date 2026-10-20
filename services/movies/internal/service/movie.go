@@ -64,6 +64,14 @@ func (s *MovieService) GetMovieInfos(ctx context.Context, userId pgtype.UUID, mo
 }
 
 func (s *MovieService) SearchTorrent(ctx context.Context, userId pgtype.UUID, movieId int, clientCaps string) (domain.CollectionMovie, error) {
+	movie, err := s.store.GetMovieInCollection(ctx, store.GetMovieInCollectionParams{
+		UserID:  userId,
+		MovieID: int32(movieId),
+	})
+	if err != nil {
+		return domain.CollectionMovie{}, domain.ErrMovieNotInCollection
+	}
+
 	var TMDBResult tmdb.Movie
 	res, err := tmdb.New().
 		SetResult(&TMDBResult).
@@ -116,15 +124,18 @@ func (s *MovieService) SearchTorrent(ctx context.Context, userId pgtype.UUID, mo
 
 	fmt.Printf("Movie Name: %s | MovieId: %d  |  TorrentLink: %s  |  Lenght: %d\n", TMDBResult.Title, movieId, link, TMDBResult.Runtime)
 
-	movie, err := s.store.UpdateTorrent(ctx, store.UpdateTorrentParams{
+	movie, err = s.store.UpdateTorrent(ctx, store.UpdateTorrentParams{
 		UserID:      userId,
 		MovieID:     int32(movieId),
 		TorrentLink: link,
 	})
+	if err != nil {
+		return domain.CollectionMovie{}, err
+	}
 
 	return domain.CollectionMovie{
 		MovieID:     int(movie.MovieID),
-		TorrentLink: "",
+		TorrentLink: link,
 		Length:      int(movie.Length),
 		Progression: movie.Progression.Microseconds / 1000,
 	}, err
@@ -197,6 +208,9 @@ func (s *MovieService) AddToCollection(ctx context.Context, userId pgtype.UUID, 
 		TorrentLink: "",
 		Length:      int32(TMDBResult.Runtime),
 	})
+	if err != nil {
+		return domain.CollectionMovie{}, err
+	}
 
 	return domain.CollectionMovie{
 		MovieID:     int(movie.MovieID),
