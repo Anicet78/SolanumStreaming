@@ -21,7 +21,7 @@ const Layout: ParentComponent = (props) => {
       {/* Sidebar */}
       <div class="drawer-side z-10">
         <label for="app-drawer" aria-label="Close menu" class="drawer-overlay" />
-        <Sidebar username={auth.user()?.name ?? "Unknown user"} locale={auth.user()?.language ?? "Unknown language"}/>
+        <Sidebar user={auth.user}/>
       </div>
     </div>
   );

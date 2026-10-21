@@ -9,9 +9,9 @@ export type Languages = "fr-FR" | "en-US"
 
 export interface User {
   uuid: string;
-  name: string;
+  username: string;
   role: string;
-  language: Languages;
+  lang: Languages;
   jwt: string;
 }
 
