@@ -55,7 +55,7 @@ func (s *StreamService) ServeRaw(w http.ResponseWriter, r *http.Request, link st
 	return nil
 }
 
-func (s *StreamService) Probe(ctx context.Context, link string) (*ProbeResult, error) {
+func (s *StreamService) CreatePlaylist(ctx context.Context, link string) (*ProbeResult, error) {
 	file, err := s.getFile(link)
 	if err != nil {
 		return nil, err

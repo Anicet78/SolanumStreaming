@@ -25,7 +25,7 @@ func NewStreamHandler(service *service.StreamService) *StreamHandler {
 func (h *StreamHandler) RegisterRoutes(e *echo.Echo) {
 	private := e.Group("")
 	// private.Use(auth.JWTMiddleware())
-	private.GET("/playlist.m3u8", h.playlist)
+	private.GET("/playlist.m3u8", h.createPlaylist)
 	// private.GET("/:segment", h.serveFile)
 
 	internal := e.Group("")
@@ -33,13 +33,13 @@ func (h *StreamHandler) RegisterRoutes(e *echo.Echo) {
 	internal.GET("/raw", h.raw)
 }
 
-func (h *StreamHandler) playlist(c *echo.Context) error {
+func (h *StreamHandler) createPlaylist(c *echo.Context) error {
 	params, err := bind.Query[domain.TorrentLinkQuery](c)
 	if err != nil {
 		return err
 	}
 
-	res, err := h.service.Probe(c.Request().Context(), params.TorrentLink)
+	res, err := h.service.CreatePlaylist(c.Request().Context(), params.TorrentLink)
 	if err != nil {
 		if errors.Is(err, domain.ErrTorrentLoadingTimeout) {
 			return response.GatewayTimeout(c, err.Error())
