@@ -1,6 +1,8 @@
 package main
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"log/slog"
 	"net/http"
 
@@ -43,7 +45,12 @@ func main() {
 	}
 	defer client.Close()
 
-	streamService := service.NewStreamService(client)
+	internalBase := "http://127.0.0.1:8083"
+	tokenBytes := make([]byte, 16)
+	rand.Read(tokenBytes)
+	internalToken := hex.EncodeToString(tokenBytes)
+
+	streamService := service.NewStreamService(client, internalBase, internalToken)
 
 	streamHandler := handler.NewStreamHandler(streamService)
 

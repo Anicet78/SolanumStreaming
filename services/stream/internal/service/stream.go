@@ -1,6 +1,8 @@
 package service
 
 import (
+	"context"
+	"log/slog"
 	"net/http"
 	"sync"
 	"time"
@@ -17,15 +19,24 @@ type loadedTorrent struct {
 }
 
 type StreamService struct {
-	client   *torrent.Client
-	mu       sync.Mutex
-	torrents map[string]*loadedTorrent
+	client        *torrent.Client
+	mu            sync.Mutex
+	torrents      map[string]*loadedTorrent
+	extractors    map[Container]KeyframeExtractor
+	InternalBase  string
+	InternalToken string
 }
 
-func NewStreamService(client *torrent.Client) *StreamService {
+func NewStreamService(client *torrent.Client, internalBase string, internalToken string) *StreamService {
 	return &StreamService{
 		client:   client,
 		torrents: map[string]*loadedTorrent{},
+		extractors: map[Container]KeyframeExtractor{
+			ContainerMKV: mkvExtractor{},
+			ContainerMP4: mp4Extractor{},
+		},
+		InternalToken: internalToken,
+		InternalBase:  internalBase,
 	}
 }
 
@@ -42,4 +53,22 @@ func (s *StreamService) ServeRaw(w http.ResponseWriter, r *http.Request, link st
 
 	http.ServeContent(w, r, file.DisplayPath(), time.Time{}, reader)
 	return nil
+}
+
+func (s *StreamService) Probe(ctx context.Context, link string) (*ProbeResult, error) {
+	if _, err := s.getFile(link); err != nil {
+		return nil, err
+	}
+	res, err := s.probe(ctx, link)
+	if err != nil {
+		return nil, err
+	}
+
+	kf, err := s.keyframes(ctx, link, res)
+	if err != nil {
+		return nil, err
+	}
+	slog.Info("keyframes", "count", len(kf), "first", kf[:min(10, len(kf))], "last", kf[len(kf)-1])
+
+	return res, nil
 }
