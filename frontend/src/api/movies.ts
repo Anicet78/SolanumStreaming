@@ -18,6 +18,8 @@ export interface MovieT {
   release_date: string;
   imdb_id: string;
   runtime: number;
+  overview: string;
+  vote_average: number;
 }
 
 export interface CollectionMovieT {

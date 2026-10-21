@@ -24,6 +24,8 @@ type Movie struct {
 	ReleaseDate   string  `json:"release_date"`
 	IMDbID        string  `json:"imdb_id"`
 	Runtime       int     `json:"runtime"`
+	Overview      string  `json:"overview"`
+	VoteAverage   float32 `json:"vote_average"`
 }
 
 func New() *resty.Request {
