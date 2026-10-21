@@ -109,7 +109,7 @@ func (s *StreamService) probe(ctx context.Context, link string) (*ProbeResult, e
 	for _, st := range raw.Streams {
 		switch st.CodecType {
 		case "video":
-			if res.Video == nil { // on garde la première piste vidéo
+			if res.Video == nil {
 				res.Video = &VideoInfo{st.CodecName, st.Width, st.Height, st.PixFmt, st.ColorTransfer}
 			}
 		case "audio":

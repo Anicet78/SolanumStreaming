@@ -56,15 +56,17 @@ func (s *StreamService) ServeRaw(w http.ResponseWriter, r *http.Request, link st
 }
 
 func (s *StreamService) Probe(ctx context.Context, link string) (*ProbeResult, error) {
-	if _, err := s.getFile(link); err != nil {
+	file, err := s.getFile(link)
+	if err != nil {
 		return nil, err
 	}
+
 	res, err := s.probe(ctx, link)
 	if err != nil {
 		return nil, err
 	}
 
-	kf, err := s.keyframes(ctx, link, res)
+	kf, err := s.keyframes(ctx, file, res)
 	if err != nil {
 		return nil, err
 	}
