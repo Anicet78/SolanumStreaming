@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"errors"
 	"io"
 
 	"github.com/Anicet78/SolanumStreaming/stream/internal/domain"
@@ -24,10 +23,4 @@ func (s *StreamService) keyframes(ctx context.Context, file *torrent.File, p *Pr
 	defer reader.Close()
 
 	return ex.Keyframes(ctx, reader, p.Duration)
-}
-
-type mp4Extractor struct{}
-
-func (mp4Extractor) Keyframes(ctx context.Context, src io.ReadSeeker, duration float64) ([]float64, error) {
-	return nil, errors.New("mp4: not implemented")
 }
