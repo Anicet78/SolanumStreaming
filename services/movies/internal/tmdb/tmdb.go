@@ -21,9 +21,11 @@ type Movie struct {
 	Adult         bool    `json:"adult"`
 	Video         bool    `json:"video"`
 	PosterPath    string  `json:"poster_path"`
+	BackdropPath  string  `json:"backdrop_path"`
 	ReleaseDate   string  `json:"release_date"`
 	IMDbID        string  `json:"imdb_id"`
 	Runtime       int     `json:"runtime"`
+	Tagline       string  `json:"tagline"`
 	Overview      string  `json:"overview"`
 	VoteAverage   float32 `json:"vote_average"`
 }

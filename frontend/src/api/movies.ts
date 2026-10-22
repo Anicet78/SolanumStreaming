@@ -15,9 +15,11 @@ export interface MovieT {
   adult: boolean;
   video: boolean;
   poster_path: string;
+  backdrop_path: string;
   release_date: string;
   imdb_id: string;
   runtime: number;
+  tagline: string;
   overview: string;
   vote_average: number;
 }

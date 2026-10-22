@@ -16,7 +16,7 @@ const SearchBar = () => {
 
   return (
     <form onSubmit={handleSubmit}>
-      <label class="input input-primary">
+      <label class="input input-primary w-2xl justify-center">
         <svg class="h-[1em] opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
           <g
           stroke-linejoin="round"
@@ -32,7 +32,8 @@ const SearchBar = () => {
         <input
           type="search"
           required
-          placeholder="Search"
+          class="grow-0 field-sizing-content min-w-0 w-auto text-center"
+          placeholder="Search for a movie"
           value={query()}
           onInput={(e) => setQuery(e.currentTarget.value)}
         />
