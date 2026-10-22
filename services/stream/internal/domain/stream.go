@@ -11,6 +11,7 @@ type StreamResponse struct {
 
 var ErrTorrentLoadingTimeout = errors.New("Torrent loading timeout")
 var ErrTorrentNoFile = errors.New("Torrent has no files")
+var ErrNoSegments = errors.New("No segments")
 var ErrNoVideo = errors.New("No video")
 var ErrUnsupportedContainer = errors.New("Unsupported format")
 var ErrBadEBML = errors.New("mkv: invalid EBML data")

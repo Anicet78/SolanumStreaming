@@ -35,7 +35,7 @@ const CollectionMovie = () => {
               <Show when={torrent()}>
                 <video-player>
                   <video-skin style="display: block; width: 100%; aspect-ratio: 2 / 1;">
-                    {/* <hlsjs-video src={`http://localhost:8083/playlist.m3u8?torrent_link=${encodeURIComponent(torrent()!.torrent_link)}`} playsinline></hlsjs-video> */}
+                    <hlsjs-video src={`http://localhost:8083/playlist.m3u8?torrent_link=${encodeURIComponent(torrent()!.torrent_link)}`} playsinline></hlsjs-video>
                   </video-skin>
                 </video-player>
 
