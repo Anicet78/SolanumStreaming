@@ -1,5 +1,5 @@
 import { A, useParams } from "@solidjs/router";
-import { createResource, ErrorBoundary, Show } from "solid-js";
+import { createResource, Show } from "solid-js";
 import { moviesApi } from "./api/movies";
 import { getProfileParam } from "./api/capabilities";
 import '@videojs/html/video/player';
@@ -38,7 +38,7 @@ const CollectionMovie = () => {
               <Show when={torrent.state === "ready"}>
                 <video-player>
                   <video-skin style="display: block; width: 100%; aspect-ratio: 2 / 1;">
-                    {/* <hlsjs-video src={`http://localhost:8083/playlist.m3u8?torrent_link=${encodeURIComponent(torrent()!.torrent_link)}`} playsinline></hlsjs-video> */}
+                    <hlsjs-video src={`http://localhost:8083/playlist.m3u8?torrent_link=${encodeURIComponent(torrent()!.torrent_link)}`} playsinline></hlsjs-video>
                   </video-skin>
                 </video-player>
               </Show>

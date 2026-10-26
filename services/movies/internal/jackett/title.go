@@ -66,44 +66,80 @@ import (
 	return score
 } */
 
+
+var (
+	reTitleTags = regexp.MustCompile(`(?i)\b(1080[pi]?|720p?|2160p?|4k|dci|bluray|blu-ray|webrip|web[-. ]?dl|hdtv|dvdrip|dvdscr|bdrip|brrip|hdrip|hdlight|remux|x264|x265|h\.?264|h\.?265|hevc|avc|av1|aac|dts|ac3|mp3|atmos|truehd|hdr10?|dolby|french|truefrench|english|vostfr|vff|vfq|vf2|vfi|multi|proper|repack|extended|theatrical|directors?[ .]cut)\b`)
+	reYear      = regexp.MustCompile(`\b(19|20)\d{2}\b`)
+)
+
+func splitTitle(raw, targetYear string) (name, year string) {
+	end := len(raw)
+	if loc := reTitleTags.FindStringIndex(raw); loc != nil {
+		end = loc[0]
+	}
+
+	var years [][]int
+	for _, m := range reYear.FindAllStringIndex(raw, -1) {
+		if m[0] > 0 {
+			years = append(years, m)
+		}
+	}
+
+	pick := -1
+	for i, m := range years {
+		if raw[m[0]:m[1]] == targetYear {
+			pick = i
+		}
+	}
+	if pick == -1 {
+		for i, m := range years {
+			if m[0] < end {
+				pick = i
+			}
+		}
+	}
+	if pick >= 0 {
+		year = raw[years[pick][0]:years[pick][1]]
+		if years[pick][0] < end {
+			end = years[pick][0]
+		}
+	}
+
+	name = strings.TrimRight(raw[:end], " .-_([")
+	return name, year
+}
+
 func titleScore(torrentTitle string, target tmdb.Movie) int {
-	score := 0
-
-	cleanTorrent := func(s string) string {
-		re := regexp.MustCompile(`(?i)\b(1080p?|720p?|2160p?|4k|bluray|blu-ray|webrip|web-dl|webdl|hdtv|dvdrip|dvdscr|bdrip|remux|x264|x265|h264|h265|hevc|avc|aac|dts|ac3|mp3|atmos|truehd|hdr|hdr10|dolby|french|english|vostfr|multi|proper|repack|extended|theatrical|directors\.cut|\d{4})\b.*`)
-		return strings.TrimSpace(re.ReplaceAllString(s, ""))
-	}
-
-	targetNorm := normalize(target.Title)
-	targetOrigNorm := normalize(target.OriginalTitle)
-	torrentClean := cleanTorrent(torrentTitle)
-	torrentNorm := normalize(torrentClean)
-
-	if torrentNorm == targetNorm || torrentNorm == targetOrigNorm {
-		score += 70
-	} else {
-		// score += approxNameScore(targetNorm, targetOrigNorm, torrentNorm)
-		return 0
-	}
-
-	yearRegex := regexp.MustCompile(`\b(19|20)\d{2}\b`)
-	torrentYear := yearRegex.FindString(torrentTitle)
-
 	var targetYear string
 	if len(target.ReleaseDate) >= 4 {
 		targetYear = target.ReleaseDate[:4]
 	}
 
-	if targetYear == "" || (torrentYear != "" && torrentYear == targetYear) {
-		return score + 30
-	} else {
+	raw := strings.ReplaceAll(torrentTitle, "_", " ")
+	name, torrentYear := splitTitle(raw, targetYear)
+
+	torrentNorm := normalize(name)
+	if torrentNorm == "" {
 		return 0
 	}
+	if torrentNorm != normalize(target.Title) && torrentNorm != normalize(target.OriginalTitle) {
+		return 0
+	}
+
+	if targetYear == "" || torrentYear == targetYear {
+		return 100
+	}
+	return 0
 }
 
 type Tier string
 
 var tierRank = map[Tier]int{"sd": 0, "hd": 1, "fhd": 2, "qhd": 3, "uhd": 4, "dci": 5}
+
+func validTier(t Tier) bool {
+	_, ok := tierRank[t]
+	return ok
+}
 
 type Display struct {
 	Tier   Tier `json:"tier"`
@@ -124,8 +160,13 @@ type ClientProfile struct {
 	Audio   []string                `json:"audio"`
 }
 
+func decodeB64(s string) ([]byte, error) {
+	s = strings.NewReplacer(" ", "-", "+", "-", "/", "_").Replace(s)
+	return base64.RawURLEncoding.DecodeString(strings.TrimRight(s, "="))
+}
+
 func ParseClientProfile(param string) (*ClientProfile, error) {
-	raw, err := base64.StdEncoding.DecodeString(param)
+	raw, err := decodeB64(param)
 	if err != nil {
 		return nil, err
 	}
@@ -133,8 +174,14 @@ func ParseClientProfile(param string) (*ClientProfile, error) {
 	if err := json.Unmarshal(raw, &p); err != nil {
 		return nil, err
 	}
-	if _, ok := tierRank[p.Display.Tier]; !ok {
+	if !validTier(p.Display.Tier) {
 		return nil, errors.New("invalid display tier")
+	}
+	for _, s := range p.Video {
+		if (s.MaxTier != nil && !validTier(*s.MaxTier)) ||
+			(s.SmoothMaxTier != nil && !validTier(*s.SmoothMaxTier)) {
+			return nil, errors.New("invalid codec tier")
+		}
 	}
 	return &p, nil
 }
@@ -150,19 +197,20 @@ func defaultProfile() *ClientProfile {
 
 var (
 	// Source
-	reRemux  = regexp.MustCompile(`\bremux\b`)
-	reBluRay = regexp.MustCompile(`\bblu-?ray\b`)
-	reWebDL  = regexp.MustCompile(`\bweb-?dl\b`)
-	reWebRip = regexp.MustCompile(`\bwebrip\b`)
+	reRemux  = regexp.MustCompile(`remux\b`)
+	reBluRay = regexp.MustCompile(`\b(blu[-. ]?ray|bdrip|brrip)\b`)
+	reWebDL  = regexp.MustCompile(`\bweb[-. ]?dl\b`)
+	reWebRip = regexp.MustCompile(`\b(web[-. ]?rip|hdrip)\b`)
 	reHDTV   = regexp.MustCompile(`\bhdtv\b`)
 	reDVDRip = regexp.MustCompile(`\b(dvdrip|dvdscr)\b`)
-	reCam    = regexp.MustCompile(`\b(cam|ts|telecine|telesync)\b`)
+	reCam    = regexp.MustCompile(`\b(cam|camrip|hd-?cam|ts|hd-?ts|telecine|telesync)\b`)
 
 	// Resolution
 	reDS4K   = regexp.MustCompile(`\bds4k\b`)
+	reDCI    = regexp.MustCompile(`\b(dci|4096x2160)\b`)
 	re4K     = regexp.MustCompile(`\b(4k|2160p|uhd)\b`)
 	re1440p  = regexp.MustCompile(`\b(2k|1440p|qhd)\b`)
-	re1080p  = regexp.MustCompile(`\b1080p\b`)
+	re1080p  = regexp.MustCompile(`\b1080[pi]\b`)
 	reM1080p = regexp.MustCompile(`\bm1080p\b`)
 	re720p   = regexp.MustCompile(`\b720p\b`)
 	reM720p  = regexp.MustCompile(`\bm720p\b`)
@@ -174,12 +222,13 @@ var (
 	reX265 = regexp.MustCompile(`\b(x265|h\.?265|hevc)\b`)
 
 	// HDR
-	reHDR         = regexp.MustCompile(`\bhdr(10)?(\+|plus)?`)
-	reDolbyVision = regexp.MustCompile(`\b(dolby[.\s]?vision|dv)\b`)
+	reHDR         = regexp.MustCompile(`\bhdr(10)?(\+|plus|p)?\b`)
+	reDolbyVision = regexp.MustCompile(`\b(dolby[. ]?vision|dovi|dv)\b`)
 
 	// Audio
-	reTrueHD = regexp.MustCompile(`\b(truehd|atmos)\b`)
-	reDTSHD  = regexp.MustCompile(`\bdts-?hd\b`)
+	reTrueHD = regexp.MustCompile(`\btruehd\b`)
+	reAtmos  = regexp.MustCompile(`\batmos\b`)
+	reDTSHD  = regexp.MustCompile(`\bdts[-. ]?hd\b`)
 	reDTS    = regexp.MustCompile(`\bdts\b`)
 	reEAC3   = regexp.MustCompile(`\b(ddp|eac3|dd\+)`)
 	reAC3    = regexp.MustCompile(`\b(ac3|dd5\.?1)\b`)
@@ -198,7 +247,7 @@ type parsedTitle struct {
 }
 
 func parseTitle(raw string) parsedTitle {
-	title := strings.ToLower(raw)
+	title := strings.ToLower(strings.ReplaceAll(raw, "_", " "))
 	var p parsedTitle
 
 	switch {
@@ -224,6 +273,8 @@ func parseTitle(raw string) parsedTitle {
 		if re720p.MatchString(title) {
 			p.tier = "hd"
 		}
+	case reDCI.MatchString(title):
+		p.tier = "dci"
 	case re4K.MatchString(title):
 		p.tier = "uhd"
 	case re1440p.MatchString(title):
@@ -265,6 +316,8 @@ func parseTitle(raw string) parsedTitle {
 		p.audio = "ac3"
 	case reAAC.MatchString(title):
 		p.audio = "aac"
+	case reAtmos.MatchString(title):
+		p.audio = "truehd"
 	}
 
 	return p
@@ -297,13 +350,11 @@ func qualityScore(torrentTitle string, client *ClientProfile) int {
 		return 0
 	}
 
-	score := resolutionScore(p, client) +
+	return resolutionScore(p, client) +
 		sourceScore(p.source) +
 		codecScore(p, client) +
 		hdrScore(p, client) +
 		audioScore(p.audio, client)
-
-	return score
 }
 
 func playable(p parsedTitle, c *ClientProfile) bool {
@@ -342,7 +393,7 @@ func resolutionScore(p parsedTitle, c *ClientProfile) int {
 	if p.reduced {
 		s -= 5
 	}
-	return s
+	return max(s, 0)
 }
 
 func sourceScore(source string) int {
@@ -383,7 +434,7 @@ func hdrScore(p parsedTitle, c *ClientProfile) int {
 		}
 	}
 	if p.hdr || p.dv {
-		return 4
+		return 0
 	}
 	return 10
 }

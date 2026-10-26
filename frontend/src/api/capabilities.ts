@@ -250,7 +250,7 @@ export function buildProfile(): ClientProfile | null {
 }
 
 export async function getProfileParam(): Promise<string> {
-  await ensureCapabilities();
+  await ensureCapabilities(true);
   const profile = buildProfile();
   return profile ? profileToParam(profile) : "";
 }
