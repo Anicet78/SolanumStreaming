@@ -52,28 +52,39 @@ const Movie = () => {
           "background-image": `linear-gradient(to bottom, rgb(0 0 0 / 10%), rgb(0 0 0 / 90%)), url(https://image.tmdb.org/t/p/original${movieInfos()?.backdrop_path})`
         }}
       >
-        <div class="flex items-center">
-          <div class="w-2xs rounded-box shadow-md p-4 mr-5">
-            <MovieCard {...movieInfos()!}/>
+        <div class="flex flex-col self-end pr-20">
+          <div class="flex flex-col justify-center w-md">
+            <div class="flex flex-col items-center pt-2">
+              <span class="font-black text-2xl">{movieInfos()!.title}</span>
+              <Show when={movieInfos()!.title !== movieInfos()!.original_title}>
+                <span class="text-sm text-gray-400">{movieInfos()!.original_title}</span>
+              </Show>
+            </div>
+            <div class="flex flex-col items-center pt-2">
+              <span class="text-2xl">🗓️ </span>
+              <span class="font-black text-2xl">{movieInfos()!.release_date.slice(0, 4)}</span>
+            </div>
+            <div class="flex flex-col items-center pt-2">
+              <span class="text-2xl">⏳ </span>
+              <span class="font-black text-2xl">{Math.floor(movieInfos()!.runtime / 60)}h {movieInfos()!.runtime % 60}m</span>
+            </div>
+            <div class="flex flex-col items-center pt-2 pb-2">
+              <span class="text-2xl">⭐ </span>
+              <span class="font-black text-2xl">{movieInfos()!.vote_average}</span>
+            </div>
           </div>
-          <div class="flex flex-col w-2xs">
-            <span class="font-black text-2xl">{movieInfos()!.title}</span>
-            <Show when={movieInfos()!.title !== movieInfos()!.original_title}>
-              <span class="self-center text-sm">{movieInfos()!.original_title}</span>
-            </Show>
-          </div>
+          <Switch fallback={<p>An error has occured</p>}>
+            <Match when={movieInCollection.loading || addSubmission.pending || removeSubmission.pending}>
+              <button class="btn btn-soft btn-primary w-full p-0"><span class="loading loading-spinner loading-sm"></span></button>
+            </Match>
+            <Match when={inCollection()}>
+              <button class="btn btn-soft btn-primary w-full p-0" onClick={handleRemoveFromCollection}>Remove from collection</button>
+            </Match>
+            <Match when={!inCollection()}>
+              <button class="btn btn-soft btn-primary w-full p-0" onClick={handleAddToCollection}>Add to collection</button>
+            </Match>
+          </Switch>
         </div>
-        <Switch fallback={<p>An error has occured</p>}>
-          <Match when={movieInCollection.loading || addSubmission.pending || removeSubmission.pending}>
-            <button class="btn btn-soft btn-primary btn-wide"><span class="loading loading-spinner loading-sm"></span></button>
-          </Match>
-          <Match when={inCollection()}>
-            <button class="btn btn-soft btn-primary btn-wide" onClick={handleRemoveFromCollection}>Remove from collection</button>
-          </Match>
-          <Match when={!inCollection()}>
-            <button class="btn btn-soft btn-primary btn-wide" onClick={handleAddToCollection}>Add to collection</button>
-          </Match>
-        </Switch>
       </main>
     </Show>
   );

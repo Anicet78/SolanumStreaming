@@ -48,7 +48,7 @@ const CollectionMovie = () => {
                   <div class="flex flex-col w-fit">
                     <span class="font-black text-2xl">{movie().title}</span>
                     <Show when={movie().title !== movie().original_title}>
-                      <span class="self-center text-sm">{movie().original_title}</span>
+                      <span class="self-center text-sm text-gray-300">{movie().original_title}</span>
                     </Show>
                   </div>
                   <div class="flex flex-col items-center p-2">
@@ -64,9 +64,10 @@ const CollectionMovie = () => {
                     <span class="font-black text-2xl">{movie().vote_average}</span>
                   </div>
                 </div>
-                <Show when={movie().overview !== ""}>
+                <Show when={movie().overview !== "" || movie().tagline !== ""}>
                   <div class="mt-5 flex flex-col">
-                    <span class=" font-black text-xl mb-3">Overview</span>
+                    <span class="text-gray-400">{movie().tagline.toUpperCase()}</span>
+                    <Show when={movie().overview !== "" && movie().tagline !== ""}><div class="mb-1"/></Show>
                     <span>{movie().overview}</span>
                   </div>
                 </Show>

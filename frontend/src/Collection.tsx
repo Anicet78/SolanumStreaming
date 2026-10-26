@@ -9,12 +9,8 @@ const Collection = () => {
 
   return (
     <>
-      <div class="flex items-center justify-between ml-4 mt-4">
-        <A href={`/collection`}>
-          <div class="btn btn-dash btn-primary w-xs">⮐ Back to Collection</div>
-        </A>
+      <div class="flex items-center justify-center mt-4">
         <SearchBar/>
-        <div class="w-xs"></div>
       </div>
       <div class="min-h-screen flex flex-col items-center p-4">
         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 bg-base-100 rounded-box shadow-md p-4">
