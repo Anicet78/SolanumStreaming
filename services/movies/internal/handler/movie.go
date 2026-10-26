@@ -24,6 +24,8 @@ func (h *MovieHandler) RegisterRoutes(e *echo.Echo) {
 	private := e.Group("")
 	private.Use(auth.JWTMiddleware())
 	private.GET("/search", h.search)
+	private.GET("/:movie_id", h.getMovieInfos)
+	private.GET("/:movie_id/torrent", h.searchTorrent)
 	private.GET("/collection", h.getCollection)
 	private.GET("/collection/:movie_id", h.getInCollection)
 	private.POST("/collection", h.addToCollection)
@@ -36,9 +38,79 @@ func (h *MovieHandler) search(c *echo.Context) error {
 		return err
 	}
 
-	res, err := h.service.Search(c.Request().Context(), params)
+	var lang string
+	cookie, err := c.Cookie("lang")
+	if err == nil {
+		lang = cookie.Value
+	} else {
+		lang = "fr-FR"
+	}
+
+	res, err := h.service.Search(c.Request().Context(), params, lang)
 	if err != nil {
-		slog.Error("Search creation failed", "error", err)
+		if errors.Is(err, domain.ErrTMDBRequestFailed) {
+			return response.InternalServerError(c, err.Error())
+		}
+		slog.Error("Search failed", "error", err)
+		return response.InternalServerError(c, "internal server error")
+	}
+
+	return response.OK(c, res)
+}
+
+func (h *MovieHandler) getMovieInfos(c *echo.Context) error {
+	params, err := bind.Params[domain.MovieIDParam](c)
+	if err != nil {
+		return err
+	}
+
+	var lang string
+	cookie, err := c.Cookie("lang")
+	if err == nil {
+		lang = cookie.Value
+	} else {
+		lang = "fr-FR"
+	}
+
+	uuid, err := auth.StringToUUID(c.Get("uuid").(string))
+	if err != nil {
+		return response.InternalServerError(c, "internal server error")
+	}
+
+	res, err := h.service.GetMovieInfos(c.Request().Context(), uuid, params.MovieID, lang)
+	if err != nil {
+		if errors.Is(err, domain.ErrTMDBRequestFailed) {
+			return response.InternalServerError(c, err.Error())
+		}
+		slog.Error("Search failed", "error", err)
+		return response.InternalServerError(c, "internal server error")
+	}
+
+	return response.OK(c, res)
+}
+
+func (h *MovieHandler) searchTorrent(c *echo.Context) error {
+	uuid, err := auth.StringToUUID(c.Get("uuid").(string))
+	if err != nil {
+		return response.InternalServerError(c, "internal server error")
+	}
+
+	params, err := bind.Params[domain.MovieIDParam](c)
+	if err != nil {
+		return err
+	}
+
+	query, err := bind.Params[domain.SearchTorrentQuery](c)
+	if err != nil {
+		return err
+	}
+
+	res, err := h.service.SearchTorrent(c.Request().Context(), uuid, params.MovieID, query.ClientCaps)
+	if err != nil {
+		if errors.Is(err, domain.ErrMovieNotInCollection) {
+			return response.NotFound(c, err.Error())
+		}
+		slog.Error("Get collection failed", "error", err)
 		return response.InternalServerError(c, "internal server error")
 	}
 
@@ -94,16 +166,18 @@ func (h *MovieHandler) addToCollection(c *echo.Context) error {
 		return response.InternalServerError(c, "internal server error")
 	}
 
-	err = h.service.AddToCollection(c.Request().Context(), uuid, body.MovieID)
+	res, err := h.service.AddToCollection(c.Request().Context(), uuid, body.MovieID)
 	if err != nil {
 		if errors.Is(err, domain.ErrMovieAlreadyInCollection) {
 			return response.Conflict(c, err.Error())
+		} else if errors.Is(err, domain.ErrTMDBRequestFailed) {
+			return response.InternalServerError(c, err.Error())
 		}
 		slog.Error("Add movie to collection failed", "error", err)
 		return response.InternalServerError(c, "internal server error")
 	}
 
-	return response.NoContent(c)
+	return response.OK(c, res)
 }
 
 func (h *MovieHandler) removeFromCollection(c *echo.Context) error {

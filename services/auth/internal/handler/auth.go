@@ -24,6 +24,7 @@ func (h *AuthHandler) RegisterRoutes(e *echo.Echo) {
 	public := e.Group("")
 	public.POST("/register", h.register)
 	public.POST("/login", h.login)
+	public.GET("/refresh", h.refresh)
 
 	private := e.Group("")
 	private.Use(auth.JWTMiddleware())
@@ -37,7 +38,7 @@ func (h *AuthHandler) register(c *echo.Context) error {
 		return err
 	}
 
-	res, err := h.service.Register(c.Request().Context(), req.Username, req.Password)
+	res, err := h.service.Register(c, req.Username, req.Password)
 	if err != nil {
 		if errors.Is(err, domain.ErrUsernameAlreadyExists) {
 			return response.Conflict(c, err.Error())
@@ -45,6 +46,8 @@ func (h *AuthHandler) register(c *echo.Context) error {
 		slog.Error("Account creation failed", "error", err)
 		return response.InternalServerError(c, "internal server error")
 	}
+
+	service.AddLangCookie(c, res.Language)
 
 	return response.Created(c, res)
 }
@@ -55,7 +58,7 @@ func (h *AuthHandler) login(c *echo.Context) error {
 		return err
 	}
 
-	res, err := h.service.Login(c.Request().Context(), req.Username, req.Password)
+	res, err := h.service.Login(c, req.Username, req.Password)
 	if err != nil {
 		if errors.Is(err, domain.ErrUsernameDoesNotExists) {
 			return response.NotFound(c, err.Error())
@@ -65,6 +68,30 @@ func (h *AuthHandler) login(c *echo.Context) error {
 		slog.Error("Log into account failed", "error", err)
 		return response.InternalServerError(c, "internal server error")
 	}
+
+	service.AddLangCookie(c, res.Language)
+
+	return response.OK(c, res)
+}
+
+func (h *AuthHandler) refresh(c *echo.Context) error {
+	cookie, err := c.Cookie("refreshToken")
+	if err != nil {
+		return response.Unauthorized(c, "no refresh token")
+	}
+
+	res, err := h.service.Refresh(c, cookie)
+	if err != nil {
+		if errors.Is(err, domain.ErrRefreshTokenNotFound) {
+			return response.NotFound(c, err.Error())
+		} else if errors.Is(err, domain.ErrRefreshTokenExpired) {
+			return response.Unauthorized(c, err.Error())
+		}
+		slog.Error("Token refresh failed", "error", err)
+		return response.InternalServerError(c, "internal server error")
+	}
+
+	service.AddLangCookie(c, res.Language)
 
 	return response.OK(c, res)
 }
@@ -97,7 +124,7 @@ func (h *AuthHandler) patchProfile(c *echo.Context) error {
 		return response.InternalServerError(c, "internal server error")
 	}
 
-	err = h.service.PatchProfile(c.Request().Context(), uuid, req.NewUsername)
+	err = h.service.PatchProfile(c.Request().Context(), uuid, req)
 	if err != nil {
 		if errors.Is(err, domain.ErrUsernameDoesNotExists) {
 			return response.NotFound(c, err.Error())
@@ -107,6 +134,8 @@ func (h *AuthHandler) patchProfile(c *echo.Context) error {
 		slog.Error("Cannot update profile", "error", err)
 		return response.InternalServerError(c, "internal server error")
 	}
+
+	service.AddLangCookie(c, req.NewLanguage)
 
 	return response.NoContent(c)
 }

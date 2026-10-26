@@ -1,27 +1,24 @@
-FROM node:slim AS dev
+FROM golang:1.27.2 AS build
 
-WORKDIR /app
+WORKDIR /src
 
-COPY ./package*.json ./
-RUN npm install
+COPY shared ./shared
+COPY stream ./stream
 
-COPY . .
+RUN go work init ./shared ./stream
 
-RUN npm run build
+WORKDIR /src/stream
+RUN go mod download
+RUN CGO_ENABLED=0 GOOS=linux go build -o /out/stream ./cmd
 
-CMD ["npm", "start"]
+FROM debian:bookworm-slim
 
-FROM node:slim AS prod
+RUN apt-get update && \
+	apt-get install -q -y --no-install-recommends ffmpeg && \
+	apt-get clean
 
-WORKDIR /app
-
-COPY ./package*.json ./
-RUN npm install
-
-COPY . .
-
-RUN npm run build
+COPY --from=build /out/stream /stream
 
 EXPOSE 8083
 
-CMD ["npm", "start"]
+ENTRYPOINT [ "/stream" ]

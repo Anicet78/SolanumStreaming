@@ -11,7 +11,7 @@ import (
 
 func removeAccents(s string) string {
 	t := transform.Chain(norm.NFD, transform.RemoveFunc(func(r rune) bool {
-		return unicode.Is(unicode.Mn, r) // Mn = non-spacing marks
+		return unicode.Is(unicode.Mn, r)
 	}), norm.NFC)
 	result, _, _ := transform.String(t, s)
 	return result
@@ -23,9 +23,7 @@ func normalize(s string) string {
 	re := regexp.MustCompile(`[^\w\s]`)
 	s = re.ReplaceAllString(s, " ")
 	s = strings.TrimSpace(s)
-	for _, article := range []string{"the ", "a ", "an ", "le ", "la ", "les ", "un ", "une "} {
-		s = strings.TrimPrefix(s, article)
-	}
+	s = strings.Join(strings.Fields(s), " ")
 	return s
 }
 

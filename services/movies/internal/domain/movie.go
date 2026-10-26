@@ -2,8 +2,6 @@ package domain
 
 import (
 	"errors"
-
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type SearchRequestQuery struct {
@@ -16,14 +14,18 @@ type CollectionRequestBody struct {
 }
 
 type CollectionMovie struct {
-	MovieID     int             `json:"movie_id"`
-	TorrentLink string          `json:"torrent_link"`
-	Length      int             `json:"length"`
-	Progression pgtype.Interval `json:"progression"`
+	MovieID     int    `json:"movie_id"`
+	TorrentLink string `json:"torrent_link"`
+	Length      int    `json:"length"`
+	Progression int64  `json:"progression"`
 }
 
 type MovieIDParam struct {
 	MovieID int `param:"movie_id"`
+}
+
+type SearchTorrentQuery struct {
+	ClientCaps string `query:"caps"`
 }
 
 var ErrMovieNotInCollection = errors.New("Movie not in collection")

@@ -4,12 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"shared/jackett"
-	"shared/tmdb"
+	"log"
+	"slices"
 	"strconv"
 
 	"github.com/Anicet78/SolanumStreaming/movies/internal/domain"
+	"github.com/Anicet78/SolanumStreaming/movies/internal/jackett"
 	"github.com/Anicet78/SolanumStreaming/movies/internal/store"
+	"github.com/Anicet78/SolanumStreaming/movies/internal/tmdb"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -22,11 +24,12 @@ func NewMovieService(store *store.Queries) *MovieService {
 	return &MovieService{store: store}
 }
 
-func (s *MovieService) Search(ctx context.Context, params domain.SearchRequestQuery) (tmdb.SearchResponse, error) {
+func (s *MovieService) Search(ctx context.Context, params domain.SearchRequestQuery, lang string) (tmdb.SearchResponse, error) {
 	var result tmdb.SearchResponse
 	res, err := tmdb.New().
+		SetQueryParam("language", lang).
 		SetQueryParam("query", params.Title).
-		SetQueryParam("include_adult", "true").
+		SetQueryParam("include_adult", "false").
 		SetQueryParam("page", strconv.Itoa(params.Page)).
 		SetResult(&result).
 		Get("/search/movie")
@@ -36,7 +39,106 @@ func (s *MovieService) Search(ctx context.Context, params domain.SearchRequestQu
 		return tmdb.SearchResponse{}, domain.ErrTMDBRequestFailed
 	}
 
+	result.Results = slices.DeleteFunc(result.Results, func(m tmdb.Movie) bool {
+		return m.PosterPath == ""
+	})
+
 	return result, nil
+}
+
+func (s *MovieService) GetMovieInfos(ctx context.Context, userId pgtype.UUID, movieId int, lang string) (tmdb.Movie, error) {
+	var result tmdb.Movie
+	res, err := tmdb.New().
+		SetQueryParam("language", lang).
+		SetResult(&result).
+		Get("/movie/" + strconv.Itoa(movieId))
+	if err != nil {
+		return tmdb.Movie{}, err
+	} else if res.IsSuccess() == false {
+		fmt.Printf("TMDB failed: status=%d url=%s body=%s",
+			res.StatusCode(), res.Request.URL, res.String())
+		return tmdb.Movie{}, domain.ErrTMDBRequestFailed
+	}
+
+	return result, nil
+}
+
+func (s *MovieService) SearchTorrent(ctx context.Context, userId pgtype.UUID, movieId int, clientCaps string) (domain.CollectionMovie, error) {
+	movie, err := s.store.GetMovieInCollection(ctx, store.GetMovieInCollectionParams{
+		UserID:  userId,
+		MovieID: int32(movieId),
+	})
+	if err != nil {
+		return domain.CollectionMovie{}, domain.ErrMovieNotInCollection
+	}
+
+	var TMDBResult tmdb.Movie
+	res, err := tmdb.New().
+		SetResult(&TMDBResult).
+		SetPathParam("movie_id", strconv.Itoa(movieId)).
+		Get("/movie/{movie_id}")
+	if err != nil {
+		return domain.CollectionMovie{}, err
+	} else if res.IsSuccess() == false {
+		return domain.CollectionMovie{}, domain.ErrTMDBRequestFailed
+	}
+
+	var JackettResponse jackett.JackettResponse
+	res, err = jackett.New().
+		SetQueryParam("apikey", "apikey").
+		SetQueryParam("Query", TMDBResult.Title).
+		SetQueryParam("Category[]", "2000").
+		SetQueryParam("Limit", "150").
+		SetResult(&JackettResponse).
+		Get("/indexers/all/results")
+	if err != nil {
+		return domain.CollectionMovie{}, err
+	} else if res.IsSuccess() == false {
+		return domain.CollectionMovie{}, domain.ErrJackettRequestFailed
+	}
+
+	for _, idx := range JackettResponse.Indexers {
+		if idx.Error != "" || idx.Status != 2 {
+			log.Printf("Indexer slow/down: %s | status: %d | error: %s", idx.Name, idx.Status, idx.Error)
+		}
+	}
+
+	profile, err := jackett.ParseClientProfile(clientCaps)
+	if err != nil {
+		profile = nil
+	}
+
+	bestResult, err := jackett.FindBestResult(&JackettResponse, TMDBResult, profile)
+	if err != nil {
+		return domain.CollectionMovie{}, err
+	}
+
+	jackett.PrintResult(bestResult.Torrent, 0)
+
+	var link string
+	if bestResult.Torrent.MagnetUri != "" {
+		link = bestResult.Torrent.MagnetUri
+	} else {
+		link = bestResult.Torrent.Link
+	}
+
+	fmt.Printf("Movie Name: %s | MovieId: %d  |  TorrentLink: %s  |  Lenght: %d\n", TMDBResult.Title, movieId, link, TMDBResult.Runtime)
+
+	movie, err = s.store.UpdateTorrent(ctx, store.UpdateTorrentParams{
+		UserID:      userId,
+		MovieID:     int32(movieId),
+		TorrentLink: link,
+	})
+	if err != nil {
+		return domain.CollectionMovie{}, err
+	}
+
+	return domain.CollectionMovie{
+		MovieID:     int(movie.MovieID),
+		TorrentLink: link,
+		Length:      int(movie.Length),
+		Progression: movie.Progression.Microseconds / 1000,
+	}, err
 }
 
 func (s *MovieService) GetCollection(ctx context.Context, userId pgtype.UUID) ([]domain.CollectionMovie, error) {
@@ -52,7 +154,7 @@ func (s *MovieService) GetCollection(ctx context.Context, userId pgtype.UUID) ([
 			MovieID:     int(u.MovieID),
 			TorrentLink: u.TorrentLink,
 			Length:      int(u.Length),
-			Progression: u.Progression,
+			Progression: u.Progression.Microseconds / 1000,
 		})
 	}
 
@@ -72,21 +174,21 @@ func (s *MovieService) GetInCollection(ctx context.Context, userId pgtype.UUID, 
 		MovieID:     int(movie.MovieID),
 		TorrentLink: movie.TorrentLink,
 		Length:      int(movie.Length),
-		Progression: movie.Progression,
+		Progression: movie.Progression.Microseconds / 1000,
 	}, nil
 }
 
-func (s *MovieService) AddToCollection(ctx context.Context, userId pgtype.UUID, movieId int) error {
+func (s *MovieService) AddToCollection(ctx context.Context, userId pgtype.UUID, movieId int) (domain.CollectionMovie, error) {
 	exists, err := s.store.GetMovieInCollection(ctx, store.GetMovieInCollectionParams{
 		UserID:  userId,
 		MovieID: int32(movieId),
 	})
 	if err != nil {
 		if !errors.Is(err, pgx.ErrNoRows) {
-			return err
+			return domain.CollectionMovie{}, err
 		}
 	} else if exists.UserID.Valid {
-		return domain.ErrMovieAlreadyInCollection
+		return domain.CollectionMovie{}, domain.ErrMovieAlreadyInCollection
 	}
 
 	var TMDBResult tmdb.Movie
@@ -95,52 +197,27 @@ func (s *MovieService) AddToCollection(ctx context.Context, userId pgtype.UUID, 
 		SetPathParam("movie_id", strconv.Itoa(movieId)).
 		Get("/movie/{movie_id}")
 	if err != nil {
-		return err
+		return domain.CollectionMovie{}, err
 	} else if res.IsSuccess() == false {
-		return domain.ErrTMDBRequestFailed
+		return domain.CollectionMovie{}, domain.ErrTMDBRequestFailed
 	}
 
-	var JackettResponse jackett.JackettResponse
-	res, err = jackett.New().
-		SetQueryParam("apikey", "apikey").
-		SetQueryParam("Query", TMDBResult.Title).
-		SetQueryParam("Category[]", "2000").
-		SetQueryParam("Limit", "25").
-		SetResult(&JackettResponse).
-		Get("/indexers/all/results")
-	if err != nil {
-		return err
-	} else if res.IsSuccess() == false {
-		return domain.ErrJackettRequestFailed
-	}
-
-	jackett.SortResults(&JackettResponse, TMDBResult)
-
-	var link string
-	for i, r := range JackettResponse.Results {
-		jackett.PrintResult(r, i)
-
-		if r.MagnetUri != "" {
-			link = r.MagnetUri
-		} else {
-			link = r.Link
-		}
-
-		if i == 0 {
-			break
-		}
-	}
-
-	fmt.Printf("Movie Name: %s | MovieId: %d  |  TorrentLink: %s  |  Lenght: %d\n", TMDBResult.Title, movieId, link, TMDBResult.Runtime)
-
-	_, err = s.store.UserAddMovieToCollection(ctx, store.UserAddMovieToCollectionParams{
+	movie, err := s.store.UserAddMovieToCollection(ctx, store.UserAddMovieToCollectionParams{
 		UserID:      userId,
 		MovieID:     int32(movieId),
-		TorrentLink: link,
+		TorrentLink: "",
 		Length:      int32(TMDBResult.Runtime),
 	})
+	if err != nil {
+		return domain.CollectionMovie{}, err
+	}
 
-	return err
+	return domain.CollectionMovie{
+		MovieID:     int(movie.MovieID),
+		TorrentLink: movie.TorrentLink,
+		Length:      int(movie.Length),
+		Progression: movie.Progression.Microseconds / 1000,
+	}, err
 }
 
 func (s *MovieService) RemoveFromCollection(ctx context.Context, userId pgtype.UUID, movieId int) error {
