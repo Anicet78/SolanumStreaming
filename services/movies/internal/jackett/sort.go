@@ -150,5 +150,9 @@ func FindBestResult(resp *JackettResponse, target tmdb.Movie, profile *ClientPro
 		return TorrentScore{}, ErrNoTorrentFound
 	}
 
+	if (bestTorrent.TitleScore == 0 || bestTorrent.InfoScore == 0 || bestTorrent.QualityScore == 0) {
+		return TorrentScore{}, ErrNoTorrentFound
+	}
+
 	return bestTorrent, nil
 }
