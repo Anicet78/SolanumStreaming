@@ -2,11 +2,13 @@ package handler
 
 import (
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"shared/auth"
 	"shared/bind"
 	"shared/response"
+	"strings"
 
 	"github.com/Anicet78/SolanumStreaming/stream/internal/domain"
 	"github.com/Anicet78/SolanumStreaming/stream/internal/service"
@@ -72,6 +74,24 @@ func (h *StreamHandler) hlsFile(c *echo.Context) error {
 		c.Response().Header().Set("Content-Type", "application/vnd.apple.mpegurl")
 		c.Response().Header().Set("Cache-Control", "no-cache")
 		return c.String(http.StatusOK, pl.Text)
+	case file == "init.mp4":
+		data, err := h.service.GetInit(c.Request().Context(), pl)
+		if err != nil {
+			slog.Error("init failed", "error", err)
+			return response.InternalServerError(c, "Internal server error")
+		}
+		return c.Blob(http.StatusOK, "video/mp4", data)
+	case strings.HasPrefix(file, "seg_") && strings.HasSuffix(file, ".m4s"):
+		var idx int
+		if _, err := fmt.Sscanf(file, "seg_%d.m4s", &idx); err != nil {
+			return response.NotFound(c, "Not found")
+		}
+		data, err := h.service.GetSegment(c.Request().Context(), pl, idx)
+		if err != nil {
+			slog.Error("segment failed", "index", idx, "error", err)
+			return response.InternalServerError(c, "Internal server error")
+		}
+		return c.Blob(http.StatusOK, "video/mp4", data)
 	default:
 		return response.NotFound(c, "Not found")
 	}
