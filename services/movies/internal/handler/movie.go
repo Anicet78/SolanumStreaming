@@ -24,6 +24,8 @@ func (h *MovieHandler) RegisterRoutes(e *echo.Echo) {
 	private := e.Group("")
 	private.Use(auth.JWTMiddleware())
 	private.GET("/search", h.search)
+	private.GET("/list/now_playing", h.nowPlayingList)
+	private.GET("/list/popular", h.popularList)
 	private.GET("/:movie_id", h.getMovieInfos)
 	private.GET("/:movie_id/torrent", h.searchTorrent)
 	private.GET("/collection", h.getCollection)
@@ -47,6 +49,48 @@ func (h *MovieHandler) search(c *echo.Context) error {
 	}
 
 	res, err := h.service.Search(c.Request().Context(), params, lang)
+	if err != nil {
+		if errors.Is(err, domain.ErrTMDBRequestFailed) {
+			return response.InternalServerError(c, err.Error())
+		}
+		slog.Error("Search failed", "error", err)
+		return response.InternalServerError(c, "internal server error")
+	}
+
+	return response.OK(c, res)
+}
+
+func (h *MovieHandler) nowPlayingList(c *echo.Context) error {
+	var lang string
+	cookie, err := c.Cookie("lang")
+	if err == nil {
+		lang = cookie.Value
+	} else {
+		lang = "fr-FR"
+	}
+
+	res, err := h.service.GetNowPlaying(c.Request().Context(), lang)
+	if err != nil {
+		if errors.Is(err, domain.ErrTMDBRequestFailed) {
+			return response.InternalServerError(c, err.Error())
+		}
+		slog.Error("Search failed", "error", err)
+		return response.InternalServerError(c, "internal server error")
+	}
+
+	return response.OK(c, res)
+}
+
+func (h *MovieHandler) popularList(c *echo.Context) error {
+	var lang string
+	cookie, err := c.Cookie("lang")
+	if err == nil {
+		lang = cookie.Value
+	} else {
+		lang = "fr-FR"
+	}
+
+	res, err := h.service.GetPopular(c.Request().Context(), lang)
 	if err != nil {
 		if errors.Is(err, domain.ErrTMDBRequestFailed) {
 			return response.InternalServerError(c, err.Error())

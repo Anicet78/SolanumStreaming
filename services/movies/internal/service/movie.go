@@ -46,6 +46,44 @@ func (s *MovieService) Search(ctx context.Context, params domain.SearchRequestQu
 	return result, nil
 }
 
+func (s *MovieService) GetNowPlaying(ctx context.Context, lang string) (tmdb.SearchResponse, error) {
+	var nowPlaying tmdb.SearchResponse
+	res, err := tmdb.New().
+		SetQueryParam("language", lang).
+		SetResult(&nowPlaying).
+		Get("/movie/now_playing")
+	if err != nil {
+		return tmdb.SearchResponse{}, err
+	} else if res.IsSuccess() == false {
+		return tmdb.SearchResponse{}, domain.ErrTMDBRequestFailed
+	}
+
+	nowPlaying.Results = slices.DeleteFunc(nowPlaying.Results, func(m tmdb.Movie) bool {
+		return m.PosterPath == ""
+	})
+
+	return nowPlaying, nil
+}
+
+func (s *MovieService) GetPopular(ctx context.Context, lang string) (tmdb.SearchResponse, error) {
+	var popular tmdb.SearchResponse
+	res, err := tmdb.New().
+		SetQueryParam("language", lang).
+		SetResult(&popular).
+		Get("/movie/popular")
+	if err != nil {
+		return tmdb.SearchResponse{}, err
+	} else if res.IsSuccess() == false {
+		return tmdb.SearchResponse{}, domain.ErrTMDBRequestFailed
+	}
+
+	popular.Results = slices.DeleteFunc(popular.Results, func(m tmdb.Movie) bool {
+		return m.PosterPath == ""
+	})
+
+	return popular, nil
+}
+
 func (s *MovieService) GetMovieInfos(ctx context.Context, userId pgtype.UUID, movieId int, lang string) (tmdb.Movie, error) {
 	var result tmdb.Movie
 	res, err := tmdb.New().
