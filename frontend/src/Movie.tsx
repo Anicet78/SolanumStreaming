@@ -52,7 +52,7 @@ const Movie = () => {
           "background-image": `linear-gradient(to bottom, rgb(0 0 0 / 10%), rgb(0 0 0 / 90%)), url(https://image.tmdb.org/t/p/original${movieInfos()?.backdrop_path})`
         }}
       >
-        <div class="flex flex-col self-end pr-20">
+        <div class="flex flex-col self-end p-5 rounded-md mr-20 backdrop-blur-xs bg-gray-500/15">
           <div class="flex flex-col justify-center w-md">
             <div class="flex flex-col items-center pt-2">
               <span class="font-black text-2xl">{movieInfos()!.title}</span>
