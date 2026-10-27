@@ -21,10 +21,10 @@ const Search = () => {
 
   return (
     <>
-      <div class="flex flex-col m-4 items-center justify-center">
-        <SearchBar/>
-      </div>
       <div class="min-h-screen flex flex-col items-center p-4">
+        <div class="flex flex-col m-4 items-center justify-center">
+          <SearchBar/>
+        </div>
         <Show when={results.loading}>
           <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 bg-base-100 rounded-box shadow-md p-4">
             <For each={Array.from({ length: 18 })}>

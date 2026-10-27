@@ -1,8 +1,9 @@
-import { useNavigate } from "@solidjs/router";
+import { useNavigate, useSearchParams } from "@solidjs/router";
 import { createSignal } from "solid-js";
 
 const SearchBar = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [query, setQuery] = createSignal("");
 
   const handleSubmit = (e: SubmitEvent) => {
@@ -16,7 +17,7 @@ const SearchBar = () => {
 
   return (
     <form onSubmit={handleSubmit}>
-      <label class="input input-primary w-2xl justify-center">
+      <label class="input input-primary w-2xl justify-center bg-transparent backdrop-blur-lg focus:outline-none">
         <svg class="h-[1em] opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
           <g
           stroke-linejoin="round"
@@ -34,7 +35,7 @@ const SearchBar = () => {
           required
           class="grow-0 field-sizing-content min-w-0 w-auto text-center"
           placeholder="Search for a movie"
-          value={query()}
+          value={searchParams.title ?? query()}
           onInput={(e) => setQuery(e.currentTarget.value)}
         />
       </label>
