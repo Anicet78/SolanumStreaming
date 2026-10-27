@@ -39,6 +39,8 @@ export const moviesApi = {
 
     return api.get<SearchResponse>(`:8082/search?${params.toString()}`);
   },
+  getNowPlaying: () => api.get<SearchResponse>(":8082/list/now_playing"),
+  getPopular: () => api.get<SearchResponse>(":8082/list/popular"),
   getMovieInfos: (movieId: number) => api.get<MovieT>(`:8082/${movieId}`),
   searchTorrent: (movieId: number, caps: string) => api.get<CollectionMovieT>(`:8082/${movieId}/torrent?caps=${caps.toString()}`),
   getCollection: () => api.get<CollectionMovieT[]>(":8082/collection"),

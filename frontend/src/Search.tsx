@@ -1,7 +1,7 @@
 import { createResource, For, Show } from "solid-js"
 import MovieCard from "./components/MovieCard"
 import { moviesApi } from "./api/movies"
-import { A, useSearchParams } from "@solidjs/router";
+import { A, useNavigate, useSearchParams } from "@solidjs/router";
 import SearchBar from "./components/SearchBar";
 
 function toSingleString(v: string | string[] | undefined): string | undefined {
@@ -10,6 +10,10 @@ function toSingleString(v: string | string[] | undefined): string | undefined {
 
 const Search = () => {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+
+  if (!searchParams.title || searchParams.title == "")
+    navigate("/");
 
   const [results] = createResource(
     () => ({
@@ -33,10 +37,10 @@ const Search = () => {
           </div>
         </Show>
 
-        <Show when={results.error}>
+        <Show when={results.error || (results() && results()?.total_results == 0)}>
           <div class="flex flex-1 flex-col items-center justify-center">
             <span class="text-2xl">Cannot load your search</span>
-            <span class="text-xl text-gray-300">{results.error?.message}</span>
+            <span class="text-xl text-gray-300">{results.error?.message ?? "No result has been found"}</span>
           </div>
         </Show>
 
