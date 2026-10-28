@@ -1,4 +1,4 @@
-import { type ParentComponent } from "solid-js";
+import { Show, type ParentComponent } from "solid-js";
 import Sidebar from "./Sidebar";
 import { useAuthContext } from "../contexts/AuthContext";
 
@@ -15,13 +15,17 @@ const Layout: ParentComponent = (props) => {
           </label>
         </div>
 
-        <main>{props.children}</main>
+        <main>
+          <Show when={auth.user()?.lang} keyed>
+            {props.children}
+          </Show>
+        </main>
       </div>
 
       {/* Sidebar */}
       <div class="drawer-side z-10">
         <label for="app-drawer" aria-label="Close menu" class="drawer-overlay" />
-        <Sidebar user={auth.user}/>
+        <Sidebar/>
       </div>
     </div>
   );
