@@ -154,7 +154,7 @@ func (h *MovieHandler) searchTorrent(c *echo.Context) error {
 		if errors.Is(err, domain.ErrMovieNotInCollection) {
 			return response.NotFound(c, err.Error())
 		}
-		slog.Error("Get collection failed", "error", err)
+		slog.Error("Search torrent failed", "error", err)
 		return response.InternalServerError(c, "internal server error")
 	}
 

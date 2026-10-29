@@ -3,7 +3,7 @@
     "id": "sitelink",
     "type": "inputstring",
     "name": "Site Link",
-    "value": "https://torrentgalaxy.one/"
+    "value": "https://torrentgalaxy.online/"
   },
   {
     "id": "cookieheader",
@@ -21,7 +21,7 @@
     "id": "filterbyuploader",
     "type": "inputstring",
     "name": "Filter by Uploader",
-    "value": null
+    "value": ""
   },
   {
     "id": "tags",

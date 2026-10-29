@@ -1,0 +1,46 @@
+[
+  {
+    "id": "sitelink",
+    "type": "inputstring",
+    "name": "Site Link",
+    "value": "https://www.torrentdownloads.pro/"
+  },
+  {
+    "id": "cookieheader",
+    "type": "hiddendata",
+    "name": "CookieHeader",
+    "value": "PHPSESSID=7k3gnub7nc5jrj17j4prhrtc9k"
+  },
+  {
+    "id": "lasterror",
+    "type": "hiddendata",
+    "name": "LastError",
+    "value": null
+  },
+  {
+    "id": "primarydownloadlink",
+    "type": "inputselect",
+    "name": "Primary Download link",
+    "value": "magnet:",
+    "options": {
+      "//itorrents.": "iTorrents",
+      "magnet:": "magnet"
+    }
+  },
+  {
+    "id": "fallbackdownloadlink",
+    "type": "inputselect",
+    "name": "Fallback Download link",
+    "value": "//itorrents.",
+    "options": {
+      "//itorrents.": "iTorrents",
+      "magnet:": "magnet"
+    }
+  },
+  {
+    "id": "tags",
+    "type": "inputtags",
+    "name": "Tags",
+    "value": ""
+  }
+]

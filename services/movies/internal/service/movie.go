@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"slices"
 	"strconv"
 
@@ -121,32 +120,29 @@ func (s *MovieService) SearchTorrent(ctx context.Context, userId pgtype.UUID, mo
 		return domain.CollectionMovie{}, domain.ErrTMDBRequestFailed
 	}
 
-	var JackettResponse jackett.JackettResponse
+	var torznabResponse jackett.TorznabResponse
 	res, err = jackett.New().
+		SetHeader("Accept", "application/rss+xml, application/xml").
 		SetQueryParam("apikey", "apikey").
-		SetQueryParam("Query", TMDBResult.Title).
-		SetQueryParam("Category[]", "2000").
-		SetQueryParam("Limit", "150").
-		SetResult(&JackettResponse).
-		Get("/indexers/all/results")
+		SetQueryParam("t", "movie").
+		SetQueryParam("imdbid", TMDBResult.IMDbID).
+		SetQueryParam("year", TMDBResult.ReleaseDate[0:4]).
+		SetResult(&torznabResponse).
+		Get("/indexers/all/results/torznab")
 	if err != nil {
 		return domain.CollectionMovie{}, err
 	} else if res.IsSuccess() == false {
 		return domain.CollectionMovie{}, domain.ErrJackettRequestFailed
 	}
 
-	for _, idx := range JackettResponse.Indexers {
-		if idx.Error != "" || idx.Status != 2 {
-			log.Printf("Indexer slow/down: %s | status: %d | error: %s", idx.Name, idx.Status, idx.Error)
-		}
-	}
+	jackett.PrintResponse(torznabResponse)
 
 	profile, err := jackett.ParseClientProfile(clientCaps)
 	if err != nil {
 		profile = nil
 	}
 
-	bestResult, err := jackett.FindBestResult(&JackettResponse, TMDBResult, profile)
+	bestResult, err := jackett.FindBestResult(&torznabResponse, TMDBResult, profile)
 	if err != nil {
 		return domain.CollectionMovie{}, err
 	}
