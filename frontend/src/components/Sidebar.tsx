@@ -1,6 +1,6 @@
 import { A, action, useAction, useSubmission } from "@solidjs/router";
-import { createSignal, For, Match, Show, Switch, type Accessor, type Component } from "solid-js";
-import { usersApi, type Languages, type User } from "../api/auth";
+import { createSignal, For, Show } from "solid-js";
+import { usersApi, type Languages } from "../api/auth";
 import { useAuthContext } from "../contexts/AuthContext";
 
 export const updateProfileAction = action(
@@ -19,6 +19,7 @@ const Sidebar = () => {
 
   const updateProfile = useAction(updateProfileAction);
   const submission = useSubmission(updateProfileAction);
+  const [languageMenuOpen, setLanguageMenuOpen] = createSignal(false);
 
   const handleSetLang = async (lang: Languages) => {
     const user = auth.user();
@@ -28,63 +29,62 @@ const Sidebar = () => {
   };
 
   return (
-    <aside class="flex min-h-full w-64 flex-col gap-4 bg-base-200 p-4">
+    <aside class="app-sidebar">
       <Show when={auth.user()}>
         {(user) => (
           <>
-            <div class="flex items-center">
-              <span class="truncate pl-1 font-semibold">{user().username}</span>
+            <div class="brand-lockup">
+              <span class="brand-symbol">S</span>
+              <div><strong>SOLANUM</strong><small>STREAMING</small></div>
             </div>
+            <div class="user-chip"><span class="user-dot" />{user().username}</div>
 
             <button
-              class="btn btn-outline btn-sm"
-              popovertarget="popover-1"
-              style="anchor-name:--anchor-1"
+              class="language-button"
               disabled={submission.pending}
+              aria-expanded={languageMenuOpen()}
+              onClick={() => setLanguageMenuOpen((open) => !open)}
             >
-              <span>
+              <span class="language-label">
                 {LANGS[user().lang]?.flag ?? "🌐"}{" "}
                 {LANGS[user().lang]?.label ?? "Unknown language"}
               </span>
             </button>
 
-            <ul
-              class="dropdown menu w-52 rounded-box bg-base-100 shadow-sm"
-              popover
-              id="popover-1"
-              style="position-anchor:--anchor-1"
-            >
-              <For each={Object.entries(LANGS) as [Languages, (typeof LANGS)[Languages]][]}>
-                {([code, { flag, label }]) => (
-                  <li>
-                    <button
-                      type="button"
-                      classList={{ "menu-active": user().lang === code }}
-                      onClick={(e) => {
-                        handleSetLang(code);
-                        // e.currentTarget.closest("[popover]")?.hidePopover();
-                      }}
-                    >
-                      {flag} {label}
-                    </button>
-                  </li>
-                )}
-              </For>
-            </ul>
-            <div class="divider my-0" />
+            <Show when={languageMenuOpen()}>
+              <ul class="language-menu">
+                <For each={Object.entries(LANGS) as [Languages, (typeof LANGS)[Languages]][]}>
+                  {([code, { flag, label }]) => (
+                    <li>
+                      <button
+                        type="button"
+                        classList={{ "menu-active": user().lang === code }}
+                        onClick={() => {
+                          void handleSetLang(code);
+                          setLanguageMenuOpen(false);
+                        }}
+                      >
+                        {flag} {label}
+                      </button>
+                    </li>
+                  )}
+                </For>
+              </ul>
+            </Show>
+            <div class="sidebar-divider" />
           </>
         )}
 
       </Show>
-      <ul class="menu w-full gap-1 p-0">
+      <ul class="sidebar-nav">
         <li>
           <A href="/" end activeClass="menu-active">
-            Home
+            <span>⌂</span> Home
           </A>
         </li>
         <li>
           <A href="/collection" activeClass="menu-active">
-            Collection
+            <span>▣</span> Collection
           </A>
         </li>
       </ul>

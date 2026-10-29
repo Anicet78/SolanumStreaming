@@ -24,28 +24,25 @@ const Search = () => {
   );
 
   return (
-    <>
-      <div class="min-h-screen flex flex-col items-center p-4">
-        <div class="flex flex-col m-4 items-center justify-center">
-          <SearchBar/>
-        </div>
+    <main class="page">
+        <div class="page-heading"><div><div class="eyebrow">Library search</div><h1 class="page-title">Search results</h1><p class="page-subtitle">Explore titles and find something worth pressing play on.</p></div><div class="search-wrap"><SearchBar/></div></div>
         <Show when={results.loading}>
-          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 bg-base-100 rounded-box shadow-md p-4">
+          <div class="movie-grid loading-grid">
             <For each={Array.from({ length: 18 })}>
-              {() => <div class="skeleton w-60 aspect-2/3 rounded-2xl"></div>}
+              {() => <div class="skeleton-card"></div>}
             </For>
           </div>
         </Show>
 
         <Show when={results.error || (results() && results()?.total_results == 0)}>
-          <div class="flex flex-1 flex-col items-center justify-center">
-            <span class="text-2xl">Cannot load your search</span>
-            <span class="text-xl text-gray-300">{results.error?.message ?? "No result has been found"}</span>
+          <div class="empty-state">
+            <strong>Nothing found</strong><br />
+            <span>{results.error?.message ?? "No result has been found"}</span>
           </div>
         </Show>
 
         <Show when={!results.loading && !results.error}>
-          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 bg-base-100 rounded-box shadow-md p-4">
+          <div class="movie-grid">
             <For each={results()?.results}>
               {(movie) =>
                 <A href={`/${movie.id}`}>
@@ -55,18 +52,12 @@ const Search = () => {
             </For>
           </div>
           <Show when={results()?.total_pages! > 1}>
-            <div class="join flex justify-end w-full mr-7">
+            <div class="pagination">
               <For each={Array.from({ length: results()?.total_pages!})}>
                 {(_, i) =>
                   <Show when={i() == 0 || i() + 1 == results()?.total_pages || (results()?.page! - i() < 4 && results()?.page! - i() >= 0) || (i() - results()?.page! < 4 && i() - results()?.page! >= 0)}>
-                    <A href={`/search?title=${searchParams.title}&page=${i() + 1}`}>
-                      <input
-                        class="join-item btn btn-square"
-                        type="radio"
-                        name="options"
-                        aria-label={(i() + 1).toString()}
-                        checked={i() + 1 == results()?.page ? true : false}
-                      />
+                    <A classList={{ "pagination-current": i() + 1 === results()?.page }} href={`/search?title=${searchParams.title}&page=${i() + 1}`}>
+                      {i() + 1}
                     </A>
                   </Show>
                 }
@@ -74,8 +65,7 @@ const Search = () => {
             </div>
           </Show>
         </Show>
-      </div>
-    </>
+    </main>
   );
 };
 

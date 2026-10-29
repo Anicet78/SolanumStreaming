@@ -8,13 +8,13 @@ const Home = () => {
   const [popular] = createResource(moviesApi.getPopular)
 
   return (
-    <>
-      <div class="flex items-center justify-center pt-4">
-        <SearchBar/>
+    <main class="page">
+      <div class="page-heading">
+        <div><div class="eyebrow">Discover</div><h1 class="page-title">Find your next story.</h1><p class="page-subtitle">A hand-picked stream of popular movies, ready for your watchlist.</p></div>
+        <div class="search-wrap"><SearchBar/></div>
       </div>
-      <div class="flex flex-col min-h-screen items-center justify-center">
-        <Show when={popular()}>
-          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 bg-base-100 rounded-box shadow-md p-4">
+      <Show when={popular()}>
+          <div class="movie-grid">
             <For each={popular()?.results}>
               {(movie, idx) =>
                 <Show when={idx() < 18}>
@@ -25,9 +25,8 @@ const Home = () => {
               }
             </For>
           </div>
-        </Show>
-      </div>
-    </>
+      </Show>
+    </main>
   );
 }
 

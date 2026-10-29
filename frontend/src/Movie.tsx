@@ -47,62 +47,45 @@ const Movie = () => {
   return (
     <Show when={movie()}>
       {(movie) => (
-        <main
-          class="relative min-h-screen bg-cover bg-center flex flex-col justify-between "
-          style={{
-            "background-image": `linear-gradient(to bottom, rgb(0 0 0 / 10%), rgb(0 0 0 / 90%)), url(https://image.tmdb.org/t/p/original${movie()?.backdrop_path})`
-          }}
-        >
-          <div class="flex items-center justify-center pt-4">
-            <SearchBar/>
+        <main class="detail-page">
+          <div class="detail-backbar">
+            <A class="detail-back" href="/">← Back to discover</A>
+            <div class="detail-search"><SearchBar /></div>
           </div>
-          <div class="w-full p-10">
-            <div class="flex items-center justify-evenly">
-              <div class="flex flex-col w-fit">
-                <span class="font-black text-2xl">{movie().title}</span>
-                <Show when={movie().title !== movie().original_title}>
-                  <span class="self-center text-sm text-gray-300">{movie().original_title}</span>
-                </Show>
+          <section class="detail-hero" style={{ "background-image": `url(https://image.tmdb.org/t/p/original${movie().backdrop_path})` }}>
+            <div class="detail-content">
+              <div class="eyebrow">Movie details</div>
+              <h1 class="detail-title">{movie().title}</h1>
+              <Show when={movie().title !== movie().original_title}>
+                <div class="detail-original">Original title: {movie().original_title}</div>
+              </Show>
+              <div class="detail-stats">
+                <span class="detail-stat">{movie().release_date.slice(0, 4)}</span>
+                <span class="detail-stat">{Math.floor(movie().runtime / 60)}h {movie().runtime % 60}m</span>
+                <span class="detail-stat">★ {movie().vote_average.toFixed(1)} / 10</span>
               </div>
-              <div class="flex flex-col items-center p-2">
-                <span class="text-2xl">🗓️ </span>
-                <span class="font-black text-2xl">{movie().release_date.slice(0, 4)}</span>
-              </div>
-              <div class="flex flex-col items-center p-2">
-                <span class="text-2xl">⏳ </span>
-                <span class="font-black text-2xl">{Math.floor(movie().runtime / 60)}h {movie().runtime % 60}m</span>
-              </div>
-              <div class="flex flex-col items-center p-2">
-                <span class="text-2xl">⭐ </span>
-                <span class="font-black text-2xl">{movie().vote_average}</span>
-              </div>
-            </div>
-            <Show when={movie().overview !== "" || movie().tagline !== ""}>
-              <div class="mt-5 flex flex-col">
-                <span class="text-gray-400">{movie().tagline.toUpperCase()}</span>
-                <Show when={movie().overview !== "" && movie().tagline !== ""}><div class="mb-1"/></Show>
-                <span>{movie().overview}</span>
-              </div>
-            </Show>
-            <div class="mt-5">
-              <Switch fallback={<p>An error has occured</p>}>
+              <Show when={movie().tagline || movie().overview}>
+                <Show when={movie().tagline}><div class="detail-tagline">{movie().tagline}</div></Show>
+                <Show when={movie().overview}><p class="detail-overview">{movie().overview}</p></Show>
+              </Show>
+              <div class="detail-actions">
+              <Switch fallback={<p>Something went wrong.</p>}>
                 <Match when={movieInCollection.loading || addSubmission.pending || removeSubmission.pending}>
-                  <button class="btn btn-outline btn-primary w-full p-0">
+                  <button class="action-button" disabled>
                     <span class="loading loading-spinner loading-sm"></span>
                   </button>
                 </Match>
                 <Match when={inCollection()}>
-                  <div class="flex justify-around">
-                    <button class="btn btn-outline btn-primary w-1/2" onClick={handleRemoveFromCollection}>Remove from collection</button>
-                    <A class="btn btn-outline btn-primary w-1/2" href={`/collection/${movie().id}`}>See in collection</A>
-                  </div>
+                  <button class="action-button secondary" onClick={handleRemoveFromCollection}>Remove from collection</button>
+                  <A class="action-button" href={`/collection/${movie().id}`}>Watch from collection</A>
                 </Match>
                 <Match when={!inCollection()}>
-                  <button class="btn btn-outline btn-primary w-full p-0" onClick={handleAddToCollection}>Add to collection</button>
+                  <button class="action-button" onClick={handleAddToCollection}>+ Add to collection</button>
                 </Match>
               </Switch>
+              </div>
             </div>
-          </div>
+          </section>
         </main>
       )}
     </Show>

@@ -31,15 +31,11 @@ const SignUp: Component<SignupProps> = (props) => {
   };
 
   return (
-    <div class="flex align-items justify-center h-screen">
-      <div class="aura aura-dual m-auto">
-        <div class="card bg-base-100">
-          <div class="card-body">
-            <div class="flex justify-center">
-              <span class="text-base">Welcome to <b>Solanum Streaming</b></span>
-            </div>
+    <div class="auth-screen">
+      <div class="auth-panel">
+          <div class="auth-intro"><div class="eyebrow">Start your library</div><strong>Solanum Streaming</strong><p>Create an account and keep your watchlist close.</p></div>
 
-            <form onSubmit={handleSubmit}>
+            <form class="auth-form" onSubmit={handleSubmit}>
               <fieldset class="fieldset bg-base-200 border-base-300 rounded-box w-xs border p-4">
                 <legend class="fieldset-legend text-primary">Sign Up</legend>
 
@@ -55,15 +51,12 @@ const SignUp: Component<SignupProps> = (props) => {
                 </div>
               </fieldset>
             </form>
-          </div>
-          <div class="flex items-center justify-center gap-1">
-            <p class="text-xs">Already a user?</p>
+          <div class="auth-switch">
+            <span>Already a user?</span>
             <button class="btn btn-xs btn-link" onClick={props.onGoToLogin}>
               Log In
             </button>
           </div>
-          <br/>
-        </div>
       </div>
     </div>
   )
