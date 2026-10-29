@@ -25,7 +25,7 @@ const Search = () => {
 
   return (
     <main class="page">
-        <div class="page-heading"><div><div class="eyebrow">Library search</div><h1 class="page-title">Search results</h1><p class="page-subtitle">Explore titles and find something worth pressing play on.</p></div><div class="search-wrap"><SearchBar/></div></div>
+        <div class="page-heading"><div><div class="eyebrow">Library search</div><h1 class="page-title">Search results</h1><p class="page-subtitle">Explore titles</p></div><div class="search-wrap"><SearchBar/></div></div>
         <Show when={results.loading}>
           <div class="movie-grid loading-grid">
             <For each={Array.from({ length: 18 })}>

@@ -10,7 +10,7 @@ const Home = () => {
   return (
     <main class="page">
       <div class="page-heading">
-        <div><div class="eyebrow">Discover</div><h1 class="page-title">Find your next story.</h1><p class="page-subtitle">A hand-picked stream of popular movies, ready for your watchlist.</p></div>
+        <div><div class="eyebrow">Discover</div><h1 class="page-title">Explore the movie catalog</h1><p class="page-subtitle">Trending and popular movies</p></div>
         <div class="search-wrap"><SearchBar/></div>
       </div>
       <Show when={popular()}>
