@@ -160,7 +160,7 @@ func (s *MovieService) SearchTorrent(ctx context.Context, userId pgtype.UUID, mo
 		link = bestResult.Torrent.Link
 	}
 
-	fmt.Printf("Movie Name: %s | MovieId: %d  |  TorrentLink: %s  |  Lenght: %d\n", TMDBResult.Title, movieId, link, TMDBResult.Runtime)
+	fmt.Printf("Movie Name: %s | MovieId: %d  |  TorrentLink: %s  |  Length: %d\n", TMDBResult.Title, movieId, link, TMDBResult.Runtime)
 
 	movie, err = s.store.UpdateTorrent(ctx, store.UpdateTorrentParams{
 		UserID:      userId,
@@ -176,6 +176,8 @@ func (s *MovieService) SearchTorrent(ctx context.Context, userId pgtype.UUID, mo
 		TorrentLink: link,
 		Length:      int(movie.Length),
 		Progression: movie.Progression.Microseconds / 1000,
+		AddedOn:     movie.AddedOn.Time,
+		LastWatched: movie.LastWatched.Time,
 	}, err
 }
 
@@ -193,6 +195,8 @@ func (s *MovieService) GetCollection(ctx context.Context, userId pgtype.UUID) ([
 			TorrentLink: u.TorrentLink,
 			Length:      int(u.Length),
 			Progression: u.Progression.Microseconds / 1000,
+			AddedOn:     u.AddedOn.Time,
+			LastWatched: u.LastWatched.Time,
 		})
 	}
 
@@ -213,6 +217,8 @@ func (s *MovieService) GetInCollection(ctx context.Context, userId pgtype.UUID, 
 		TorrentLink: movie.TorrentLink,
 		Length:      int(movie.Length),
 		Progression: movie.Progression.Microseconds / 1000,
+		AddedOn:     movie.AddedOn.Time,
+		LastWatched: movie.LastWatched.Time,
 	}, nil
 }
 
@@ -255,6 +261,8 @@ func (s *MovieService) AddToCollection(ctx context.Context, userId pgtype.UUID, 
 		TorrentLink: movie.TorrentLink,
 		Length:      int(movie.Length),
 		Progression: movie.Progression.Microseconds / 1000,
+		AddedOn:     movie.AddedOn.Time,
+		LastWatched: movie.LastWatched.Time,
 	}, err
 }
 

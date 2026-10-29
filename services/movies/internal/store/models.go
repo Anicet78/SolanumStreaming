@@ -14,4 +14,6 @@ type Collection struct {
 	TorrentLink string
 	Length      int32
 	Progression pgtype.Interval
+	AddedOn     pgtype.Timestamptz
+	LastWatched pgtype.Timestamptz
 }

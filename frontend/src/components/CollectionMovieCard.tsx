@@ -3,7 +3,6 @@ import { moviesApi, type CollectionMovieT } from "../api/movies"
 import MovieCard from "./MovieCard"
 
 const CollectionMovieCard: Component<CollectionMovieT> = (props) => {
-  const [movieInCollection] = createResource(() => props.movie_id, moviesApi.getInCollection);
   const [movieInfos] = createResource(() => props.movie_id, moviesApi.getMovieInfos);
 
   return (

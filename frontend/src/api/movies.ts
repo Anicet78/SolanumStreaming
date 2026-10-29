@@ -29,6 +29,8 @@ export interface CollectionMovieT {
   torrent_link: string
   length: number
   progression: number
+  added_on: string
+  last_watched: string
 }
 
 export const moviesApi = {

@@ -14,7 +14,7 @@ import (
 const deleteMovieFromCollection = `-- name: DeleteMovieFromCollection :one
 DELETE FROM collection
 WHERE user_id=$1 AND movie_id=$2
-RETURNING user_id, movie_id, torrent_link, length, progression
+RETURNING user_id, movie_id, torrent_link, length, progression, added_on, last_watched
 `
 
 type DeleteMovieFromCollectionParams struct {
@@ -31,36 +31,34 @@ func (q *Queries) DeleteMovieFromCollection(ctx context.Context, arg DeleteMovie
 		&i.TorrentLink,
 		&i.Length,
 		&i.Progression,
+		&i.AddedOn,
+		&i.LastWatched,
 	)
 	return i, err
 }
 
 const getAllMoviesInCollection = `-- name: GetAllMoviesInCollection :many
-SELECT movie_id, torrent_link, length, progression FROM collection
+SELECT user_id, movie_id, torrent_link, length, progression, added_on, last_watched FROM collection
 WHERE user_id=$1
 `
 
-type GetAllMoviesInCollectionRow struct {
-	MovieID     int32
-	TorrentLink string
-	Length      int32
-	Progression pgtype.Interval
-}
-
-func (q *Queries) GetAllMoviesInCollection(ctx context.Context, userID pgtype.UUID) ([]GetAllMoviesInCollectionRow, error) {
+func (q *Queries) GetAllMoviesInCollection(ctx context.Context, userID pgtype.UUID) ([]Collection, error) {
 	rows, err := q.db.Query(ctx, getAllMoviesInCollection, userID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetAllMoviesInCollectionRow
+	var items []Collection
 	for rows.Next() {
-		var i GetAllMoviesInCollectionRow
+		var i Collection
 		if err := rows.Scan(
+			&i.UserID,
 			&i.MovieID,
 			&i.TorrentLink,
 			&i.Length,
 			&i.Progression,
+			&i.AddedOn,
+			&i.LastWatched,
 		); err != nil {
 			return nil, err
 		}
@@ -73,7 +71,7 @@ func (q *Queries) GetAllMoviesInCollection(ctx context.Context, userID pgtype.UU
 }
 
 const getMovieInCollection = `-- name: GetMovieInCollection :one
-SELECT user_id, movie_id, torrent_link, length, progression FROM collection
+SELECT user_id, movie_id, torrent_link, length, progression, added_on, last_watched FROM collection
 WHERE user_id=$1 AND movie_id=$2
 `
 
@@ -91,6 +89,8 @@ func (q *Queries) GetMovieInCollection(ctx context.Context, arg GetMovieInCollec
 		&i.TorrentLink,
 		&i.Length,
 		&i.Progression,
+		&i.AddedOn,
+		&i.LastWatched,
 	)
 	return i, err
 }
@@ -99,7 +99,7 @@ const updateTorrent = `-- name: UpdateTorrent :one
 UPDATE collection
 SET torrent_link=$3
 WHERE user_id=$1 AND movie_id=$2
-RETURNING user_id, movie_id, torrent_link, length, progression
+RETURNING user_id, movie_id, torrent_link, length, progression, added_on, last_watched
 `
 
 type UpdateTorrentParams struct {
@@ -117,6 +117,8 @@ func (q *Queries) UpdateTorrent(ctx context.Context, arg UpdateTorrentParams) (C
 		&i.TorrentLink,
 		&i.Length,
 		&i.Progression,
+		&i.AddedOn,
+		&i.LastWatched,
 	)
 	return i, err
 }
@@ -124,7 +126,7 @@ func (q *Queries) UpdateTorrent(ctx context.Context, arg UpdateTorrentParams) (C
 const userAddMovieToCollection = `-- name: UserAddMovieToCollection :one
 INSERT INTO collection (user_id, movie_id, torrent_link, length)
 VALUES ($1, $2, $3, $4)
-RETURNING user_id, movie_id, torrent_link, length, progression
+RETURNING user_id, movie_id, torrent_link, length, progression, added_on, last_watched
 `
 
 type UserAddMovieToCollectionParams struct {
@@ -148,6 +150,8 @@ func (q *Queries) UserAddMovieToCollection(ctx context.Context, arg UserAddMovie
 		&i.TorrentLink,
 		&i.Length,
 		&i.Progression,
+		&i.AddedOn,
+		&i.LastWatched,
 	)
 	return i, err
 }
