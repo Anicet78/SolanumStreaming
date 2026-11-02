@@ -89,6 +89,7 @@
 .auth-form { display: grid; gap: 12px; }
 .auth-form .input { width: 100%; border-color: #304554; background: #0f1a23; color: #f7fafc; }
 .auth-form .btn-primary { border: 0; background: #67d3c4; color: #0b1118; }
+.text-primary { color: #67d3c4; }
 .auth-switch { margin-top: 22px; color: #93a4b8; text-align: center; font-size: .82rem; }
 .auth-switch .btn-link { color: #67d3c4; }
 @media (max-width: 640px) { .page { width: min(100% - 28px, 1440px); padding-top: 24px; } .page-heading { display: block; margin-bottom: 22px; } .movie-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 12px; } .search-submit { display: none; } }
