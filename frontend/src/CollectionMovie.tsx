@@ -1,5 +1,5 @@
 import { A, useParams } from "@solidjs/router";
-import { createResource, Show } from "solid-js";
+import { createResource, Match, Show, Switch } from "solid-js";
 import { moviesApi } from "./api/movies";
 import { getProfileParam } from "./api/capabilities";
 import '@videojs/html/video/player';
@@ -24,7 +24,14 @@ const CollectionMovie = () => {
   return (
     <main class="detail-page">
       <Show when={id()} fallback={<span>Not Found</span>}>
-        <Show when={movieInfos()} fallback={<span>Loading...</span>}>
+        <Show when={movieInfos()} fallback={
+          <Show when={torrent.loading}>
+            <div class="flex justify-center font-bold">
+              <span class="test-sm mr-2">Loading</span>
+              <span class="loading loading-infinity loading-md"></span>
+            </div>
+          </Show>
+        }>
           {(movie) => (
             <div class="player-page">
               <div class="detail-backbar">
@@ -56,9 +63,16 @@ const CollectionMovie = () => {
                   <Show when={movie().overview}><p class="detail-overview">{movie().overview}</p></Show>
                 </Show>
               </div>
-              <Show when={torrent.error}>
+              <Show when={torrent.state === "errored"}>
                 <div class="player-error">
-                  No stream is available for this movie yet.
+                  <Switch fallback={<span>An error has occured</span>}>
+                    <Match when={torrent.error.message === "No torrent found"}>
+                      No stream is available for this movie yet.
+                    </Match>
+                    <Match when={torrent.error.message === "Movie not in collection"}>
+                      This movie is not in your collection
+                    </Match>
+                  </Switch>
                 </div>
               </Show>
 

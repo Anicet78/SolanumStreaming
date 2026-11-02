@@ -8,6 +8,7 @@ import (
 	"shared/response"
 
 	"github.com/Anicet78/SolanumStreaming/movies/internal/domain"
+	"github.com/Anicet78/SolanumStreaming/movies/internal/jackett"
 	"github.com/Anicet78/SolanumStreaming/movies/internal/service"
 	"github.com/labstack/echo/v5"
 )
@@ -152,6 +153,8 @@ func (h *MovieHandler) searchTorrent(c *echo.Context) error {
 	res, err := h.service.SearchTorrent(c.Request().Context(), uuid, params.MovieID, query.ClientCaps)
 	if err != nil {
 		if errors.Is(err, domain.ErrMovieNotInCollection) {
+			return response.NotFound(c, err.Error())
+		} else if errors.Is(err, jackett.ErrNoTorrentFound) {
 			return response.NotFound(c, err.Error())
 		}
 		slog.Error("Search torrent failed", "error", err)
