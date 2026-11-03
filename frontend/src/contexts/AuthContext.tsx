@@ -9,6 +9,7 @@ interface AuthContextValue {
   user: Accessor<User | null>;
   login: (user: User) => void;
   logout: () => void;
+  updateUser: (patch: Partial<User>) => void;
 }
 
 const AuthContext = createContext<AuthContextValue>();
@@ -33,9 +34,12 @@ export function AuthProvider(props: ParentProps) {
 
   const login = (user: User) => setUser(user);
   const logout = () => setUser(null);
+  const updateUser = (patch: Partial<User>) =>
+    setUser((prev) => (prev ? { ...prev, ...patch } : prev));
+
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout, updateUser }}>
       <Switch>
         <Match when={refresh.loading}>
           <div class="flex"><span>Loading</span></div>

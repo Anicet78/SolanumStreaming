@@ -1,46 +1,90 @@
-import { A } from "@solidjs/router";
-import { Match, Show, Switch, type Accessor, type Component } from "solid-js";
-import type { User } from "../api/auth";
+import { A, action, useAction, useSubmission } from "@solidjs/router";
+import { createSignal, For, Show } from "solid-js";
+import { usersApi, type Languages } from "../api/auth";
+import { useAuthContext } from "../contexts/AuthContext";
 
-interface SidebarProps {
-  user: Accessor<User | null>
-}
+export const updateProfileAction = action(
+  async (username: string, newLang: Languages) => {
+    return usersApi.update({ new_username: username, new_language: newLang });
+  }
+);
 
-const Sidebar: Component<SidebarProps> = (props) => {
+const LANGS: Record<Languages, { flag: string; label: string }> = {
+  "fr-FR": { flag: "🇫🇷", label: "Français" },
+  "en-US": { flag: "🇬🇧", label: "English" },
+};
+
+const Sidebar = () => {
+  const auth = useAuthContext();
+
+  const updateProfile = useAction(updateProfileAction);
+  const submission = useSubmission(updateProfileAction);
+  const [languageMenuOpen, setLanguageMenuOpen] = createSignal(false);
+
+  const handleSetLang = async (lang: Languages) => {
+    const user = auth.user();
+    if (!user || user.lang === lang) return;
+    await updateProfile(user.username, lang);
+    auth.updateUser({ lang });
+  };
+
   return (
-    <aside class="flex min-h-full w-64 flex-col gap-4 bg-base-200 p-4">
-      <Show when={props.user()}>
-        <div class="flex items-center">
-          <span class="truncate font-semibold pl-1">{props.user()?.username ?? "Unknown User"}</span>
-        </div>
+    <aside class="app-sidebar">
+      <Show when={auth.user()}>
+        {(user) => (
+          <>
+            <div class="brand-lockup">
+              <span class="brand-symbol">S</span>
+              <div><strong>SOLANUM</strong><small>STREAMING</small></div>
+            </div>
+            <div class="user-chip"><span class="user-dot" />{user().username}</div>
 
-        <button class="btn btn-outline btn-sm" popovertarget="popover-1" style="anchor-name:--anchor-1">
-          <ul class="dropdown menu w-52 rounded-box bg-base-100 shadow-sm"
-            popover id="popover-1" style="position-anchor:--anchor-1">
-            <li><a>🇫🇷 Français</a></li>
-            <li><a>🇬🇧 English</a></li>
-          </ul>
-          <Switch fallback={<p>🌐 Unknown language</p>}>
-            <Match when={props.user()?.lang === "fr-FR"}>
-              <p>🇫🇷 Français</p>
-            </Match>
-            <Match when={props.user()?.lang === "en-US"}>
-              <p>🇬🇧 English</p>
-            </Match>
-        </Switch>
-        </button>
+            <button
+              class="language-button"
+              disabled={submission.pending}
+              aria-expanded={languageMenuOpen()}
+              onClick={() => setLanguageMenuOpen((open) => !open)}
+            >
+              <span class="language-label">
+                {LANGS[user().lang]?.flag ?? "🌐"}{" "}
+                {LANGS[user().lang]?.label ?? "Unknown language"}
+              </span>
+            </button>
 
-        <div class="divider my-0" />
+            <Show when={languageMenuOpen()}>
+              <ul class="language-menu">
+                <For each={Object.entries(LANGS) as [Languages, (typeof LANGS)[Languages]][]}>
+                  {([code, { flag, label }]) => (
+                    <li>
+                      <button
+                        type="button"
+                        classList={{ "menu-active": user().lang === code }}
+                        onClick={() => {
+                          void handleSetLang(code);
+                          setLanguageMenuOpen(false);
+                        }}
+                      >
+                        {flag} {label}
+                      </button>
+                    </li>
+                  )}
+                </For>
+              </ul>
+            </Show>
+            <div class="sidebar-divider" />
+          </>
+        )}
+
       </Show>
-      <ul class="menu w-full gap-1 p-0">
+      <ul class="sidebar-nav">
         <li>
           <A href="/" end activeClass="menu-active">
-            Home
+            <span>⌂</span> Home
           </A>
         </li>
         <li>
           <A href="/collection" activeClass="menu-active">
-            Collection
+            <span>▣</span> Collection
           </A>
         </li>
       </ul>

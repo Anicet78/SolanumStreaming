@@ -7,5 +7,5 @@ node_modules/
 
 # Jackett
 jackett/DataProtection
-jackett/log.txt
+jackett/log*.txt
 *.bak

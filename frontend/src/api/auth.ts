@@ -20,5 +20,5 @@ export const usersApi = {
   login: (data: Credentials) => api.post<User>(":8081/login", data),
   refresh: () => api.get<User>(":8081/refresh"),
   delete: () => api.delete<void>(":8081/profile"),
-  rename: (data: Omit<Credentials, "password">) => api.patch<void>(":8081/profile", data),
+  update: (data: {new_username: string, new_language: Languages}) => api.patch<void>(":8081/profile", data),
 };

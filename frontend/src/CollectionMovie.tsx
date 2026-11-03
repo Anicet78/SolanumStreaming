@@ -1,5 +1,5 @@
 import { A, useParams } from "@solidjs/router";
-import { createResource, Show } from "solid-js";
+import { createResource, Match, Show, Switch } from "solid-js";
 import { moviesApi } from "./api/movies";
 import { getProfileParam } from "./api/capabilities";
 import '@videojs/html/video/player';
@@ -22,61 +22,57 @@ const CollectionMovie = () => {
   )
 
   return (
-    <>
-      <div class="flex items-center justify-between ml-4 mt-4">
-        <A href={`/collection`}>
-          <div class="btn btn-dash btn-primary w-xs">⮐ Back to Collection</div>
-        </A>
-        <SearchBar/>
-        <div class="w-xs"></div>
-      </div>
-
+    <main class="detail-page">
       <Show when={id()} fallback={<span>Not Found</span>}>
-        <Show when={movieInfos()} fallback={<span>Loading...</span>}>
+        <Show when={movieInfos()} fallback={
+          <Show when={torrent.loading}>
+            <div class="flex justify-center font-bold">
+              <span class="test-sm mr-2">Loading</span>
+              <span class="loading loading-infinity loading-md"></span>
+            </div>
+          </Show>
+        }>
           {(movie) => (
-            <div class="min-h-screen p-4 flex flex-col items-center">
+            <div class="player-page">
+              <div class="detail-backbar">
+                <A class="detail-back" href="/collection">← Back to collection</A>
+                <div class="detail-search"><SearchBar /></div>
+              </div>
               <Show when={torrent.state === "ready"}>
-                <video-player>
-                  <video-skin style="display: block; width: 100%; aspect-ratio: 2 / 1;">
-                    <hlsjs-video src={`http://localhost:8083/playlist.m3u8?torrent_link=${encodeURIComponent(torrent()!.torrent_link)}`} playsinline></hlsjs-video>
-                  </video-skin>
-                </video-player>
-              </Show>
-
-              <div class="w-full p-4 pl-3">
-                <div class="flex items-center justify-evenly">
-                  <div class="flex flex-col w-fit">
-                    <span class="font-black text-2xl">{movie().title}</span>
-                    <Show when={movie().title !== movie().original_title}>
-                      <span class="self-center text-sm text-gray-300">{movie().original_title}</span>
-                    </Show>
-                  </div>
-                  <div class="flex flex-col items-center p-2">
-                    <span class="text-2xl">🗓️ </span>
-                    <span class="font-black text-2xl">{movie().release_date.slice(0, 4)}</span>
-                  </div>
-                  <div class="flex flex-col items-center p-2">
-                    <span class="text-2xl">⏳ </span>
-                    <span class="font-black text-2xl">{Math.floor(movie().runtime / 60)}h {movie().runtime % 60}m</span>
-                  </div>
-                  <div class="flex flex-col items-center p-2">
-                    <span class="text-2xl">⭐ </span>
-                    <span class="font-black text-2xl">{movie().vote_average}</span>
-                  </div>
+                <div class="player-frame">
+                  <video-player>
+                    <video-skin>
+                      <hlsjs-video src={`http://localhost:8083/playlist.m3u8?torrent_link=${encodeURIComponent(torrent()!.torrent_link)}`} playsinline></hlsjs-video>
+                    </video-skin>
+                  </video-player>
                 </div>
-                <Show when={movie().overview !== "" || movie().tagline !== ""}>
-                  <div class="mt-5 flex flex-col">
-                    <span class="text-gray-400">{movie().tagline.toUpperCase()}</span>
-                    <Show when={movie().overview !== "" && movie().tagline !== ""}><div class="mb-1"/></Show>
-                    <span>{movie().overview}</span>
-                  </div>
+              </Show>
+              <div class="player-info">
+                <div class="eyebrow">Now playing</div>
+                <h1 class="detail-title">{movie().title}</h1>
+                <Show when={movie().title !== movie().original_title}>
+                  <div class="detail-original">Original title: {movie().original_title}</div>
+                </Show>
+                <div class="detail-stats">
+                  <span class="detail-stat">{movie().release_date.slice(0, 4)}</span>
+                  <span class="detail-stat">{Math.floor(movie().runtime / 60)}h {movie().runtime % 60}m</span>
+                  <span class="detail-stat">★ {movie().vote_average.toFixed(1)} / 10</span>
+                </div>
+                <Show when={movie().tagline || movie().overview}>
+                  <Show when={movie().tagline}><div class="detail-tagline">{movie().tagline}</div></Show>
+                  <Show when={movie().overview}><p class="detail-overview">{movie().overview}</p></Show>
                 </Show>
               </div>
-              <Show when={torrent.error}>
-                <div class="mt-10 flex justify-center items-center h-full">
-                  <span class="text-2xl font-serif">
-                    Oups, ce film n'a pas de torrent disponible
-                  </span>
+              <Show when={torrent.state === "errored"}>
+                <div class="player-error">
+                  <Switch fallback={<span>An error has occured</span>}>
+                    <Match when={torrent.error.message === "No torrent found"}>
+                      No stream is available for this movie yet.
+                    </Match>
+                    <Match when={torrent.error.message === "Movie not in collection"}>
+                      This movie is not in your collection
+                    </Match>
+                  </Switch>
                 </div>
               </Show>
 
@@ -85,7 +81,7 @@ const CollectionMovie = () => {
           )}
         </Show>
       </Show>
-    </>
+    </main>
   )
 }
 

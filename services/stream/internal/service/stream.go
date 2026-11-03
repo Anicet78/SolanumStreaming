@@ -88,11 +88,14 @@ func (s *StreamService) CreatePlaylist(ctx context.Context, link string) (string
 			return nil, domain.ErrNoSegments
 		}
 
-		s.mu.Lock()
-		s.playlists[id] = &Playlist{
+		pl := &Playlist{
 			ID: id, Link: link, Text: buildPlaylist(segs),
 			Segments: segs, Probe: probe,
 		}
+		pl.pk = newPackager(s, pl)
+
+		s.mu.Lock()
+		s.playlists[id] = pl
 		s.mu.Unlock()
 		return nil, nil
 	})

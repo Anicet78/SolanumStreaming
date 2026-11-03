@@ -1,0 +1,32 @@
+[
+  {
+    "id": "sitelink",
+    "type": "inputstring",
+    "name": "Site Link",
+    "value": "https://yts.gg/"
+  },
+  {
+    "id": "cookieheader",
+    "type": "hiddendata",
+    "name": "CookieHeader",
+    "value": null
+  },
+  {
+    "id": "lasterror",
+    "type": "hiddendata",
+    "name": "LastError",
+    "value": "Exception (yts): Request to https://movies-api.accel.li/api/v2/list_movies.json?limit=50&sort_by=date_added&order_by=desc failed (Error 521) - The tracker seems to be down.: Request to https://movies-api.accel.li/api/v2/list_movies.json?limit=50&sort_by=date_added&order_by=desc failed (Error 521) - The tracker seems to be down."
+  },
+  {
+    "id": "apiurl",
+    "type": "inputstring",
+    "name": "API URL",
+    "value": "movies-api.accel.li"
+  },
+  {
+    "id": "tags",
+    "type": "inputtags",
+    "name": "Tags",
+    "value": ""
+  }
+]

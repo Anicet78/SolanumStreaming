@@ -106,7 +106,7 @@ func getScore(currentTorrent TorrentScore, bestTorrent *TorrentScore, target tmd
 	}
 }
 
-func FindBestResult(resp *JackettResponse, target tmdb.Movie, profile *ClientProfile) (TorrentScore, error) {
+func FindBestResult(resp *TorznabResponse, target tmdb.Movie, profile *ClientProfile) (TorrentScore, error) {
 	if len(resp.Results) > 150 {
 		resp.Results = resp.Results[:150]
 	}
@@ -150,7 +150,7 @@ func FindBestResult(resp *JackettResponse, target tmdb.Movie, profile *ClientPro
 		return TorrentScore{}, ErrNoTorrentFound
 	}
 
-	if (bestTorrent.TitleScore == 0 || bestTorrent.InfoScore == 0 || bestTorrent.QualityScore == 0) {
+	if bestTorrent.TitleScore == 0 || bestTorrent.InfoScore == 0 || bestTorrent.QualityScore == 0 {
 		return TorrentScore{}, ErrNoTorrentFound
 	}
 

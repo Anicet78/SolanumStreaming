@@ -8,6 +8,8 @@ import (
 	"strings"
 )
 
+const minKeyGap = 1.0
+
 type Segment struct {
 	Index    int
 	Start    float64
@@ -20,6 +22,8 @@ type Playlist struct {
 	Text     string
 	Segments []Segment
 	Probe    *ProbeResult
+
+	pk *packager
 }
 
 func buildSegments(keyframes []float64, total, target float64) []Segment {
@@ -27,13 +31,18 @@ func buildSegments(keyframes []float64, total, target float64) []Segment {
 		return nil
 	}
 
-	cuts := []float64{0}
-	last := 0.0
-	for _, k := range keyframes {
-		if k-last >= target {
-			cuts = append(cuts, k)
-			last = k
+	cuts := []float64{keyframes[0]}
+	last := keyframes[0]
+	for i := 1; i < len(keyframes); i++ {
+		k := keyframes[i]
+		if k-last < target {
+			continue
 		}
+		if i+1 < len(keyframes) && keyframes[i+1]-k < minKeyGap {
+			continue
+		}
+		cuts = append(cuts, k)
+		last = k
 	}
 
 	if len(cuts) > 1 && total-cuts[len(cuts)-1] < target/2 {
@@ -46,7 +55,11 @@ func buildSegments(keyframes []float64, total, target float64) []Segment {
 		if i+1 < len(cuts) {
 			end = cuts[i+1]
 		}
-		segs[i] = Segment{Index: i, Start: start, Duration: end - start}
+		d := end - start
+		if d <= 0 {
+			d = target
+		}
+		segs[i] = Segment{Index: i, Start: start, Duration: d}
 	}
 	return segs
 }

@@ -96,37 +96,17 @@ func PrintResult(r Result, index int) {
 	}
 }
 
-func PrintResponse(resp JackettResponse) {
+func PrintResponse(resp TorznabResponse) {
 	sep := strings.Repeat("─", 72)
 	bold := func(s string) string { return "\033[1m" + s + "\033[0m" }
 	dim := func(s string) string { return "\033[2m" + s + "\033[0m" }
 
 	// Header
 	fmt.Printf("\n%s\n", sep)
-	fmt.Printf("  %s   %s\n",
+	fmt.Printf("  %s\n",
 		bold(fmt.Sprintf("%d results", len(resp.Results))),
-		dim(fmt.Sprintf("across %d indexers", len(resp.Indexers))),
 	)
 	fmt.Printf("%s\n\n", sep)
-
-	// Indexer summary
-	for _, idx := range resp.Indexers {
-		status := "✓"
-		if idx.Status != 2 {
-			status = "✗"
-		}
-		line := fmt.Sprintf("  %s %-30s %s",
-			status,
-			idx.Name,
-			dim(fmt.Sprintf("%d results", idx.Results)),
-		)
-		if idx.Error != "" {
-			line += "  " + fmt.Sprintf("\033[31m%s\033[0m", idx.Error)
-		}
-		fmt.Println(line)
-	}
-
-	fmt.Printf("\n%s\n", sep)
 
 	// Results
 	for i, r := range resp.Results {

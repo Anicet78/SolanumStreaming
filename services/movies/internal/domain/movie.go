@@ -2,6 +2,7 @@ package domain
 
 import (
 	"errors"
+	"time"
 )
 
 type SearchRequestQuery struct {
@@ -14,10 +15,12 @@ type CollectionRequestBody struct {
 }
 
 type CollectionMovie struct {
-	MovieID     int    `json:"movie_id"`
-	TorrentLink string `json:"torrent_link"`
-	Length      int    `json:"length"`
-	Progression int64  `json:"progression"`
+	MovieID     int       `json:"movie_id"`
+	TorrentLink string    `json:"torrent_link"`
+	Length      int       `json:"length"`
+	Progression int64     `json:"progression"`
+	AddedOn     time.Time `json:"added_on"`
+	LastWatched time.Time `json:"last_watched"`
 }
 
 type MovieIDParam struct {
