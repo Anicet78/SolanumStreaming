@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -77,9 +78,9 @@ func (h *StreamHandler) hlsFile(c *echo.Context) error {
 	case file == "init.mp4":
 		data, err := h.service.GetInit(c.Request().Context(), pl)
 		if err != nil {
-			slog.Error("init failed", "error", err)
-			return response.InternalServerError(c, "Internal server error")
+			return h.mediaError(c, "init", err)
 		}
+		c.Response().Header().Set("Cache-Control", "public, max-age=3600")
 		return c.Blob(http.StatusOK, "video/mp4", data)
 	case strings.HasPrefix(file, "seg_") && strings.HasSuffix(file, ".m4s"):
 		var idx int
@@ -88,13 +89,24 @@ func (h *StreamHandler) hlsFile(c *echo.Context) error {
 		}
 		data, err := h.service.GetSegment(c.Request().Context(), pl, idx)
 		if err != nil {
-			slog.Error("segment failed", "index", idx, "error", err)
-			return response.InternalServerError(c, "Internal server error")
+			return h.mediaError(c, fmt.Sprintf("segment %d", idx), err)
 		}
+		c.Response().Header().Set("Cache-Control", "public, max-age=3600")
 		return c.Blob(http.StatusOK, "video/mp4", data)
 	default:
 		return response.NotFound(c, "Not found")
 	}
+}
+
+func (h *StreamHandler) mediaError(c *echo.Context, what string, err error) error {
+	switch {
+	case errors.Is(err, context.Canceled), errors.Is(err, context.DeadlineExceeded):
+		return nil
+	case errors.Is(err, domain.ErrSegmentOutOfRange):
+		return response.NotFound(c, "Segment not found")
+	}
+	slog.Error("media request failed", "what", what, "error", err)
+	return response.InternalServerError(c, "Internal server error")
 }
 
 func (h *StreamHandler) raw(c *echo.Context) error {

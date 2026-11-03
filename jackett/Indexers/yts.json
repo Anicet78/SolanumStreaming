@@ -9,13 +9,13 @@
     "id": "cookieheader",
     "type": "hiddendata",
     "name": "CookieHeader",
-    "value": "PHPSESSID=td6lkuv8sifl66fa3st1du9usc"
+    "value": null
   },
   {
     "id": "lasterror",
     "type": "hiddendata",
     "name": "LastError",
-    "value": null
+    "value": "Exception (yts): Request to https://movies-api.accel.li/api/v2/list_movies.json?limit=50&sort_by=date_added&order_by=desc failed (Error 521) - The tracker seems to be down.: Request to https://movies-api.accel.li/api/v2/list_movies.json?limit=50&sort_by=date_added&order_by=desc failed (Error 521) - The tracker seems to be down."
   },
   {
     "id": "apiurl",
