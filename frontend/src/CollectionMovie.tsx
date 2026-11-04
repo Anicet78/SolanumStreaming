@@ -1,11 +1,13 @@
-import { A, useParams } from "@solidjs/router";
+import { useParams } from "@solidjs/router";
 import { createResource, Match, Show, Switch } from "solid-js";
 import { moviesApi } from "./api/movies";
 import { getProfileParam } from "./api/capabilities";
 import '@videojs/html/video/player';
 import '@videojs/html/video/skin';
 import '@videojs/html/media/hlsjs-video';
-import SearchBar from "./components/SearchBar";
+import DetailPage from "./components/DetailPage";
+import DetailBackbar from "./components/DetailBackbar";
+import MovieDetails from "./components/MovieDetails";
 
 const CollectionMovie = () => {
   const params = useParams()
@@ -22,24 +24,21 @@ const CollectionMovie = () => {
   )
 
   return (
-    <main class="detail-page">
+    <DetailPage>
       <Show when={id()} fallback={<span>Not Found</span>}>
         <Show when={movieInfos()} fallback={
           <Show when={torrent.loading}>
             <div class="flex justify-center font-bold">
-              <span class="test-sm mr-2">Loading</span>
+              <span class="mr-2">Loading</span>
               <span class="loading loading-infinity loading-md"></span>
             </div>
           </Show>
         }>
           {(movie) => (
-            <div class="player-page">
-              <div class="detail-backbar">
-                <A class="detail-back" href="/collection">← Back to collection</A>
-                <div class="detail-search"><SearchBar /></div>
-              </div>
+            <div class="mx-auto w-full 3xl:w-[min(100%,2200px)] 4xl:w-[min(100%,3000px)]">
+              <DetailBackbar href="/collection" label="← Back to collection" />
               <Show when={torrent.state === "ready"}>
-                <div class="player-frame">
+                <div class="overflow-hidden bg-[#05090d] shadow-[0_20px_50px_rgb(0_0_0/28%)] [&_hlsjs-video]:block [&_hlsjs-video]:h-full [&_hlsjs-video]:w-full [&_video-player]:block [&_video-player]:w-full [&_video-skin]:block [&_video-skin]:aspect-[2/1] [&_video-skin]:w-full 4xl:[&_video-skin]:aspect-video">
                   <video-player>
                     <video-skin>
                       <hlsjs-video src={`http://localhost:8083/playlist.m3u8?torrent_link=${encodeURIComponent(torrent()!.torrent_link)}`} playsinline></hlsjs-video>
@@ -47,24 +46,11 @@ const CollectionMovie = () => {
                   </video-player>
                 </div>
               </Show>
-              <div class="player-info">
-                <div class="eyebrow">Now playing</div>
-                <h1 class="detail-title">{movie().title}</h1>
-                <Show when={movie().title !== movie().original_title}>
-                  <div class="detail-original">Original title: {movie().original_title}</div>
-                </Show>
-                <div class="detail-stats">
-                  <span class="detail-stat">{movie().release_date.slice(0, 4)}</span>
-                  <span class="detail-stat">{Math.floor(movie().runtime / 60)}h {movie().runtime % 60}m</span>
-                  <span class="detail-stat">★ {movie().vote_average.toFixed(1)} / 10</span>
-                </div>
-                <Show when={movie().tagline || movie().overview}>
-                  <Show when={movie().tagline}><div class="detail-tagline">{movie().tagline}</div></Show>
-                  <Show when={movie().overview}><p class="detail-overview">{movie().overview}</p></Show>
-                </Show>
+              <div class="mt-6 rounded-2xl border border-line bg-surface p-[clamp(20px,4vw,34px)] 4xl:p-14.5">
+                <MovieDetails movie={movie()} eyebrow="Now playing" compact />
               </div>
               <Show when={torrent.state === "errored"}>
-                <div class="player-error">
+                <div class="mt-4.5 rounded-[10px] border border-[#6b4c56] p-4 text-[#f2b8c5] 4xl:text-[1.55rem]">
                   <Switch fallback={<span>An error has occured</span>}>
                     <Match when={torrent.error.message === "No torrent found"}>
                       No stream is available for this movie yet.
@@ -81,7 +67,7 @@ const CollectionMovie = () => {
           )}
         </Show>
       </Show>
-    </main>
+    </DetailPage>
   )
 }
 

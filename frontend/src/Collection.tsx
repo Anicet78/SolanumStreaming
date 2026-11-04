@@ -2,7 +2,9 @@ import { moviesApi } from "./api/movies";
 import { createMemo, createResource, For } from "solid-js";
 import { A } from "@solidjs/router";
 import CollectionMovieCard from "./components/CollectionMovieCard";
-import SearchBar from "./components/SearchBar";
+import MovieGrid from "./components/MovieGrid";
+import Page from "./components/Page";
+import PageHeading from "./components/PageHeading";
 
 const Collection = () => {
   const [results] = createResource(moviesApi.getCollection);
@@ -12,18 +14,18 @@ const Collection = () => {
   );
 
   return (
-    <main class="page">
-      <div class="page-heading"><div><div class="eyebrow">Your library</div><h1 class="page-title">Collection</h1><p class="page-subtitle">The movies you saved, sorted by your latest activity.</p></div><div class="search-wrap"><SearchBar /></div></div>
-        <div class="movie-grid">
-          <For each={sortedMovies()}>
-            {(movie) => (
-              <A href={`/collection/${movie.movie_id}`}>
-                <CollectionMovieCard {...movie} />
-              </A>
-            )}
-          </For>
-        </div>
-    </main>
+    <Page>
+      <PageHeading eyebrow="Your library" title="Collection" subtitle="The movies you saved, sorted by your latest activity." />
+      <MovieGrid>
+        <For each={sortedMovies()}>
+          {(movie) => (
+            <A href={`/collection/${movie.movie_id}`}>
+              <CollectionMovieCard {...movie} />
+            </A>
+          )}
+        </For>
+      </MovieGrid>
+    </Page>
   );
 };
 

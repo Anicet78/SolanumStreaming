@@ -1,5 +1,4 @@
 import { Route, Router } from '@solidjs/router'
-import './App.css'
 import Home from './Home'
 import Search from './Search'
 import { AuthProvider } from './contexts/AuthContext'

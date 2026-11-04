@@ -9,7 +9,7 @@ const escapeRegex = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$
 const PasswordConfirm: Component<PasswordProps> = (props) => {
   return (
     <>
-      <label class="input validator">
+      <label class="input validator w-full border-line-strong bg-surface-deep text-snow">
         <svg class="h-[1em] opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
           <g
           stroke-linejoin="round"

@@ -1,7 +1,9 @@
 import { A, action, useAction, useParams, useSubmission } from "@solidjs/router";
 import { moviesApi } from "./api/movies";
 import { createEffect, createResource, createSignal, Match, Show, Switch } from "solid-js";
-import SearchBar from "./components/SearchBar";
+import DetailPage from "./components/DetailPage";
+import DetailBackbar from "./components/DetailBackbar";
+import MovieDetails from "./components/MovieDetails";
 
 export const addToCollectionAction = action(async (movie_id: number) => {
   return moviesApi.addToCollection({ movie_id });
@@ -10,6 +12,11 @@ export const addToCollectionAction = action(async (movie_id: number) => {
 export const removeFromCollectionAction = action(async (movie_id: number) => {
   return moviesApi.removeFromCollection(movie_id);
 });
+
+const actionButton =
+  "inline-flex min-h-10.5 cursor-pointer items-center justify-center rounded-[9px] border px-4 text-[0.85rem] font-bold hover:brightness-[1.08] narrow:flex-[1_1_100%] 3xl:text-[0.95rem] 4xl:min-h-14.5 4xl:px-6.5 4xl:text-[1.1rem]";
+const actionPrimary = "border-brand bg-brand text-ink";
+const actionSecondary = "border-[#496273] bg-[rgb(11_17_24/65%)] text-[#d7e2eb]";
 
 const Movie = () => {
   const params = useParams()
@@ -44,49 +51,37 @@ const Movie = () => {
     if (!removeSubmission.error) setInCollection(false)
   };
 
+
   return (
     <Show when={movie()}>
       {(movie) => (
-        <main class="detail-page">
-          <div class="detail-backbar">
-            <A class="detail-back" href="/">← Back to discover</A>
-            <div class="detail-search"><SearchBar /></div>
-          </div>
-          <section class="detail-hero" style={{ "background-image": `url(https://image.tmdb.org/t/p/original${movie().backdrop_path})` }}>
-            <div class="detail-content">
-              <div class="eyebrow">Movie details</div>
-              <h1 class="detail-title">{movie().title}</h1>
-              <Show when={movie().title !== movie().original_title}>
-                <div class="detail-original">Original title: {movie().original_title}</div>
-              </Show>
-              <div class="detail-stats">
-                <span class="detail-stat">{movie().release_date.slice(0, 4)}</span>
-                <span class="detail-stat">{Math.floor(movie().runtime / 60)}h {movie().runtime % 60}m</span>
-                <span class="detail-stat">★ {movie().vote_average.toFixed(1)} / 10</span>
-              </div>
-              <Show when={movie().tagline || movie().overview}>
-                <Show when={movie().tagline}><div class="detail-tagline">{movie().tagline}</div></Show>
-                <Show when={movie().overview}><p class="detail-overview">{movie().overview}</p></Show>
-              </Show>
-              <div class="detail-actions">
+        <DetailPage>
+          <DetailBackbar href="/" label="← Back to discover" />
+          <section
+            class="relative flex min-h-[min(650px,calc(100vh-130px))] items-end overflow-hidden rounded-[20px] border border-line bg-cover bg-center shadow-[0_24px_70px_rgb(0_0_0/28%)] before:absolute before:inset-0 before:bg-[linear-gradient(90deg,rgb(6_12_18/96%)_0%,rgb(6_12_18/78%)_42%,rgb(6_12_18/18%)_100%),linear-gradient(0deg,rgb(6_12_18/96%)_0%,transparent_58%)] before:content-[''] max-lg:min-h-0 narrow:bg-[position:64%_center] narrow:before:bg-[linear-gradient(0deg,rgb(6_12_18/98%)_8%,rgb(6_12_18/50%)_64%,rgb(6_12_18/20%)_100%)] 3xl:min-h-[760px] 4xl:min-h-[980px]"
+            style={{ "background-image": `url(https://image.tmdb.org/t/p/original${movie().backdrop_path})` }}
+          >
+            <div class="relative w-[min(760px,100%)] p-[clamp(24px,5vw,64px)] narrow:px-5 narrow:py-6 4xl:w-[min(100%,1250px)] 4xl:p-27.5">
+              <MovieDetails movie={movie()} eyebrow="Movie details" />
+              <div class="mt-7 flex flex-wrap gap-2.5">
               <Switch fallback={<p>Something went wrong.</p>}>
                 <Match when={movieInCollection.loading || addSubmission.pending || removeSubmission.pending}>
-                  <button class="action-button" disabled>
+                  <button class={`${actionButton} ${actionPrimary}`} disabled>
                     <span class="loading loading-spinner loading-sm"></span>
                   </button>
                 </Match>
                 <Match when={inCollection()}>
-                  <button class="action-button secondary" onClick={handleRemoveFromCollection}>Remove from collection</button>
-                  <A class="action-button" href={`/collection/${movie().id}`}>Watch from collection</A>
+                  <button class={`${actionButton} ${actionSecondary}`} onClick={handleRemoveFromCollection}>Remove from collection</button>
+                  <A class={`${actionButton} ${actionPrimary}`} href={`/collection/${movie().id}`}>Watch from collection</A>
                 </Match>
                 <Match when={!inCollection()}>
-                  <button class="action-button" onClick={handleAddToCollection}>+ Add to collection</button>
+                  <button class={`${actionButton} ${actionPrimary}`} onClick={handleAddToCollection}>+ Add to collection</button>
                 </Match>
               </Switch>
               </div>
             </div>
           </section>
-        </main>
+        </DetailPage>
       )}
     </Show>
   );
