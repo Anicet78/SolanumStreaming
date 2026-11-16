@@ -1,0 +1,8 @@
+Frontend:
+	☐ Mieux gérer les erreurs
+	✔ Implementer le systeme d'override @done (11/16/2026, 1:56:41 PM)
+
+Backend:
+	✔ Fix the stream issues @done (11/4/2026, 4:01:13 PM)
+	☐ Add jwt on stream requests
+	☐ Add subtitles to the stream

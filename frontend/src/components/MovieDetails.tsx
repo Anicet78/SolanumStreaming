@@ -1,6 +1,7 @@
-import { Show, type Component } from "solid-js";
+import { Show, type Component, type JSX } from "solid-js";
 import type { moviesApi } from "../api/movies";
 import Eyebrow from "./Eyebrow";
+import { pill, pillIdle } from "./pill";
 
 type MovieInfos = Awaited<ReturnType<typeof moviesApi.getMovieInfos>>;
 
@@ -8,10 +9,10 @@ type MovieDetailsProps = {
   movie: MovieInfos;
   eyebrow: string;
   compact?: boolean;
+  statsExtra?: JSX.Element;
 };
 
-const stat =
-  "rounded-lg border border-line-strong bg-[rgb(11_17_24/60%)] px-[11px] py-2 text-[0.8rem] text-haze 3xl:text-[0.9rem] 4xl:px-4.5 4xl:py-[13px] 4xl:text-[1.5rem]";
+const stat = `${pill} ${pillIdle}`;
 
 const MovieDetails: Component<MovieDetailsProps> = (props) => (
   <>
@@ -34,6 +35,7 @@ const MovieDetails: Component<MovieDetailsProps> = (props) => (
       <span class={stat}>{props.movie.release_date.slice(0, 4)}</span>
       <span class={stat}>{Math.floor(props.movie.runtime / 60)}h {props.movie.runtime % 60}m</span>
       <span class={stat}>★ {props.movie.vote_average.toFixed(1)} / 10</span>
+      {props.statsExtra}
     </div>
     <Show when={props.movie.tagline || props.movie.overview}>
       <Show when={props.movie.tagline}>

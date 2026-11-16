@@ -1,25 +1,32 @@
 import { useParams } from "@solidjs/router";
-import { createResource, Match, Show, Switch } from "solid-js";
+import { createMemo, createResource, Match, Show, Switch } from "solid-js";
 import { moviesApi } from "./api/movies";
-import { getProfileParam } from "./api/capabilities";
+import { buildProfile, getProfileParam, profileToParam } from "./api/capabilities";
+import { useDisplay } from "./Capabilities";
 import '@videojs/html/video/player';
 import '@videojs/html/video/skin';
 import '@videojs/html/media/hlsjs-video';
 import DetailPage from "./components/DetailPage";
 import DetailBackbar from "./components/DetailBackbar";
+import DisplayMenu from "./components/DisplayMenu";
 import MovieDetails from "./components/MovieDetails";
 
 const CollectionMovie = () => {
   const params = useParams()
   const id = () => Number(params.movie_id)
 
+  const { display, override } = useDisplay()
   const [profile] = createResource(getProfileParam)
+  const profileParam = createMemo(() => {
+    display()
+    if (!profile()) return ""
+    const p = buildProfile()
+    return p ? profileToParam(p) : ""
+  })
+  const customDisplay = () => override().tier !== undefined || override().hdr !== undefined
   const [movieInfos] = createResource(id, moviesApi.getMovieInfos)
   const [torrent] = createResource(
-    () => {
-      const caps = profile()
-      return id() && caps ? { id: id(), caps } : false
-    },
+    () => (id() && profileParam() ? { id: id(), caps: profileParam() } : false),
     ({ id, caps }) => moviesApi.searchTorrent(id, caps)
   )
 
@@ -46,14 +53,27 @@ const CollectionMovie = () => {
                   </video-player>
                 </div>
               </Show>
+              <Show when={torrent.state === "refreshing"}>
+                <div class="grid aspect-[2/1] place-items-center bg-[#05090d] shadow-[0_20px_50px_rgb(0_0_0/28%)] 4xl:aspect-video">
+                  <span class="loading loading-spinner loading-md text-brand"></span>
+                </div>
+              </Show>
               <div class="mt-6 rounded-2xl border border-line bg-surface p-[clamp(20px,4vw,34px)] 4xl:p-14.5">
-                <MovieDetails movie={movie()} eyebrow="Now playing" compact />
+                <MovieDetails
+                  movie={movie()}
+                  eyebrow="Now playing"
+                  compact
+                  statsExtra={<Show when={profile()}><DisplayMenu /></Show>}
+                />
               </div>
               <Show when={torrent.state === "errored"}>
                 <div class="mt-4.5 rounded-[10px] border border-[#6b4c56] p-4 text-[#f2b8c5] 4xl:text-[1.55rem]">
                   <Switch fallback={<span>An error has occured</span>}>
                     <Match when={torrent.error.message === "No torrent found"}>
                       No stream is available for this movie yet.
+                      <Show when={customDisplay()}>
+                        <div class="mt-1 opacity-70">Your display settings are customised: try a lower resolution.</div>
+                      </Show>
                     </Match>
                     <Match when={torrent.error.message === "Movie not in collection"}>
                       This movie is not in your collection
