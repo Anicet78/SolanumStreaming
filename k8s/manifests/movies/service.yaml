@@ -7,4 +7,3 @@ spec:
     app: movies
   ports:
     - port: 8082
-      targetPort: 8082

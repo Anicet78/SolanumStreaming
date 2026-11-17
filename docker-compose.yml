@@ -72,9 +72,13 @@ services:
       - solanum-streaming
     env_file:
       - .env
+    environment:
+    - GOMODCACHE=/go-cache/mod
+    - GOCACHE=/go-cache/build
     working_dir: /src/auth
     volumes:
       - ./services:/src
+      - go-cache:/go-cache
     entrypoint: ["go", "run", "cmd/main.go"]
     restart: on-failure:3
     healthcheck:
@@ -97,9 +101,13 @@ services:
       - solanum-streaming
     env_file:
       - .env
+    environment:
+    - GOMODCACHE=/go-cache/mod
+    - GOCACHE=/go-cache/build
     working_dir: /src/movies
     volumes:
       - ./services:/src
+      - go-cache:/go-cache
     entrypoint: ["go", "run", "cmd/main.go"]
     restart: on-failure:3
     healthcheck:
@@ -128,9 +136,13 @@ services:
       - solanum-streaming
     env_file:
       - .env
+    environment:
+    - GOMODCACHE=/go-cache/mod
+    - GOCACHE=/go-cache/build
     working_dir: /src/stream
     volumes:
       - ./services:/src
+      - go-cache:/go-cache
     entrypoint: ["go", "run", "cmd/main.go"]
     restart: on-failure:3
     healthcheck:
@@ -146,6 +158,7 @@ services:
 
 volumes:
   postgres-v:
+  go-cache:
 
 networks:
   solanum-streaming:

@@ -15,5 +15,8 @@ spec:
       containers:
         - name: frontend
           image: frontend
+          envFrom:
+            - secretRef:
+                name: solanumstreaming-env
           ports:
             - containerPort: 80

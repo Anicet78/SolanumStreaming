@@ -7,10 +7,10 @@ metadata:
 spec:
   ingressClassName: traefik
   tls:
-    - hosts: [solanumstreaming.mondomaine.fr]
+    - hosts: [solanumstreaming.domain.com]
       secretName: solanumstreaming-tls
   rules:
-    - host: solanumstreaming.mondomaine.fr
+    - host: solanumstreaming.domain.com
       http:
         paths:
           - path: /api/auth

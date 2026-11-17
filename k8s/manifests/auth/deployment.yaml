@@ -15,5 +15,8 @@ spec:
       containers:
         - name: auth
           image: auth
+          envFrom:
+            - secretRef:
+                name: solanumstreaming-env
           ports:
             - containerPort: 8081
