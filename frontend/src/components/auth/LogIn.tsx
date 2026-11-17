@@ -1,6 +1,7 @@
 import { createSignal, type Component } from "solid-js";
 import Password from "./Password"
 import Username from "./Username"
+import AuthPanel from "../AuthPanel";
 import { usersApi } from "../../api/auth";
 import { action, useAction, useSubmission } from "@solidjs/router";
 import { useAuthContext } from "../../contexts/AuthContext";
@@ -31,32 +32,28 @@ const LogIn: Component<LoginProps> = (props) => {
   };
 
   return (
-    <div class="auth-screen">
-      <div class="auth-panel">
-          <div class="auth-intro"><div class="eyebrow">Welcome back</div><strong>Solanum Streaming</strong><p>Your next favorite movie is waiting.</p></div>
+    <AuthPanel
+      eyebrow="Welcome back"
+      tagline="Your next favorite movie is waiting."
+      switchText="Need an account?"
+      switchLabel="Sign Up"
+      onSwitch={props.onGoToSignup}
+    >
+      <form class="grid gap-3" onSubmit={handleSubmit}>
+        <fieldset class="fieldset bg-base-200 border-base-300 rounded-box w-xs border p-4">
+          <legend class="fieldset-legend text-brand">Log In</legend>
 
-            <form class="auth-form" onSubmit={handleSubmit}>
-              <fieldset class="fieldset bg-base-200 border-base-300 rounded-box w-xs border p-4">
-                <legend class="fieldset-legend text-primary">Log In</legend>
+          <Username value={username()} onInput={setUsername} />
+          <Password value={password()} onInput={setPassword} />
 
-                <Username value={username()} onInput={setUsername} />
-                <Password value={password()} onInput={setPassword} />
-
-                <div class="tooltip tooltip-open tooltip-top tooltip-end mt-4 mb-2" data-tip={submission.error ? submission.error.message : ""}>
-                  <button class="btn btn-soft btn-primary w-full" type="submit" disabled={submission.pending}>
-                    {submission.pending ? "Logging in..." : "Log In"}
-                  </button>
-                </div>
-              </fieldset>
-            </form>
-          <div class="auth-switch">
-            <span>Need an account?</span>
-            <button class="btn btn-xs btn-link" onClick={props.onGoToSignup}>
-              Sign Up
+          <div class="tooltip tooltip-open tooltip-top tooltip-end mt-4 mb-2" data-tip={submission.error ? submission.error.message : ""}>
+            <button class="btn btn-soft btn-primary w-full border-0 bg-brand text-ink" type="submit" disabled={submission.pending}>
+              {submission.pending ? "Logging in..." : "Log In"}
             </button>
           </div>
-      </div>
-    </div>
+        </fieldset>
+      </form>
+    </AuthPanel>
   )
 }
 

@@ -1,18 +1,20 @@
 import { createSignal, onCleanup, onMount } from "solid-js";
-import { ensureCapabilities, getDisplay, getOverride, subscribeCapabilities } from "./api/capabilities";
+import { ensureCapabilities, getCapabilities, getDisplay, getOverride, subscribeCapabilities } from "./api/capabilities";
 
 export function useDisplay() {
   const [display, setDisplay] = createSignal(getDisplay());
   const [override, setOverride] = createSignal(getOverride());
+  const [detected, setDetected] = createSignal(getCapabilities()?.detected ?? null);
 
   const sync = () => {
     setDisplay(getDisplay());
     setOverride({ ...getOverride() });
+    setDetected(getCapabilities()?.detected ?? null);
   };
   onCleanup(subscribeCapabilities(sync));
   onMount(() => void ensureCapabilities());
 
-  return { display, override };
+  return { display, override, detected };
 }
 
 const Capabilities = () => {

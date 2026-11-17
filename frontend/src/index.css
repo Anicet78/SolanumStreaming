@@ -2,16 +2,66 @@
 @import "tailwindcss";
 @plugin "daisyui";
 
-:root {
-	font-family: 'DM Sans', 'Avenir Next', sans-serif;
-	color: #edf2f7;
-	background: #0b1118;
-	font-synthesis: none;
-	text-rendering: optimizeLegibility;
+/* ---------------------------------------------------------------------------
+   Design tokens : tout ce qui est modifiable globalement est ici.
+   --------------------------------------------------------------------------- */
+@theme {
+  /* Typographie (utilisée par `font-sans` via preflight, et `font-heading`) */
+  --font-sans: 'DM Sans', 'Avenir Next', sans-serif;
+  --font-heading: 'Space Grotesk', sans-serif;
+
+  /* Breakpoints : en px comme l'ancien CSS (pas de mélange rem/px) */
+  --breakpoint-lg: 1024px;
+  --breakpoint-3xl: 1800px;
+  --breakpoint-4xl: 2560px;
+
+  /* Palette */
+  --color-ink: #0b1118;          /* fond de l'app, texte sur fond brand */
+  --color-glow: #193044;         /* halo des dégradés radiaux */
+  --color-brand: #67d3c4;        /* accent */
+  --color-snow: #f7fafc;         /* titres, texte fort */
+  --color-haze: #c4d0dc;         /* texte courant (synopsis, stats) */
+  --color-fog: #b6c4d2;          /* texte de la sidebar / pagination */
+  --color-dim: #93a4b8;          /* texte secondaire */
+  --color-surface: #111d27;      /* panneaux, champ de recherche */
+  --color-surface-deep: #0f1a23; /* boutons ronds, champs d'auth */
+  --color-surface-hover: #162733;
+  --color-line: #263747;         /* bordures des cartes */
+  --color-line-soft: #20313f;    /* séparateurs de la sidebar */
+  --color-line-strong: #304554;  /* bordures des contrôles */
+
+  /* Skeleton de chargement */
+  --animate-shimmer: shimmer 1.4s infinite;
+  @keyframes shimmer {
+    to { background-position: -200% 0; }
+  }
 }
 
-* { box-sizing: border-box; }
-html, body, #root { min-height: 100%; margin: 0; }
-body { min-width: 320px; background: #0b1118; }
-a { color: inherit; text-decoration: none; }
-button, input { font: inherit; }
+/* Variants responsive qui reprennent exactement les anciennes media queries
+   (max-width inclusif : 640px et 700px). */
+@custom-variant mobile (@media (max-width: 640px));
+@custom-variant narrow (@media (max-width: 700px));
+
+/* Tailwind v4 limite `hover:` aux appareils qui supportent le survol ;
+   l'ancien CSS appliquait :hover partout (y compris au tactile). */
+@custom-variant hover (&:hover);
+
+/* Styles racine : volontairement hors `@layer`, comme avant, pour continuer à
+   passer devant les styles de base de daisyUI (:root { background, color }). */
+:root {
+  color: #edf2f7;
+  background: var(--color-ink);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+html, body, #root { min-height: 100%; }
+body { min-width: 320px; background: var(--color-ink); }
+
+/* Boutons/champs : police héritée, comme avant. Placé dans `@layer utilities`
+   (premier niveau) pour passer devant la typo des `.btn` de daisyUI, qui vit
+   dans des sous-layers, tout en restant battu par les classes Tailwind
+   (`text-sm`, `font-bold`…) grâce à leur spécificité. Ne pas le sortir du layer :
+   hors layer, il écraserait toutes les classes de typographie des boutons. */
+@layer utilities {
+  button, input { font: inherit; }
+}
