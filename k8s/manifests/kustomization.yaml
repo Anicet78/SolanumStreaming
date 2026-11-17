@@ -23,19 +23,19 @@ resources:
 
 images:
   - name: frontend
-    newName: ghcr.io/Anicet78/solanumstreaming-frontend
+    newName: ghcr.io/anicet78/solanumstreaming-frontend
     newTag: latest
   - name: auth
-    newName: ghcr.io/Anicet78/solanumstreaming-auth
+    newName: ghcr.io/anicet78/solanumstreaming-auth
     newTag: latest
   - name: movies
-    newName: ghcr.io/Anicet78/solanumstreaming-movies
+    newName: ghcr.io/anicet78/solanumstreaming-movies
     newTag: latest
   - name: stream
-    newName: ghcr.io/Anicet78/solanumstreaming-stream
+    newName: ghcr.io/anicet78/solanumstreaming-stream
     newTag: latest
   - name: migrate
-    newName: ghcr.io/Anicet78/solanumstreaming-migrate
+    newName: ghcr.io/anicet78/solanumstreaming-migrate
     newTag: latest
 
 configMapGenerator:

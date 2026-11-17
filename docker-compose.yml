@@ -57,11 +57,25 @@ services:
     restart: on-failure:3
 
   # frontend:
-  #   build: ./frontend
+  #   image: oven/bun:slim
   #   container_name: frontend-c
   #   ports:
-  #     - 8080:8080
+  #     - 5173:5173
+  #   networks:
+  #     - solanum-streaming
+  #   working_dir: /src
+  #   volumes:
+  #     - ./frontend:/src
+  #   entrypoint: ["bun", "run", "dev"]
   #   restart: on-failure:3
+  frontend:
+    build: ./frontend
+    container_name: frontend-c
+    ports:
+      - 8080:80
+    networks:
+      - solanum-streaming
+    restart: on-failure:3
 
   auth:
     image: golang:1.27.2
