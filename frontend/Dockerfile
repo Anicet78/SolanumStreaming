@@ -1,19 +1,19 @@
-FROM node:slim
+FROM oven/bun:slim AS builder
 
 WORKDIR /app
 
-COPY ./nginx.conf /etc/nginx/conf.d/default.conf:ro
-
 COPY . .
 
-RUN npm run build
+RUN bun run build
 
 FROM nginx:stable-alpine-slim
 
 WORKDIR /usr/share/nginx
 
-COPY --from=builder /app/build .
+COPY --from=builder /app/dist .
 
-EXPOSE 8080
+COPY ./nginx.conf /etc/nginx/conf.d/default.conf
 
-ENTRYPOINT [ "nginx -g 'daemon off;'" ]
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]

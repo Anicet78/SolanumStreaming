@@ -56,12 +56,18 @@ services:
       - ./jackett:/config/Jackett
     restart: on-failure:3
 
-  # frontend:
-  #   build: ./frontend
-  #   container_name: frontend-c
-  #   ports:
-  #     - 8080:8080
-  #   restart: on-failure:3
+  frontend:
+    image: oven/bun:slim
+    container_name: frontend-c
+    ports:
+      - 5173:5173
+    networks:
+      - solanum-streaming
+    working_dir: /src
+    volumes:
+      - ./frontend:/src
+    entrypoint: ["bun", "run", "dev"]
+    restart: on-failure:3
 
   auth:
     image: golang:1.27.2
