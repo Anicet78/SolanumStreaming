@@ -39,5 +39,5 @@ spec:
             backend:
               service:
                 name: frontend
-                ports:
+                port:
                   number: 80
