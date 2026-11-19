@@ -72,6 +72,14 @@ func (h *StreamHandler) hlsFile(c *echo.Context) error {
 
 	switch {
 	case file == "index.m3u8":
+		text := pl.Text
+		if pl.Master != "" {
+			text = pl.Master
+		}
+		c.Response().Header().Set("Content-Type", "application/vnd.apple.mpegurl")
+		c.Response().Header().Set("Cache-Control", "no-cache")
+		return c.String(http.StatusOK, text)
+	case file == "video.m3u8":
 		c.Response().Header().Set("Content-Type", "application/vnd.apple.mpegurl")
 		c.Response().Header().Set("Cache-Control", "no-cache")
 		return c.String(http.StatusOK, pl.Text)
@@ -93,6 +101,32 @@ func (h *StreamHandler) hlsFile(c *echo.Context) error {
 		}
 		c.Response().Header().Set("Cache-Control", "public, max-age=3600")
 		return c.Blob(http.StatusOK, "video/mp4", data)
+	case strings.HasPrefix(file, "sub_") && strings.HasSuffix(file, ".m3u8"):
+		var id int
+		if _, err := fmt.Sscanf(file, "sub_%d.m3u8", &id); err != nil {
+			return response.NotFound(c, "Not found")
+		}
+		text, ok := h.service.SubtitlePlaylist(pl, id)
+		if !ok {
+			return response.NotFound(c, "Subtitle track not found")
+		}
+		c.Response().Header().Set("Content-Type", "application/vnd.apple.mpegurl")
+		c.Response().Header().Set("Cache-Control", "no-cache")
+		return c.String(http.StatusOK, text)
+	case strings.HasPrefix(file, "sub_") && strings.HasSuffix(file, ".vtt"):
+		var id, k int
+		if _, err := fmt.Sscanf(file, "sub_%d_%d.vtt", &id, &k); err != nil {
+			return response.NotFound(c, "Not found")
+		}
+		data, err := h.service.SubtitleSegment(c.Request().Context(), pl, id, k)
+		if err != nil {
+			if errors.Is(err, service.ErrSubtitleNotFound) {
+				return response.NotFound(c, "Subtitle segment not found")
+			}
+			return h.mediaError(c, fmt.Sprintf("subtitle %d/%d", id, k), err)
+		}
+		c.Response().Header().Set("Cache-Control", "public, max-age=3600")
+		return c.Blob(http.StatusOK, "text/vtt; charset=utf-8", data)
 	default:
 		return response.NotFound(c, "Not found")
 	}

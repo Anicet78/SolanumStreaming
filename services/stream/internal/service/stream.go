@@ -93,6 +93,8 @@ func (s *StreamService) CreatePlaylist(ctx context.Context, link string) (string
 			Segments: segs, Probe: probe,
 		}
 		pl.pk = newPackager(s, pl)
+		pl.subs = newSubtitles(s, pl, s.sidecars(link))
+		pl.Master = pl.subs.master()
 
 		s.mu.Lock()
 		s.playlists[id] = pl

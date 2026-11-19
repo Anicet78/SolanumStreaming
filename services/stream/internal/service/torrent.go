@@ -1,6 +1,7 @@
 package service
 
 import (
+	"io"
 	"net/http"
 	"strings"
 	"time"
@@ -108,4 +109,32 @@ func loadTorrent(client *torrent.Client, torrentLink string) (*torrent.Torrent, 
 		}
 	}
 	return t, nil
+}
+
+func (s *StreamService) sidecars(link string) []sidecarFile {
+	s.mu.Lock()
+	entry := s.torrents[link]
+	s.mu.Unlock()
+	if entry == nil || entry.t == nil {
+		return nil
+	}
+
+	var out []sidecarFile
+	for _, f := range entry.t.Files() {
+		name := f.DisplayPath()
+		if !isSidecarName(name) || f.Length() <= 0 || f.Length() > maxSidecarSize {
+			continue
+		}
+		f := f
+		out = append(out, sidecarFile{
+			Name: name,
+			Size: f.Length(),
+			Open: func() (io.ReadSeekCloser, error) {
+				r := f.NewReader()
+				r.SetResponsive()
+				return r, nil
+			},
+		})
+	}
+	return out
 }

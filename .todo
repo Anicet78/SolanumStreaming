@@ -1,8 +1,11 @@
 Frontend:
 	☐ Mieux gérer les erreurs
 	✔ Implementer le systeme d'override @done (11/16/2026, 1:56:41 PM)
+	☐ Fix responsive
+	☐ Add jwt on stream requests
 
 Backend:
 	✔ Fix the stream issues @done (11/4/2026, 4:01:13 PM)
-	☐ Add jwt on stream requests
-	☐ Add subtitles to the stream
+	✔ Add subtitles to the stream @done (11/19/2026, 2:42:57 PM)
+	☐ Change subtitles look
+	☐ Subtitles by default if film language != user language
