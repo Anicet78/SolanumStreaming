@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"io"
 	"net/http"
 	"strings"
@@ -137,4 +138,29 @@ func (s *StreamService) sidecars(link string) []sidecarFile {
 		})
 	}
 	return out
+}
+
+func (s *StreamService) movieHash(ctx context.Context, link string) (string, error) {
+	file, err := s.getFile(link)
+	if err != nil {
+		return "", err
+	}
+	type result struct {
+		hash string
+		err  error
+	}
+	ch := make(chan result, 1)
+	go func() {
+		r := file.NewReader()
+		r.SetResponsive()
+		defer r.Close()
+		h, err := opensubtitlesHash(r, file.Length())
+		ch <- result{h, err}
+	}()
+	select {
+	case res := <-ch:
+		return res.hash, res.err
+	case <-ctx.Done():
+		return "", ctx.Err()
+	}
 }

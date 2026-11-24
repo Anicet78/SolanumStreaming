@@ -41,7 +41,12 @@ type sidecarFile struct {
 	Name string
 	Size int64
 	Open func() (io.ReadSeekCloser, error)
+	Fetch func(ctx context.Context) ([]byte, error)
+	Label string
+	Lang  string
 }
+
+func (sc *sidecarFile) external() bool { return sc.Label != "" }
 
 type subTrack struct {
 	ID     int
@@ -94,12 +99,23 @@ func newSubtitles(s *StreamService, pl *Playlist, sidecars []sidecarFile) *subti
 		})
 	}
 
-	sort.Slice(sidecars, func(i, j int) bool { return sidecars[i].Name < sidecars[j].Name })
-	for i := range sidecars {
-		if i >= maxSidecars {
-			break
+	sort.SliceStable(sidecars, func(i, j int) bool {
+		ei, ej := sidecars[i].external(), sidecars[j].external()
+		if ei != ej {
+			return !ei
 		}
+		return !ei && sidecars[i].Name < sidecars[j].Name
+	})
+	nTorrent := 0
+	for i := range sidecars {
 		sc := sidecars[i]
+		if sc.external() {
+			st.tracks = append(st.tracks, &subTrack{Name: sc.Label, Lang: sc.Lang, stream: -1, sidecar: &sc})
+			continue
+		}
+		if nTorrent++; nTorrent > maxSidecars {
+			continue
+		}
 		iso, lname := detectLangFromPath(sc.Name)
 		name := lname
 		if name == "" {
@@ -340,6 +356,14 @@ func readLimited(ctx context.Context, sc *sidecarFile) ([]byte, error) {
 	}
 	ch := make(chan result, 1)
 	go func() {
+		if sc.Fetch != nil {
+			data, err := sc.Fetch(ctx)
+			if err == nil && len(data) > maxSidecarSize {
+				err = fmt.Errorf("fichier de sous-titres trop gros (%s)", sc.Name)
+			}
+			ch <- result{data, err}
+			return
+		}
 		r, err := sc.Open()
 		if err != nil {
 			ch <- result{nil, err}

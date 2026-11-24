@@ -37,13 +37,27 @@ func (h *StreamHandler) RegisterRoutes(e *echo.Echo) {
 	internal.GET("/raw", h.raw)
 }
 
+func firstParam(c *echo.Context, names ...string) string {
+	for _, n := range names {
+		if v := c.QueryParam(n); v != "" {
+			return v
+		}
+	}
+	return ""
+}
+
 func (h *StreamHandler) createPlaylist(c *echo.Context) error {
 	params, err := bind.Query[domain.TorrentLinkQuery](c)
 	if err != nil {
 		return err
 	}
 
-	id, err := h.service.CreatePlaylist(c.Request().Context(), params.TorrentLink)
+	meta := service.ParseMovieMeta(
+		firstParam(c, "tmdbId", "tmdb_id"),
+		firstParam(c, "imdbId", "imdb_id"),
+	)
+
+	id, err := h.service.CreatePlaylistFor(c.Request().Context(), params.TorrentLink, meta)
 	if err != nil {
 		if errors.Is(err, domain.ErrTorrentLoadingTimeout) {
 			return response.GatewayTimeout(c, err.Error())
@@ -122,6 +136,9 @@ func (h *StreamHandler) hlsFile(c *echo.Context) error {
 		if err != nil {
 			if errors.Is(err, service.ErrSubtitleNotFound) {
 				return response.NotFound(c, "Subtitle segment not found")
+			}
+			if errors.Is(err, service.ErrSubtitleQuota) {
+				return response.ServiceUnavailable(c, "Subtitle download quota exceeded, try again later")
 			}
 			return h.mediaError(c, fmt.Sprintf("subtitle %d/%d", id, k), err)
 		}
