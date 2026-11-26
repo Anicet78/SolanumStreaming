@@ -28,7 +28,7 @@ images:
   newTag: f79b52139eb11d5c1162dc2c026d5b472cc10c5c
 - name: frontend
   newName: ghcr.io/anicet78/solanumstreaming-frontend
-  newTag: f79b52139eb11d5c1162dc2c026d5b472cc10c5c
+  newTag: d82caed673eb5c460715e0d7bcaf13ef5dd2a885
 - name: migrate
   newName: ghcr.io/anicet78/solanumstreaming-migrate
   newTag: f79b52139eb11d5c1162dc2c026d5b472cc10c5c
