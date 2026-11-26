@@ -48,7 +48,7 @@ const CollectionMovie = () => {
                 <div class="overflow-hidden bg-[#05090d] shadow-[0_1.25rem_3.125rem_rgb(0_0_0/28%)] [&_hlsjs-video]:block [&_hlsjs-video]:h-full [&_hlsjs-video]:w-full [&_video-player]:block [&_video-player]:w-full [&_video-skin]:block [&_video-skin]:aspect-[2/1] [&_video-skin]:max-h-[85svh] [&_video-skin]:w-full">
                   <video-player>
                     <video-skin>
-                      <hlsjs-video src={`http://localhost:8083/playlist.m3u8?torrent_link=${encodeURIComponent(torrent()!.torrent_link)}`} playsinline></hlsjs-video>
+                      <hlsjs-video src={`${import.meta.env.VITE_API_URL}${import.meta.env.VITE_STREAM_PATH}/playlist.m3u8?torrent_link=${encodeURIComponent(torrent()!.torrent_link)}`} playsinline></hlsjs-video>
                     </video-skin>
                   </video-player>
                 </div>

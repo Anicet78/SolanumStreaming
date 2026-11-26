@@ -5,6 +5,7 @@ namespace: solanumstreaming
 
 resources:
   - ingress.yaml
+  - prefix-middleware.yaml
   - frontend/deployment.yaml
   - frontend/service.yaml
   - auth/deployment.yaml

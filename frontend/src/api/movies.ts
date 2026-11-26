@@ -33,20 +33,22 @@ export interface CollectionMovieT {
   last_watched: string
 }
 
+const BASE = import.meta.env.VITE_MOVIES_PATH;
+
 export const moviesApi = {
   search: (filters: { title?: string; page?: number }) => {
     const params = new URLSearchParams();
     if (filters.title) params.set("title", filters.title);
     if (filters.page) params.set("page", String(filters.page));
 
-    return api.get<SearchResponse>(`:8082/search?${params.toString()}`);
+    return api.get<SearchResponse>(`${BASE}/search?${params.toString()}`);
   },
-  getNowPlaying: () => api.get<SearchResponse>(":8082/list/now_playing"),
-  getPopular: () => api.get<SearchResponse>(":8082/list/popular"),
-  getMovieInfos: (movieId: number) => api.get<MovieT>(`:8082/${movieId}`),
-  searchTorrent: (movieId: number, caps: string) => api.get<CollectionMovieT>(`:8082/${movieId}/torrent?caps=${caps.toString()}`),
-  getCollection: () => api.get<CollectionMovieT[]>(":8082/collection"),
-  getInCollection: (movieId: number) => api.get<CollectionMovieT>(`:8082/collection/${movieId}`),
-  addToCollection: (data: { movie_id: number }) => api.post<CollectionMovieT>(`:8082/collection`, data),
-  removeFromCollection: (movieId: number) => api.delete<void>(`:8082/collection/${movieId}`),
+  getNowPlaying: () => api.get<SearchResponse>(`${BASE}/list/now_playing`),
+  getPopular: () => api.get<SearchResponse>(`${BASE}/list/popular`),
+  getMovieInfos: (movieId: number) => api.get<MovieT>(`${BASE}/${movieId}`),
+  searchTorrent: (movieId: number, caps: string) => api.get<CollectionMovieT>(`${BASE}/${movieId}/torrent?caps=${caps.toString()}`),
+  getCollection: () => api.get<CollectionMovieT[]>(`${BASE}/collection`),
+  getInCollection: (movieId: number) => api.get<CollectionMovieT>(`${BASE}/collection/${movieId}`),
+  addToCollection: (data: { movie_id: number }) => api.post<CollectionMovieT>(`${BASE}/collection`, data),
+  removeFromCollection: (movieId: number) => api.delete<void>(`${BASE}/collection/${movieId}`),
 };

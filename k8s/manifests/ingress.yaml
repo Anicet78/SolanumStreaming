@@ -4,6 +4,7 @@ metadata:
   name: solanumstreaming
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt
+    traefik.ingress.kubernetes.io/router.middlewares: solanumstreaming-strip-api-prefix@kubernetescrd
 spec:
   ingressClassName: traefik
   tls:
