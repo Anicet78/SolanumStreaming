@@ -33,6 +33,22 @@ type AudioInfo struct {
 	Title    string
 }
 
+type SubInfo struct {
+	Index    int
+	Codec    string
+	Language string
+	Title    string
+	Forced   bool
+}
+
+func isTextSubCodec(c string) bool {
+	switch c {
+	case "subrip", "srt", "ass", "ssa", "webvtt", "mov_text", "text", "microdvd", "subviewer", "sami":
+		return true
+	}
+	return false
+}
+
 type Container string
 
 const (
@@ -55,15 +71,18 @@ func containerFromFormatName(name string) Container {
 
 type ProbeResult struct {
 	Duration  float64
+	Bitrate   int64
 	Container Container
 	Video     *VideoInfo
 	Audio     []AudioInfo
+	Subs      []SubInfo
 }
 
 type ffprobeOut struct {
 	Format struct {
 		Duration   string `json:"duration"`
 		FormatName string `json:"format_name"`
+		BitRate    string `json:"bit_rate"`
 	} `json:"format"`
 	Streams []struct {
 		Index         int               `json:"index"`
@@ -75,6 +94,7 @@ type ffprobeOut struct {
 		ColorTransfer string            `json:"color_transfer"`
 		Channels      int               `json:"channels"`
 		Tags          map[string]string `json:"tags"`
+		Disposition   map[string]int    `json:"disposition"`
 	} `json:"streams"`
 }
 
@@ -105,6 +125,7 @@ func (s *StreamService) probe(ctx context.Context, link string) (*ProbeResult, e
 	res := &ProbeResult{}
 	res.Duration, _ = strconv.ParseFloat(raw.Format.Duration, 64)
 	res.Container = containerFromFormatName(raw.Format.FormatName)
+	res.Bitrate, _ = strconv.ParseInt(raw.Format.BitRate, 10, 64)
 
 	for _, st := range raw.Streams {
 		switch st.CodecType {
@@ -117,6 +138,14 @@ func (s *StreamService) probe(ctx context.Context, link string) (*ProbeResult, e
 				Index: st.Index, Codec: st.CodecName, Channels: st.Channels,
 				Language: st.Tags["language"], Title: st.Tags["title"],
 			})
+		case "subtitle":
+			if isTextSubCodec(st.CodecName) {
+				res.Subs = append(res.Subs, SubInfo{
+					Index: st.Index, Codec: st.CodecName,
+					Language: st.Tags["language"], Title: st.Tags["title"],
+					Forced: st.Disposition["forced"] == 1,
+				})
+			}
 		}
 	}
 	if res.Video == nil {

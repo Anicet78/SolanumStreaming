@@ -28,10 +28,11 @@ type StreamService struct {
 	group         singleflight.Group
 	InternalBase  string
 	InternalToken string
+	opensubs      *openSubtitles
 }
 
 func NewStreamService(client *torrent.Client, internalBase string, internalToken string) *StreamService {
-	return &StreamService{
+	s := &StreamService{
 		client:   client,
 		torrents: map[string]*loadedTorrent{},
 		extractors: map[Container]KeyframeExtractor{
@@ -42,6 +43,10 @@ func NewStreamService(client *torrent.Client, internalBase string, internalToken
 		InternalToken: internalToken,
 		InternalBase:  internalBase,
 	}
+	if cfg, ok := OpenSubtitlesConfigFromEnv(); ok {
+		s.opensubs = newOpenSubtitles(cfg)
+	}
+	return s
 }
 
 func (s *StreamService) ServeRaw(w http.ResponseWriter, r *http.Request, link string) error {
@@ -60,7 +65,11 @@ func (s *StreamService) ServeRaw(w http.ResponseWriter, r *http.Request, link st
 }
 
 func (s *StreamService) CreatePlaylist(ctx context.Context, link string) (string, error) {
-	id := makeID(link)
+	return s.CreatePlaylistFor(ctx, link, MovieMeta{})
+}
+
+func (s *StreamService) CreatePlaylistFor(ctx context.Context, link string, meta MovieMeta) (string, error) {
+	id := makeID(link + meta.key())
 
 	s.mu.Lock()
 	_, ok := s.playlists[id]
@@ -93,6 +102,10 @@ func (s *StreamService) CreatePlaylist(ctx context.Context, link string) (string
 			Segments: segs, Probe: probe,
 		}
 		pl.pk = newPackager(s, pl)
+		torrentSubs := s.sidecars(link)
+		extra := s.openSubtitleTracks(bctx, link, probe, torrentSubs, meta)
+		pl.subs = newSubtitles(s, pl, append(torrentSubs, extra...))
+		pl.Master = pl.subs.master()
 
 		s.mu.Lock()
 		s.playlists[id] = pl

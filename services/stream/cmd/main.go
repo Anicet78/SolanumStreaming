@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"log/slog"
 	"net/http"
+	"os"
 
 	"github.com/Anicet78/SolanumStreaming/stream/internal/handler"
 	"github.com/Anicet78/SolanumStreaming/stream/internal/service"
@@ -45,7 +46,7 @@ func main() {
 	}
 	defer client.Close()
 
-	internalBase := "http://127.0.0.1:8083"
+	internalBase := os.Getenv("API_URL") + os.Getenv("API_STREAM_PATH")
 	tokenBytes := make([]byte, 16)
 	rand.Read(tokenBytes)
 	internalToken := hex.EncodeToString(tokenBytes)
@@ -57,7 +58,7 @@ func main() {
 	e := echo.New()
 
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins:     []string{"http://localhost:5500", "http://localhost:5173"},
+		AllowOrigins:     []string{"http://localhost:5500", "http://localhost:5173", "https://solanumstreaming.mooo.com"},
 		AllowCredentials: true,
 		AllowMethods:     []string{http.MethodGet, http.MethodPost, http.MethodPatch, http.MethodDelete},
 	}))

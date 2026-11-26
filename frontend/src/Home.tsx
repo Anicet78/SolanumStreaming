@@ -15,12 +15,10 @@ const Home = () => {
       <Show when={popular()}>
         <MovieGrid>
           <For each={popular()?.results}>
-            {(movie, idx) =>
-              <Show when={idx() < 18}>
-                <A href={`/${movie.id}`}>
-                  <MovieCard {...movie} />
-                </A>
-              </Show>
+            {(movie) =>
+              <A href={`/${movie.id}`}>
+                <MovieCard {...movie} />
+              </A>
             }
           </For>
         </MovieGrid>

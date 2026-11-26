@@ -15,10 +15,12 @@ export interface User {
   jwt: string;
 }
 
+const BASE = import.meta.env.VITE_AUTH_PATH;
+
 export const usersApi = {
-  create: (data: Credentials) => api.post<User>(":8081/register", data),
-  login: (data: Credentials) => api.post<User>(":8081/login", data),
-  refresh: () => api.get<User>(":8081/refresh"),
-  delete: () => api.delete<void>(":8081/profile"),
-  update: (data: {new_username: string, new_language: Languages}) => api.patch<void>(":8081/profile", data),
+  create: (data: Credentials) => api.post<User>(`${BASE}/register`, data),
+  login: (data: Credentials) => api.post<User>(`${BASE}/login`, data),
+  refresh: () => api.get<User>(`${BASE}/refresh`),
+  delete: () => api.delete<void>(`${BASE}/profile`),
+  update: (data: {new_username: string, new_language: Languages}) => api.patch<void>("${BASE}/profile", data),
 };

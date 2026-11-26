@@ -1,6 +1,8 @@
 package service
 
 import (
+	"context"
+	"io"
 	"net/http"
 	"strings"
 	"time"
@@ -108,4 +110,57 @@ func loadTorrent(client *torrent.Client, torrentLink string) (*torrent.Torrent, 
 		}
 	}
 	return t, nil
+}
+
+func (s *StreamService) sidecars(link string) []sidecarFile {
+	s.mu.Lock()
+	entry := s.torrents[link]
+	s.mu.Unlock()
+	if entry == nil || entry.t == nil {
+		return nil
+	}
+
+	var out []sidecarFile
+	for _, f := range entry.t.Files() {
+		name := f.DisplayPath()
+		if !isSidecarName(name) || f.Length() <= 0 || f.Length() > maxSidecarSize {
+			continue
+		}
+		f := f
+		out = append(out, sidecarFile{
+			Name: name,
+			Size: f.Length(),
+			Open: func() (io.ReadSeekCloser, error) {
+				r := f.NewReader()
+				r.SetResponsive()
+				return r, nil
+			},
+		})
+	}
+	return out
+}
+
+func (s *StreamService) movieHash(ctx context.Context, link string) (string, error) {
+	file, err := s.getFile(link)
+	if err != nil {
+		return "", err
+	}
+	type result struct {
+		hash string
+		err  error
+	}
+	ch := make(chan result, 1)
+	go func() {
+		r := file.NewReader()
+		r.SetResponsive()
+		defer r.Close()
+		h, err := opensubtitlesHash(r, file.Length())
+		ch <- result{h, err}
+	}()
+	select {
+	case res := <-ch:
+		return res.hash, res.err
+	case <-ctx.Done():
+		return "", ctx.Err()
+	}
 }

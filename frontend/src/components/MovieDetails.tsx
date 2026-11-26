@@ -18,16 +18,16 @@ const MovieDetails: Component<MovieDetailsProps> = (props) => (
   <>
     <Eyebrow>{props.eyebrow}</Eyebrow>
     <h1
-      class="mt-2 font-heading leading-[0.96] tracking-[-0.04em] text-snow"
+      class="mt-2 font-heading leading-[0.96] tracking-[-0.04em] break-words text-snow"
       classList={{
-        "text-[clamp(2.2rem,6vw,5rem)] 4xl:text-[clamp(5rem,5vw,8rem)]": !props.compact,
+        "text-[clamp(2.2rem,6vw,5rem)]": !props.compact,
         "text-[clamp(1.8rem,4vw,3rem)]": props.compact,
       }}
     >
       {props.movie.title}
     </h1>
     <Show when={props.movie.title !== props.movie.original_title}>
-      <div class="mt-[9px] text-[0.9rem] text-dim 3xl:text-[1rem] 4xl:text-[1.75rem]">
+      <div class="mt-[0.5625rem] text-[0.9rem] break-words text-dim">
         Original title: {props.movie.original_title}
       </div>
     </Show>
@@ -39,12 +39,12 @@ const MovieDetails: Component<MovieDetailsProps> = (props) => (
     </div>
     <Show when={props.movie.tagline || props.movie.overview}>
       <Show when={props.movie.tagline}>
-        <div class="mt-6 text-[0.82rem] font-bold tracking-[0.12em] text-brand uppercase 3xl:text-[0.9rem] 4xl:text-[1.8rem]">
+        <div class="mt-6 text-[0.82rem] font-bold tracking-[0.12em] break-words text-brand uppercase">
           {props.movie.tagline}
         </div>
       </Show>
       <Show when={props.movie.overview}>
-        <p class="mt-3 max-w-[650px] leading-[1.65] text-haze 3xl:text-[1.05rem] 4xl:max-w-[1050px] 4xl:text-[2rem] 4xl:leading-[1.5]">
+        <p class="mt-3 max-w-[40.625rem] leading-[1.65] break-words text-haze">
           {props.movie.overview}
         </p>
       </Show>

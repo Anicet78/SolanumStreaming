@@ -20,10 +20,12 @@ type Playlist struct {
 	ID       string
 	Link     string
 	Text     string
+	Master   string
 	Segments []Segment
 	Probe    *ProbeResult
 
-	pk *packager
+	pk   *packager
+	subs *subtitles
 }
 
 func buildSegments(keyframes []float64, total, target float64) []Segment {
