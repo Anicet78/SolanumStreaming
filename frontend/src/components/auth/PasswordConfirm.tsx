@@ -9,8 +9,8 @@ const escapeRegex = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$
 const PasswordConfirm: Component<PasswordProps> = (props) => {
   return (
     <>
-      <label class="input validator w-full border-line-strong bg-surface-deep text-snow">
-        <svg class="h-[1em] opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+      <label class="input validator w-full text-base pointer-coarse:[--size:3rem]">
+        <svg class="h-[1em] opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true">
           <g
           stroke-linejoin="round"
           stroke-linecap="round"
@@ -28,9 +28,11 @@ const PasswordConfirm: Component<PasswordProps> = (props) => {
           type="password"
           required
           placeholder="Confirm password"
+          aria-label="Confirm password"
+          autocomplete="new-password"
           minlength="5"
           pattern={escapeRegex(props.password())}
-          title="Must be more than 8 characters, including number, lowercase letter, uppercase letter"
+          title="Passwords must match"
         />
       </label>
       <p class="validator-hint hidden">

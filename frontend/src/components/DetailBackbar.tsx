@@ -9,10 +9,10 @@ type DetailBackbarProps = {
 
 const DetailBackbar: Component<DetailBackbarProps> = (props) => (
   <div class="mb-8 flex items-center justify-between gap-5 narrow:flex-col-reverse narrow:items-stretch">
-    <A class="text-[0.85rem] text-dim hover:text-brand 3xl:text-[0.95rem] 4xl:text-[1.75rem]" href={props.href}>
+    <A class="-my-2 py-2 text-[0.85rem] text-dim hover:text-brand pointer-coarse:-my-3 pointer-coarse:py-3" href={props.href}>
       {props.label}
     </A>
-    <div class="w-[min(100%,480px)] narrow:w-full">
+    <div class="w-[min(100%,30rem)] narrow:w-full">
       <SearchBar />
     </div>
   </div>

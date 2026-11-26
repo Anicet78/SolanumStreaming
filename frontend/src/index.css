@@ -1,67 +1,92 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
 @import "tailwindcss";
-@plugin "daisyui";
+@plugin "daisyui" {
+  themes: false;
+}
+@plugin "daisyui/theme" {
+  name: "solanum";
+  default: true;
+  color-scheme: dark;
+  --color-base-100: var(--color-surface-deep);
+  --color-base-200: var(--color-surface);
+  --color-base-300: var(--color-line);
+  --color-base-content: var(--color-snow);
+  --color-primary: var(--color-brand);
+  --color-primary-content: var(--color-ink);
+  --color-secondary: var(--color-line-strong);
+  --color-secondary-content: var(--color-snow);
+  --color-accent: var(--color-brand);
+  --color-accent-content: var(--color-ink);
+  --color-neutral: var(--color-surface-hover);
+  --color-neutral-content: var(--color-haze);
+  --color-info: var(--color-brand);
+  --color-info-content: var(--color-ink);
+  --color-success: var(--color-brand);
+  --color-success-content: var(--color-ink);
+  --color-warning: #f5c26b;
+  --color-warning-content: var(--color-ink);
+  --color-error: #f2b8c5;
+  --color-error-content: var(--color-ink);
+  --radius-selector: 0.5rem;
+  --radius-field: 0.5rem;
+  --radius-box: 0.75rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: max(1px, 0.0625rem);
+  --depth: 0;
+  --noise: 0;
+}
 
-/* ---------------------------------------------------------------------------
-   Design tokens : tout ce qui est modifiable globalement est ici.
-   --------------------------------------------------------------------------- */
 @theme {
-  /* Typographie (utilisée par `font-sans` via preflight, et `font-heading`) */
   --font-sans: 'DM Sans', 'Avenir Next', sans-serif;
   --font-heading: 'Space Grotesk', sans-serif;
 
-  /* Breakpoints : en px comme l'ancien CSS (pas de mélange rem/px) */
-  --breakpoint-lg: 1024px;
-  --breakpoint-3xl: 1800px;
-  --breakpoint-4xl: 2560px;
+  --default-border-width: max(1px, 0.0625rem);
 
-  /* Palette */
-  --color-ink: #0b1118;          /* fond de l'app, texte sur fond brand */
-  --color-glow: #193044;         /* halo des dégradés radiaux */
-  --color-brand: #67d3c4;        /* accent */
-  --color-snow: #f7fafc;         /* titres, texte fort */
-  --color-haze: #c4d0dc;         /* texte courant (synopsis, stats) */
-  --color-fog: #b6c4d2;          /* texte de la sidebar / pagination */
-  --color-dim: #93a4b8;          /* texte secondaire */
-  --color-surface: #111d27;      /* panneaux, champ de recherche */
-  --color-surface-deep: #0f1a23; /* boutons ronds, champs d'auth */
+  --color-ink: #0b1118;
+  --color-glow: #193044;
+  --color-brand: #67d3c4;
+  --color-snow: #f7fafc;
+  --color-haze: #c4d0dc;
+  --color-fog: #b6c4d2;
+  --color-dim: #93a4b8;
+  --color-surface: #111d27;
+  --color-surface-deep: #0f1a23;
   --color-surface-hover: #162733;
-  --color-line: #263747;         /* bordures des cartes */
-  --color-line-soft: #20313f;    /* séparateurs de la sidebar */
-  --color-line-strong: #304554;  /* bordures des contrôles */
+  --color-line: #263747;
+  --color-line-soft: #20313f;
+  --color-line-strong: #304554;
+  --color-danger: #f2b8c5;
+  --color-danger-line: #6b4c56;
 
-  /* Skeleton de chargement */
   --animate-shimmer: shimmer 1.4s infinite;
   @keyframes shimmer {
     to { background-position: -200% 0; }
   }
 }
 
-/* Variants responsive qui reprennent exactement les anciennes media queries
-   (max-width inclusif : 640px et 700px). */
-@custom-variant mobile (@media (max-width: 640px));
-@custom-variant narrow (@media (max-width: 700px));
-
-/* Tailwind v4 limite `hover:` aux appareils qui supportent le survol ;
-   l'ancien CSS appliquait :hover partout (y compris au tactile). */
+@custom-variant mobile (@media (max-width: 40rem));
+@custom-variant narrow (@media (max-width: 43.75rem));
+@custom-variant tall (@media (min-height: 32rem));
 @custom-variant hover (&:hover);
 
-/* Styles racine : volontairement hors `@layer`, comme avant, pour continuer à
-   passer devant les styles de base de daisyUI (:root { background, color }). */
 :root {
+  font-size: max(100%, min(1vw, 1.7778vh));
   color: #edf2f7;
   background: var(--color-ink);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
 }
 html, body, #root { min-height: 100%; }
-body { min-width: 320px; background: var(--color-ink); }
+body { background: var(--color-ink); }
 
-/* Boutons/champs : police héritée, comme avant. Placé dans `@layer utilities`
-   (premier niveau) pour passer devant la typo des `.btn` de daisyUI, qui vit
-   dans des sous-layers, tout en restant battu par les classes Tailwind
-   (`text-sm`, `font-bold`…) grâce à leur spécificité. Ne pas le sortir du layer :
-   hors layer, il écraserait toutes les classes de typographie des boutons. */
+@layer base {
+  :focus-visible {
+    outline: 0.125rem solid var(--color-brand);
+    outline-offset: 0.125rem;
+  }
+}
+
 @layer utilities {
   button, input { font: inherit; }
 }

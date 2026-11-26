@@ -1,7 +1,7 @@
 Frontend:
 	☐ Mieux gérer les erreurs
 	✔ Implementer le systeme d'override @done (11/16/2026, 1:56:41 PM)
-	☐ Fix responsive
+	✔ Fix responsive @done (11/26/2026, 2:37:49 PM)
 	☐ Add jwt on stream requests
 
 Backend:

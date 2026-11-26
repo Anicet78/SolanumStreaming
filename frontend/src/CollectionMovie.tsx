@@ -42,10 +42,10 @@ const CollectionMovie = () => {
           </Show>
         }>
           {(movie) => (
-            <div class="mx-auto w-full 3xl:w-[min(100%,2200px)] 4xl:w-[min(100%,3000px)]">
+            <div class="mx-auto w-full">
               <DetailBackbar href="/collection" label="← Back to collection" />
               <Show when={torrent.state === "ready"}>
-                <div class="overflow-hidden bg-[#05090d] shadow-[0_20px_50px_rgb(0_0_0/28%)] [&_hlsjs-video]:block [&_hlsjs-video]:h-full [&_hlsjs-video]:w-full [&_video-player]:block [&_video-player]:w-full [&_video-skin]:block [&_video-skin]:aspect-[2/1] [&_video-skin]:w-full 4xl:[&_video-skin]:aspect-video">
+                <div class="overflow-hidden bg-[#05090d] shadow-[0_1.25rem_3.125rem_rgb(0_0_0/28%)] [&_hlsjs-video]:block [&_hlsjs-video]:h-full [&_hlsjs-video]:w-full [&_video-player]:block [&_video-player]:w-full [&_video-skin]:block [&_video-skin]:aspect-[2/1] [&_video-skin]:max-h-[85svh] [&_video-skin]:w-full">
                   <video-player>
                     <video-skin>
                       <hlsjs-video src={`http://localhost:8083/playlist.m3u8?torrent_link=${encodeURIComponent(torrent()!.torrent_link)}`} playsinline></hlsjs-video>
@@ -54,11 +54,11 @@ const CollectionMovie = () => {
                 </div>
               </Show>
               <Show when={torrent.state === "refreshing"}>
-                <div class="grid aspect-[2/1] place-items-center bg-[#05090d] shadow-[0_20px_50px_rgb(0_0_0/28%)] 4xl:aspect-video">
+                <div class="grid aspect-[2/1] max-h-[85svh] place-items-center bg-[#05090d] shadow-[0_1.25rem_3.125rem_rgb(0_0_0/28%)]">
                   <span class="loading loading-spinner loading-md text-brand"></span>
                 </div>
               </Show>
-              <div class="mt-6 rounded-2xl border border-line bg-surface p-[clamp(20px,4vw,34px)] 4xl:p-14.5">
+              <div class="mt-6 rounded-2xl border border-line bg-surface p-[clamp(1.25rem,4vw,2.125rem)]">
                 <MovieDetails
                   movie={movie()}
                   eyebrow="Now playing"
@@ -67,7 +67,7 @@ const CollectionMovie = () => {
                 />
               </div>
               <Show when={torrent.state === "errored"}>
-                <div class="mt-4.5 rounded-[10px] border border-[#6b4c56] p-4 text-[#f2b8c5] 4xl:text-[1.55rem]">
+                <div class="mt-4.5 rounded-[0.625rem] border border-danger-line p-4 text-danger">
                   <Switch fallback={<span>An error has occured</span>}>
                     <Match when={torrent.error.message === "No torrent found"}>
                       No stream is available for this movie yet.

@@ -78,9 +78,10 @@ const DisplayMenu: Component = () => {
 
   createEffect(() => {
     if (!open() || !panel) return;
+    const margin = parseFloat(getComputedStyle(document.documentElement).fontSize) * 0.75;
     const left = trigger.getBoundingClientRect().left;
-    const max = window.innerWidth - panel.offsetWidth - 12;
-    setShift(Math.max(12, Math.min(left, max)) - left);
+    const max = window.innerWidth - panel.offsetWidth - margin;
+    setShift(Math.max(margin, Math.min(left, max)) - left);
     panel.querySelector<HTMLInputElement>('input[type="radio"]:checked')?.focus();
   });
 
@@ -91,7 +92,7 @@ const DisplayMenu: Component = () => {
           <button
             ref={trigger}
             type="button"
-            class={`group flex cursor-pointer items-center gap-[0.5em] transition-[border-color,color] duration-200 hover:border-brand hover:text-brand ${pill}`}
+            class={`group flex cursor-pointer items-center gap-[0.5em] transition-[border-color,color] duration-200 hover:border-brand hover:text-brand pointer-coarse:py-3 ${pill}`}
             classList={{ [pillIdle]: !customised(), "border-brand/60 text-brand": customised() }}
             aria-haspopup="dialog"
             aria-expanded={open()}
@@ -115,7 +116,7 @@ const DisplayMenu: Component = () => {
               id={`${uid}-panel`}
               role="dialog"
               aria-label="Display settings"
-              class="absolute top-full z-20 mt-2 flex w-[22em] max-w-[calc(100vw-24px)] flex-col gap-[1em] rounded-[0.9em] border border-line-strong bg-surface p-[1em] text-[0.8rem] font-normal text-fog shadow-[0_12px_24px_rgb(0_0_0/28%)] transition-[opacity,translate] duration-150 starting:-translate-y-1 starting:opacity-0 3xl:text-[0.9rem] 4xl:text-[1.5rem]"
+              class="absolute top-full z-10 mt-2 flex w-[22em] max-w-[calc(100vw-1.5rem)] flex-col gap-[1em] rounded-[0.9em] border border-line-strong bg-surface p-[1em] text-[0.8rem] font-normal text-fog shadow-[0_0.75rem_1.5rem_rgb(0_0_0/28%)] transition-[opacity,translate] duration-150 starting:-translate-y-1 starting:opacity-0"
               style={{ left: `${shift()}px` }}
             >
               <div>
@@ -137,7 +138,7 @@ const DisplayMenu: Component = () => {
                     {(t) => (
                       <label
                         title={`${TIERS[t].width} × ${TIERS[t].height}`}
-                        class="cursor-pointer rounded-[0.6em] border border-line-strong px-[0.75em] py-[0.5em] text-center transition-colors hover:border-brand/60 has-checked:border-brand has-checked:bg-brand/10 has-checked:text-brand has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-brand"
+                        class="flex cursor-pointer items-center justify-center rounded-[0.6em] border border-line-strong px-[0.75em] py-[0.5em] text-center transition-colors pointer-coarse:min-h-11 hover:border-brand/60 has-checked:border-brand has-checked:bg-brand/10 has-checked:text-brand has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-brand"
                       >
                         <input
                           type="radio"
@@ -175,13 +176,13 @@ const DisplayMenu: Component = () => {
 
               <div class="flex items-center justify-between gap-[0.75em] border-t border-line-soft pt-[0.9em]">
                 <Show when={customised()}>
-                  <button type="button" class="cursor-pointer text-dim transition-colors hover:text-brand" onClick={reset}>
+                  <button type="button" class="cursor-pointer py-[0.4em] text-dim transition-colors hover:text-brand pointer-coarse:min-h-11" onClick={reset}>
                     Use detected
                   </button>
                 </Show>
                 <button
                   type="button"
-                  class="ml-auto cursor-pointer rounded-[0.6em] bg-brand px-[1em] py-[0.5em] font-bold text-ink hover:brightness-[1.08] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:brightness-100"
+                  class="ml-auto cursor-pointer rounded-[0.6em] bg-brand px-[1em] py-[0.5em] font-bold text-ink pointer-coarse:min-h-11 hover:brightness-[1.08] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:brightness-100"
                   disabled={!dirty()}
                   onClick={apply}
                 >

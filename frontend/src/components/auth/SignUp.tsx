@@ -2,7 +2,7 @@ import { createSignal, type Component } from "solid-js";
 import Password from "./Password"
 import PasswordConfirm from "./PasswordConfirm"
 import Username from "./Username"
-import AuthPanel from "../AuthPanel";
+import AuthPanel from "./AuthPanel";
 import { usersApi } from "../../api/auth";
 import { action, useAction, useSubmission } from "@solidjs/router";
 import { useAuthContext } from "../../contexts/AuthContext";
@@ -35,26 +35,18 @@ const SignUp: Component<SignupProps> = (props) => {
     <AuthPanel
       eyebrow="Start your library"
       tagline="Create an account and keep your watchlist close."
+      submitLabel="Create account"
+      pendingLabel="Creating account..."
+      pending={submission.pending}
+      error={submission.error ? (submission.error.message ?? "Something went wrong") : undefined}
+      onSubmit={handleSubmit}
       switchText="Already a user?"
       switchLabel="Log In"
       onSwitch={props.onGoToLogin}
     >
-      <form class="grid gap-3" onSubmit={handleSubmit}>
-        <fieldset class="fieldset bg-base-200 border-base-300 rounded-box w-xs border p-4">
-          <legend class="fieldset-legend text-brand">Sign Up</legend>
-
-          <Username value={username()} onInput={setUsername} />
-          <br/>
-          <Password value={password()} onInput={setPassword} />
-          <PasswordConfirm password={password}/>
-
-          <div class="tooltip tooltip-open tooltip-top tooltip-end mt-4 mb-2" data-tip={submission.error ? submission.error.message : ""}>
-            <button class="btn btn-soft btn-primary w-full border-0 bg-brand text-ink" type="submit" disabled={submission.pending}>
-              {submission.pending ? "Creating account..." : "Create account"}
-            </button>
-          </div>
-        </fieldset>
-      </form>
+      <Username value={username()} onInput={setUsername} />
+      <Password value={password()} onInput={setPassword} autocomplete="new-password" />
+      <PasswordConfirm password={password}/>
     </AuthPanel>
   )
 }
