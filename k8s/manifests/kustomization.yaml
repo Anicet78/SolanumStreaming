@@ -4,42 +4,42 @@ kind: Kustomization
 namespace: solanumstreaming
 
 resources:
-  - ingress.yaml
-  - prefix-middleware.yaml
-  - frontend/deployment.yaml
-  - frontend/service.yaml
-  - auth/deployment.yaml
-  - auth/service.yaml
-  - movies/deployment.yaml
-  - movies/service.yaml
-  - stream/deployment.yaml
-  - stream/service.yaml
-  - stream/service-torrent.yaml
-  - postgres/statefulset.yaml
-  - postgres/service.yaml
-  - jackett/deployment.yaml
-  - jackett/pvc.yaml
-  - jackett/service.yaml
-  - migrate/job.yaml
+- ingress.yaml
+- prefix-middleware.yaml
+- frontend/deployment.yaml
+- frontend/service.yaml
+- auth/deployment.yaml
+- auth/service.yaml
+- movies/deployment.yaml
+- movies/service.yaml
+- stream/deployment.yaml
+- stream/service.yaml
+- stream/service-torrent.yaml
+- postgres/statefulset.yaml
+- postgres/service.yaml
+- jackett/deployment.yaml
+- jackett/pvc.yaml
+- jackett/service.yaml
+- migrate/job.yaml
 
 images:
-  - name: frontend
-    newName: ghcr.io/anicet78/solanumstreaming-frontend
-    newTag: latest
-  - name: auth
-    newName: ghcr.io/anicet78/solanumstreaming-auth
-    newTag: latest
-  - name: movies
-    newName: ghcr.io/anicet78/solanumstreaming-movies
-    newTag: latest
-  - name: stream
-    newName: ghcr.io/anicet78/solanumstreaming-stream
-    newTag: latest
-  - name: migrate
-    newName: ghcr.io/anicet78/solanumstreaming-migrate
-    newTag: latest
+- name: auth
+  newName: ghcr.io/anicet78/solanumstreaming-auth
+  newTag: 64a5aca27917e6bb7aa4261fd75dafd25033cfbe
+- name: frontend
+  newName: ghcr.io/anicet78/solanumstreaming-frontend
+  newTag: 64a5aca27917e6bb7aa4261fd75dafd25033cfbe
+- name: migrate
+  newName: ghcr.io/anicet78/solanumstreaming-migrate
+  newTag: latest
+- name: movies
+  newName: ghcr.io/anicet78/solanumstreaming-movies
+  newTag: 64a5aca27917e6bb7aa4261fd75dafd25033cfbe
+- name: stream
+  newName: ghcr.io/anicet78/solanumstreaming-stream
+  newTag: 64a5aca27917e6bb7aa4261fd75dafd25033cfbe
 
 configMapGenerator:
-  - name: postgres-init
-    files:
-      - postgres/init.sh
+- files:
+  - postgres/init.sh
+  name: postgres-init
