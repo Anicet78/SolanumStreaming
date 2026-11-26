@@ -29,6 +29,8 @@ jobs:
 
       - name: Create .env
         run: |
+          echo "API_URL=${{ secrets.API_URL }}" >> .env
+          echo "API_STREAM_PATH=${{ secrets.API_STREAM_PATH }}" >> .env
           echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}" >> .env
           echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> .env
           echo "POSTGRES_DB=${{ secrets.POSTGRES_DB }}" >> .env
@@ -36,6 +38,11 @@ jobs:
           echo "POSTGRES_PORT=${{ secrets.POSTGRES_PORT }}" >> .env
           echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
           echo "TMDB_TOKEN=${{ secrets.TMDB_TOKEN }}" >> .env
+          echo "OPENSUBTITLES_API_KEY=${{ secrets.OPENSUBTITLES_API_KEY }}" >> .env
+          echo "OPENSUBTITLES_USERNAME=${{ secrets.OPENSUBTITLES_USERNAME }}" >> .env
+          echo "OPENSUBTITLES_PASSWORD=${{ secrets.OPENSUBTITLES_PASSWORD }}" >> .env
+          echo "OPENSUBTITLES_USER_AGENT=${{ secrets.OPENSUBTITLES_USER_AGENT }}" >> .env
+          echo "SUBTITLE_CACHE_DIR=${{ secrets.SUBTITLE_CACHE_DIR }}" >> .env
 
       - name: Start services
         run: docker compose up -d --build

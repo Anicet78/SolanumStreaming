@@ -59,9 +59,9 @@ jobs:
           platforms: linux/arm64
           tags: ghcr.io/anicet78/solanumstreaming-${{ matrix.service }}:${{ github.sha }}
           build-args: |
-            VITE_AUTH_URL=${{ vars.VITE_AUTH_URL }}
-            VITE_MOVIES_URL=${{ vars.VITE_MOVIES_URL }}
-            VITE_STREAM_URL=${{ vars.VITE_STREAM_URL }}
+            VITE_AUTH_PATH=${{ vars.VITE_AUTH_PATH }}
+            VITE_MOVIES_PATH=${{ vars.VITE_MOVIES_PATH }}
+            VITE_STREAM_PATH=${{ vars.VITE_STREAM_PATH }}
           cache-from: type=gha,scope=${{ matrix.service }}
           cache-to: type=gha,mode=max,scope=${{ matrix.service }}
 
