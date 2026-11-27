@@ -136,6 +136,9 @@ func (s *MovieService) SearchTorrent(ctx context.Context, userId pgtype.UUID, mo
 	}
 
 	jackett.PrintResponse(torznabResponse)
+	fmt.Println("Request URL:", res.Request.URL)
+	fmt.Println("Status:", res.StatusCode())
+	fmt.Println("Response:", res.String())
 
 	profile, err := jackett.ParseClientProfile(clientCaps)
 	if err != nil {
