@@ -24,19 +24,19 @@ resources:
 images:
 - name: auth
   newName: ghcr.io/anicet78/solanumstreaming-auth
-  newTag: f79b52139eb11d5c1162dc2c026d5b472cc10c5c
+  newTag: 6bf312d9f6c7bad740caa6b6344635ec58d73794
 - name: frontend
   newName: ghcr.io/anicet78/solanumstreaming-frontend
-  newTag: 3b7d2752aaf062d801ba26979859f96aa655a5c8
+  newTag: 6bf312d9f6c7bad740caa6b6344635ec58d73794
 - name: migrate
   newName: ghcr.io/anicet78/solanumstreaming-migrate
-  newTag: f79b52139eb11d5c1162dc2c026d5b472cc10c5c
+  newTag: 6bf312d9f6c7bad740caa6b6344635ec58d73794
 - name: movies
   newName: ghcr.io/anicet78/solanumstreaming-movies
-  newTag: 3b7d2752aaf062d801ba26979859f96aa655a5c8
+  newTag: 6bf312d9f6c7bad740caa6b6344635ec58d73794
 - name: stream
   newName: ghcr.io/anicet78/solanumstreaming-stream
-  newTag: 5163b7bd59846c0c57eb848e7c8421111656e132
+  newTag: 6bf312d9f6c7bad740caa6b6344635ec58d73794
 
 configMapGenerator:
 - files:
