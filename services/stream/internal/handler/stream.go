@@ -72,7 +72,7 @@ func (h *StreamHandler) createPlaylist(c *echo.Context) error {
 		return response.InternalServerError(c, "internal server error")
 	}
 
-	return response.Found(c, "/hls/"+id+"/index.m3u8")
+	return response.Found(c, "hls/"+id+"/index.m3u8")
 }
 
 func (h *StreamHandler) hlsFile(c *echo.Context) error {

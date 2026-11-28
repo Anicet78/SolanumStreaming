@@ -51,6 +51,8 @@ services:
     environment:
       - TZ=Europe/Paris
       - AUTO_UPDATE=true
+      - PUID=1000
+      - PGID=1000
     userns_mode: keep-id
     volumes:
       - ./jackett:/config/Jackett
