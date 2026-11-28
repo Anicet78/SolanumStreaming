@@ -46,7 +46,7 @@ func main() {
 	}
 	defer client.Close()
 
-	internalBase := os.Getenv("API_URL") + os.Getenv("API_STREAM_PATH")
+	internalBase := "http://127.0.0.1:8083"
 	tokenBytes := make([]byte, 16)
 	rand.Read(tokenBytes)
 	internalToken := hex.EncodeToString(tokenBytes)
