@@ -28,13 +28,13 @@ images:
   newTag: f79b52139eb11d5c1162dc2c026d5b472cc10c5c
 - name: frontend
   newName: ghcr.io/anicet78/solanumstreaming-frontend
-  newTag: d82caed673eb5c460715e0d7bcaf13ef5dd2a885
+  newTag: 3b7d2752aaf062d801ba26979859f96aa655a5c8
 - name: migrate
   newName: ghcr.io/anicet78/solanumstreaming-migrate
   newTag: f79b52139eb11d5c1162dc2c026d5b472cc10c5c
 - name: movies
   newName: ghcr.io/anicet78/solanumstreaming-movies
-  newTag: f79b52139eb11d5c1162dc2c026d5b472cc10c5c
+  newTag: 3b7d2752aaf062d801ba26979859f96aa655a5c8
 - name: stream
   newName: ghcr.io/anicet78/solanumstreaming-stream
   newTag: f79b52139eb11d5c1162dc2c026d5b472cc10c5c
