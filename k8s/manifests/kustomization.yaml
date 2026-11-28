@@ -4,23 +4,22 @@ kind: Kustomization
 namespace: solanumstreaming
 
 resources:
-- ingress.yaml
-- prefix-middleware.yaml
-- frontend/deployment.yaml
-- frontend/service.yaml
-- auth/deployment.yaml
-- auth/service.yaml
-- movies/deployment.yaml
-- movies/service.yaml
-- stream/deployment.yaml
-- stream/service.yaml
-- stream/service-torrent.yaml
-- postgres/statefulset.yaml
-- postgres/service.yaml
-- jackett/deployment.yaml
-- jackett/pvc.yaml
-- jackett/service.yaml
-- migrate/job.yaml
+  - ingress.yaml
+  - prefix-middleware.yaml
+  - frontend/deployment.yaml
+  - frontend/service.yaml
+  - auth/deployment.yaml
+  - auth/service.yaml
+  - movies/deployment.yaml
+  - movies/service.yaml
+  - stream/deployment.yaml
+  - stream/service.yaml
+  - stream/service-torrent.yaml
+  - postgres/statefulset.yaml
+  - postgres/service.yaml
+  - jackett/deployment.yaml
+  - jackett/service.yaml
+  - migrate/job.yaml
 
 images:
 - name: auth
