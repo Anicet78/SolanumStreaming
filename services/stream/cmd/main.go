@@ -5,7 +5,6 @@ import (
 	"encoding/hex"
 	"log/slog"
 	"net/http"
-	"os"
 
 	"github.com/Anicet78/SolanumStreaming/stream/internal/handler"
 	"github.com/Anicet78/SolanumStreaming/stream/internal/service"
