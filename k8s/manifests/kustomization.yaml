@@ -22,23 +22,23 @@ resources:
   - migrate/job.yaml
 
 images:
-  - name: frontend
-    newName: ghcr.io/anicet78/solanumstreaming-frontend
-    newTag: latest
-  - name: auth
-    newName: ghcr.io/anicet78/solanumstreaming-auth
-    newTag: latest
-  - name: movies
-    newName: ghcr.io/anicet78/solanumstreaming-movies
-    newTag: latest
-  - name: stream
-    newName: ghcr.io/anicet78/solanumstreaming-stream
-    newTag: latest
-  - name: migrate
-    newName: ghcr.io/anicet78/solanumstreaming-migrate
-    newTag: latest
+- name: auth
+  newName: ghcr.io/anicet78/solanumstreaming-auth
+  newTag: f79b52139eb11d5c1162dc2c026d5b472cc10c5c
+- name: frontend
+  newName: ghcr.io/anicet78/solanumstreaming-frontend
+  newTag: 3b7d2752aaf062d801ba26979859f96aa655a5c8
+- name: migrate
+  newName: ghcr.io/anicet78/solanumstreaming-migrate
+  newTag: f79b52139eb11d5c1162dc2c026d5b472cc10c5c
+- name: movies
+  newName: ghcr.io/anicet78/solanumstreaming-movies
+  newTag: 3b7d2752aaf062d801ba26979859f96aa655a5c8
+- name: stream
+  newName: ghcr.io/anicet78/solanumstreaming-stream
+  newTag: f79b52139eb11d5c1162dc2c026d5b472cc10c5c
 
 configMapGenerator:
-  - name: postgres-init
-    files:
-      - postgres/init.sh
+- files:
+  - postgres/init.sh
+  name: postgres-init
