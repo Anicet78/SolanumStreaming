@@ -36,7 +36,7 @@ images:
   newTag: 3b7d2752aaf062d801ba26979859f96aa655a5c8
 - name: stream
   newName: ghcr.io/anicet78/solanumstreaming-stream
-  newTag: 6f203fe19b960de61bf31335eeeca485ac37cde1
+  newTag: 5163b7bd59846c0c57eb848e7c8421111656e132
 
 configMapGenerator:
 - files:
