@@ -4,22 +4,22 @@ kind: Kustomization
 namespace: solanumstreaming
 
 resources:
-  - ingress.yaml
-  - prefix-middleware.yaml
-  - frontend/deployment.yaml
-  - frontend/service.yaml
-  - auth/deployment.yaml
-  - auth/service.yaml
-  - movies/deployment.yaml
-  - movies/service.yaml
-  - stream/deployment.yaml
-  - stream/service.yaml
-  - stream/service-torrent.yaml
-  - postgres/statefulset.yaml
-  - postgres/service.yaml
-  - jackett/deployment.yaml
-  - jackett/service.yaml
-  - migrate/job.yaml
+- ingress.yaml
+- prefix-middleware.yaml
+- frontend/deployment.yaml
+- frontend/service.yaml
+- auth/deployment.yaml
+- auth/service.yaml
+- movies/deployment.yaml
+- movies/service.yaml
+- stream/deployment.yaml
+- stream/service.yaml
+- stream/service-torrent.yaml
+- postgres/statefulset.yaml
+- postgres/service.yaml
+- jackett/deployment.yaml
+- jackett/service.yaml
+- migrate/job.yaml
 
 images:
 - name: auth
@@ -36,7 +36,7 @@ images:
   newTag: 3b7d2752aaf062d801ba26979859f96aa655a5c8
 - name: stream
   newName: ghcr.io/anicet78/solanumstreaming-stream
-  newTag: f79b52139eb11d5c1162dc2c026d5b472cc10c5c
+  newTag: 6f203fe19b960de61bf31335eeeca485ac37cde1
 
 configMapGenerator:
 - files:
