@@ -31,5 +31,6 @@ spec:
               mountPath: /config
       volumes:
         - name: config
-          persistentVolumeClaim:
-            claimName: jackett-config
+          hostPath:
+            path: /home/ubuntu/SolanumStreaming/jackett
+            type: Directory
