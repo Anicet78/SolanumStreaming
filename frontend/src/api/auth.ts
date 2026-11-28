@@ -22,5 +22,5 @@ export const usersApi = {
   login: (data: Credentials) => api.post<User>(`${BASE}/login`, data),
   refresh: () => api.get<User>(`${BASE}/refresh`),
   delete: () => api.delete<void>(`${BASE}/profile`),
-  update: (data: {new_username: string, new_language: Languages}) => api.patch<void>("${BASE}/profile", data),
+  update: (data: {new_username: string, new_language: Languages}) => api.patch<void>(`${BASE}/profile`, data),
 };
