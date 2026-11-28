@@ -24,11 +24,15 @@ spec:
               value: Europe/Paris
             - name: AUTO_UPDATE
               value: "true"
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
           ports:
             - containerPort: 9117
           volumeMounts:
             - name: config
-              mountPath: /config
+              mountPath: /config/Jackett
       volumes:
         - name: config
           hostPath:
